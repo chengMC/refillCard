@@ -63,7 +63,7 @@ public class TransactionController {
     }
 
     @RequestMapping("/push/receiveMsg")
-    public Result receivedMsg(@RequestParam("timestamp") long timestamp, @RequestParam("json") String json,
+    public String receivedMsg(@RequestParam("timestamp") long timestamp, @RequestParam("json") String json,
                               @RequestParam("aopic") long aopic, @RequestParam("sign") String sign) {
 //          json = "{\"Platform\":\"TAOBAO\",\"PlatformUserId\":\"2567518478\",\"ReceiverName\":null,\"ReceiverMobile\":null,\"ReceiverPhone\":null,\"ReceiverAddress\":\"QQ:569741817\\r\\n备注:\",\"BuyerArea\":null,\"ExtendedFields\":{},\"Tid\":1660873104587781269,\"TidStr\":\"1660873104587781269\",\"Status\":\"WAIT_SELLER_SEND_GOODS\",\"SellerNick\":\"劲舞团24小时充值\",\"BuyerNick\":\"启动蓝色\",\"Type\":null,\"BuyerMessage\":null,\"Price\":\"9.99\",\"Num\":1,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PayTime\":null,\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"PostFee\":\"0.00\",\"Created\":\"2021-03-21 19:18:40\",\"TradeFrom\":\"WAP,WAP\",\"Orders\":[{\"Oid\":1660873104587781269,\"OidStr\":\"1660873104587781269\",\"NumIid\":640359390526,\"OuterIid\":\"10\",\"OuterSkuId\":null,\"Title\":\"【谨防诈骗】腾讯qq币10qbQ币10个q币10qb10个qb10QB 自动充值\",\"Price\":\"9.99\",\"Num\":1,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"SkuId\":null,\"SkuPropertiesName\":null,\"DivideOrderFee\":null,\"PartMjzDiscount\":null}],\"SellerMemo\":null,\"SellerFlag\":0,\"CreditCardFee\":null}";
         Map<String, String> map = new HashMap<String, String>();
@@ -73,7 +73,7 @@ public class TransactionController {
 
         TransactionDto transactionDto = JSON.parseObject(json, TransactionDto.class);
         if(CollUtil.isEmpty(transactionDto.getOrders())){
-            return Result.fall("没有订单信息");
+            return JSON.toJSONString(Result.fall("没有订单信息"));
         }
         Transaction transaction = new Transaction();
         transaction.setStatus(transactionDto.getStatus());
@@ -90,13 +90,13 @@ public class TransactionController {
                 taobaoDoMemoUpdateVo.setFlag(-1);
                 taobaoDoMemoUpdateVo.setMemo("");
                 taobaoTransactionVo.setDoMemoUpdate(taobaoDoMemoUpdateVo);
-                return Result.success("推送成功",taobaoTransactionVo);
+                return JSON.toJSONString(taobaoTransactionVo);
             }else  if(state == 1){
-                return Result.fall("订单ID："+transactionDto.getTid()+"已存在。待推送");
+                return JSON.toJSONString(Result.fall("订单ID："+transactionDto.getTid()+"已存在。待推送"));
             }else  if(state == 3){
-                return Result.fall("订单ID："+transactionDto.getTid()+"已存在。推送失败");
+                return JSON.toJSONString(Result.fall("订单ID："+transactionDto.getTid()+"已存在。推送失败"));
             }else{
-                return Result.fall("订单ID："+transactionDto.getTid()+"已存在");
+                return JSON.toJSONString(Result.fall("订单ID："+transactionDto.getTid()+"已存在"));
             }
         }
         //保存订单
@@ -111,14 +111,14 @@ public class TransactionController {
             userRelate = userService.save(platformUserId, sellerNick);
         }
         if(userRelate == null || StringUtils.isEmpty(userRelate.getFuluSercret())){
-            return Result.fall("订单推送失败，请先填写相关配置");
+            return JSON.toJSONString(Result.fall("订单推送失败，请先填写相关配置"));
         }
         //推送订单
         System.out.println(transactionDto);
         Map resultMap = transactionService.placeOrder(transactionDto, userRelate);
         if(resultMap.get("fail") != null){
             Object fail = resultMap.get("fail");
-            return Result.fall("推送失败：",fail);
+            return JSON.toJSONString(Result.fall("推送失败：",fail));
         }else if(resultMap.get("success") != null){
             TaobaoTransactionVo taobaoTransactionVo = new TaobaoTransactionVo();
             taobaoTransactionVo.setDoDummySend(true);
@@ -127,9 +127,9 @@ public class TransactionController {
             taobaoDoMemoUpdateVo.setFlag(-1);
             taobaoDoMemoUpdateVo.setMemo("");
             taobaoTransactionVo.setDoMemoUpdate(taobaoDoMemoUpdateVo);
-            return Result.success("推送成功",taobaoTransactionVo);
+            return JSON.toJSONString(Result.success("推送成功",taobaoTransactionVo));
         }
-        return Result.fall("推送失败");
+        return JSON.toJSONString(Result.fall("推送失败"));
     }
 
 
