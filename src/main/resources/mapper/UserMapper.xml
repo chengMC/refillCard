@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mc.refillCard.dao.UserMapper">
+  <resultMap id="BaseResultMap" type="com.mc.refillCard.entity.User">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="create_emp" jdbcType="VARCHAR" property="createEmp" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="update_emp" jdbcType="VARCHAR" property="updateEmp" />
+    <result column="logo" jdbcType="VARCHAR" property="logo" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="role_name" jdbcType="VARCHAR" property="roleName" />
+    <result column="role_id" jdbcType="BIGINT" property="roleId" />
+    <result column="department_id" jdbcType="BIGINT" property="departmentId" />
+    <result column="department_name" jdbcType="VARCHAR" property="departmentName" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, user_name, password, phone, remark, status, create_emp, create_time, update_time,
+    update_emp, logo, email, role_name, role_id, department_id, department_name
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from user
+    where status != 0
+    and (select is_hidden from role r where r.id =user.role_id) = 1
+    <if test="userName != null">
+      and (user_name like concat('%',#{userName,jdbcType=VARCHAR},'%')
+       or phone like concat('%',#{phone,jdbcType=VARCHAR},'%'))
+    </if>
+    order by update_time desc
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from user
+    where user.id = #{id,jdbcType=BIGINT}
+    and user.status != 0
+  </select>
+
+  <select id="findUser" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from user
+    where user_name =#{userName,jdbcType=VARCHAR}
+     and password = #{password,jdbcType=VARCHAR}
+    and status != 0
+  </select>
+  <select id="findByPrimary" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from user
+    where 1=1 and status != 0
+    <if test="id != null">
+      and id != #{id}
+    </if>
+    <if test="userName != null">
+      and user_name like concat('%',#{userName,jdbcType=VARCHAR},'%')
+    </if>
+     <if test="validUserName != null">
+      and user_name =#{validUserName,jdbcType=VARCHAR}
+    </if>
+    <if test="departmentName != null">
+      and department_name like concat('%',#{departmentName,jdbcType=VARCHAR},'%')
+    </if>
+    <if test="phone != null">
+      and phone = #{phone,jdbcType=VARCHAR}
+    </if>
+    <if test="remark != null">
+      and remark = #{remark,jdbcType=VARCHAR}
+    </if>
+    <if test="status != null">
+      and status = #{status,jdbcType=INTEGER}
+    </if>
+    <if test="email != null">
+      and email = #{email,jdbcType=VARCHAR}
+    </if>
+    limit 1
+  </select>
+    <select id="findByUserName" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from user
+      where
+      status != 0
+      and user_name =#{userName,jdbcType=VARCHAR}
+       or phone =#{userName,jdbcType=VARCHAR}
+      limit 1
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from user
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+
+  <insert id="insert" parameterType="com.mc.refillCard.entity.User">
+    insert into user (id, user_name, password,
+    phone, remark, status,
+    create_emp, create_time, update_time,
+    update_emp, logo, email,
+    role_name, role_id, department_id,
+    department_name)
+    values (#{id,jdbcType=BIGINT}, #{userName,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},
+    #{phone,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER},
+    #{createEmp,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP},
+    #{updateEmp,jdbcType=VARCHAR}, #{logo,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR},
+    #{roleName,jdbcType=VARCHAR}, #{roleId,jdbcType=BIGINT}, #{departmentId,jdbcType=BIGINT},
+    #{departmentName,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.mc.refillCard.entity.User"
+          useGeneratedKeys="true" keyProperty="id"  keyColumn="id">
+    insert into user
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="userName != null">
+        user_name,
+      </if>
+      <if test="password != null">
+        password,
+      </if>
+      <if test="phone != null">
+        phone,
+      </if>
+      <if test="remark != null">
+        remark,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="createEmp != null">
+        create_emp,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+      <if test="updateEmp != null">
+        update_emp,
+      </if>
+      <if test="logo != null">
+        logo,
+      </if>
+      <if test="email != null">
+        email,
+      </if>
+      <if test="roleName != null">
+        role_name,
+      </if>
+      <if test="roleId != null">
+        role_id,
+      </if>
+      <if test="departmentId != null">
+        department_id,
+      </if>
+      <if test="departmentName != null">
+        department_name,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="userName != null">
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null">
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="createEmp != null">
+        #{createEmp,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateEmp != null">
+        #{updateEmp,jdbcType=VARCHAR},
+      </if>
+      <if test="logo != null">
+        #{logo,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null">
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="roleName != null">
+        #{roleName,jdbcType=VARCHAR},
+      </if>
+      <if test="roleId != null">
+        #{roleId,jdbcType=BIGINT},
+      </if>
+      <if test="departmentId != null">
+        #{departmentId,jdbcType=BIGINT},
+      </if>
+      <if test="departmentName != null">
+        #{departmentName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.mc.refillCard.entity.User">
+    update user
+    <set>
+      <if test="userName != null">
+        user_name = #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        password = #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null">
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="createEmp != null">
+        create_emp = #{createEmp,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateEmp != null">
+        update_emp = #{updateEmp,jdbcType=VARCHAR},
+      </if>
+      <if test="logo != null">
+        logo = #{logo,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null">
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="roleName != null">
+        role_name = #{roleName,jdbcType=VARCHAR},
+      </if>
+      <if test="roleId != null">
+        role_id = #{roleId,jdbcType=BIGINT},
+      </if>
+      <if test="departmentId != null">
+        department_id = #{departmentId,jdbcType=BIGINT},
+      </if>
+      <if test="departmentName != null">
+        department_name = #{departmentName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.mc.refillCard.entity.User">
+    update user
+    set user_name = #{userName,jdbcType=VARCHAR},
+    password = #{password,jdbcType=VARCHAR},
+    phone = #{phone,jdbcType=VARCHAR},
+    remark = #{remark,jdbcType=VARCHAR},
+    status = #{status,jdbcType=INTEGER},
+    create_emp = #{createEmp,jdbcType=VARCHAR},
+    create_time = #{createTime,jdbcType=TIMESTAMP},
+    update_time = #{updateTime,jdbcType=TIMESTAMP},
+    update_emp = #{updateEmp,jdbcType=VARCHAR},
+    logo = #{logo,jdbcType=VARCHAR},
+    email = #{email,jdbcType=VARCHAR},
+    role_name = #{roleName,jdbcType=VARCHAR},
+    role_id = #{roleId,jdbcType=BIGINT},
+    department_id = #{departmentId,jdbcType=BIGINT},
+    department_name = #{departmentName,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

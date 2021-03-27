@@ -1,0 +1,70 @@
+package com.mc.refillCard.util;
+
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSON;
+import com.mc.refillCard.entity.SysDict;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ *  百度地图接口调用工具类
+ */
+@Component
+public class BaiDuMapApiUtil {
+
+    private static Logger log = Logger.getLogger(BaiDuMapApiUtil.class);
+
+    private static String ak;
+    @Value("${baiduApi.ak}")
+    public void setAk(String ak) {
+        BaiDuMapApiUtil.ak = ak;
+    }
+
+    /**
+     * 百度地图API
+     * http://lbsyun.baidu.com/index.php?title=webapi/ip-api
+     * @param ip
+     * @param sysDicts
+     */
+    public static String location(String ip,List<SysDict> sysDicts){
+        String province = "";
+        String url = " http://api.map.baidu.com/location/ip?ak="+ak+"&ip="+ip+"&coor=bd09ll" ;
+        String resultStr = HttpUtil.get(url);
+        Map resultMap = JSON.parseObject(resultStr);
+        String status = String.valueOf(resultMap.get("status"));
+        //状态
+        if("0".equals(status)){
+            Map content = JSON.parseObject(JSON.toJSONString(resultMap.get("content")));
+            String address = String.valueOf(content.get("address"));
+            Map addressDetail = JSON.parseObject(JSON.toJSONString(content.get("address_detail")));
+            province = String.valueOf(addressDetail.get("province"));
+        }else{
+            Integer statusInt = Integer.valueOf(status);
+            //状态码地址 http://lbsyun.baidu.com/index.php?title=webapi/appendix
+            if (statusInt > 300) {
+                //超额换ak
+                for (SysDict dict : sysDicts) {
+                    String baiDuAkStr = dict.getDataValue();
+                    if (!ak.equals(baiDuAkStr)) {
+                        url = " http://api.map.baidu.com/location/ip?ak=" + baiDuAkStr + "&ip=" + ip + "&coor=bd09ll";
+                        resultStr = HttpUtil.get(url);
+                        resultMap = JSON.parseObject(resultStr);
+                        status = String.valueOf(resultMap.get("status"));
+                        if ("0".equals(status)) {
+                            Map content = JSON.parseObject(JSON.toJSONString(resultMap.get("content")));
+                            String address = String.valueOf(content.get("address"));
+                            Map addressDetail = JSON.parseObject(JSON.toJSONString(content.get("address_detail")));
+                             province = String.valueOf(addressDetail.get("province"));
+                        }
+                    }
+                }
+            }
+        }
+        return province;
+    }
+
+}

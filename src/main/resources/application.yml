@@ -1,0 +1,34 @@
+spring:
+  profiles:
+#    active: dev
+    active: test
+#    active: prod
+
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: com.mc.refillCard.entity
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+jwt:
+  secret: refillCard
+
+logging:
+  level:
+    org.springframework.web: info
+    com.mc.refillCard: debug
+
+
+
+agiso:
+  appSecret: ak6mr75ettb7yktzv7spspwu322f374y
+  AccssToken: TbAlds5gt3bhurg6zsupfhvecndpxszavyxwch9tx62atd9y5s
+
+fuli:
+  appKey: +gViu2wfFwlHcca4U4FR+ijRebmrPjLu9+9JLeKukYjh3aqGj5g1BLO+soJ7Npix
+  sysSecret: 77126992853e4fcabf04014ce75afbfa
+  url: http://openapi.fulu.com/api/getway
+
+#百度地图api
+baiduApi:
+  ak: V16EnpeKlyqxe1hGi7iIOPfWKRtvc9fj

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mc.refillCard.dao.MenuMapper">
+  <resultMap id="BaseResultMap" type="com.mc.refillCard.entity.Menu">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="menu_name" jdbcType="VARCHAR" property="menuName" />
+    <result column="parent_id" jdbcType="BIGINT" property="parentId" />
+    <result column="display_name" jdbcType="VARCHAR" property="displayName" />
+    <result column="display_order" jdbcType="INTEGER" property="displayOrder" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="state" jdbcType="INTEGER" property="state" />
+    <result column="img_url" jdbcType="VARCHAR" property="imgUrl" />
+    <result column="station_id" jdbcType="BIGINT" property="stationId" />
+    <result column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="mark_picture" jdbcType="VARCHAR" property="markPicture" />
+    <result column="colour" jdbcType="VARCHAR" property="colour" />
+    <result column="mark" jdbcType="VARCHAR" property="mark" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, menu_name, parent_id, display_name, display_order, url, state, img_url, station_id, 
+    company_id, create_time, mark_picture, colour, mark
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from menu
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="findMenuByUserId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from menu
+	WHERE
+	state = 0
+	AND id in(
+	   select rm.menu_id  from role_menu rm where rm.role_id in (
+	     select ru.role_id  from role_user ru where ru.user_id = #{id,jdbcType=BIGINT}
+		 )
+	)
+    ORDER BY display_order,id
+  </select>
+    <select id="findAll" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from menu
+      WHERE state = 0
+    </select>
+  <select id="findTree" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List" />
+     FROM menu
+    where state = 0 and id not in (SELECT parent_id FROM `menu` where parent_id != 0)
+    ORDER BY display_order,id
+  </select>
+  <select id="findMenuIdByRoleId" resultType="java.lang.Long">
+    select m.id
+    from  menu m,role_menu rm
+    where m.state= 0
+    and m.id = rm.menu_id
+    and rm.role_id = #{id}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from menu
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.mc.refillCard.entity.Menu">
+    insert into menu (id, menu_name, parent_id, 
+      display_name, display_order, url, 
+      state, img_url, station_id, 
+      company_id, create_time, mark_picture, 
+      colour, mark)
+    values (#{id,jdbcType=BIGINT}, #{menuName,jdbcType=VARCHAR}, #{parentId,jdbcType=BIGINT}, 
+      #{displayName,jdbcType=VARCHAR}, #{displayOrder,jdbcType=INTEGER}, #{url,jdbcType=VARCHAR}, 
+      #{state,jdbcType=INTEGER}, #{imgUrl,jdbcType=VARCHAR}, #{stationId,jdbcType=BIGINT}, 
+      #{companyId,jdbcType=BIGINT}, #{createTime,jdbcType=TIMESTAMP}, #{markPicture,jdbcType=VARCHAR}, 
+      #{colour,jdbcType=VARCHAR}, #{mark,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.mc.refillCard.entity.Menu">
+    insert into menu
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="menuName != null">
+        menu_name,
+      </if>
+      <if test="parentId != null">
+        parent_id,
+      </if>
+      <if test="displayName != null">
+        display_name,
+      </if>
+      <if test="displayOrder != null">
+        display_order,
+      </if>
+      <if test="url != null">
+        url,
+      </if>
+      <if test="state != null">
+        state,
+      </if>
+      <if test="imgUrl != null">
+        img_url,
+      </if>
+      <if test="stationId != null">
+        station_id,
+      </if>
+      <if test="companyId != null">
+        company_id,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="markPicture != null">
+        mark_picture,
+      </if>
+      <if test="colour != null">
+        colour,
+      </if>
+      <if test="mark != null">
+        mark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="menuName != null">
+        #{menuName,jdbcType=VARCHAR},
+      </if>
+      <if test="parentId != null">
+        #{parentId,jdbcType=BIGINT},
+      </if>
+      <if test="displayName != null">
+        #{displayName,jdbcType=VARCHAR},
+      </if>
+      <if test="displayOrder != null">
+        #{displayOrder,jdbcType=INTEGER},
+      </if>
+      <if test="url != null">
+        #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null">
+        #{state,jdbcType=INTEGER},
+      </if>
+      <if test="imgUrl != null">
+        #{imgUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="stationId != null">
+        #{stationId,jdbcType=BIGINT},
+      </if>
+      <if test="companyId != null">
+        #{companyId,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="markPicture != null">
+        #{markPicture,jdbcType=VARCHAR},
+      </if>
+      <if test="colour != null">
+        #{colour,jdbcType=VARCHAR},
+      </if>
+      <if test="mark != null">
+        #{mark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.mc.refillCard.entity.Menu">
+    update menu
+    <set>
+      <if test="menuName != null">
+        menu_name = #{menuName,jdbcType=VARCHAR},
+      </if>
+      <if test="parentId != null">
+        parent_id = #{parentId,jdbcType=BIGINT},
+      </if>
+      <if test="displayName != null">
+        display_name = #{displayName,jdbcType=VARCHAR},
+      </if>
+      <if test="displayOrder != null">
+        display_order = #{displayOrder,jdbcType=INTEGER},
+      </if>
+      <if test="url != null">
+        url = #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null">
+        state = #{state,jdbcType=INTEGER},
+      </if>
+      <if test="imgUrl != null">
+        img_url = #{imgUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="stationId != null">
+        station_id = #{stationId,jdbcType=BIGINT},
+      </if>
+      <if test="companyId != null">
+        company_id = #{companyId,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="markPicture != null">
+        mark_picture = #{markPicture,jdbcType=VARCHAR},
+      </if>
+      <if test="colour != null">
+        colour = #{colour,jdbcType=VARCHAR},
+      </if>
+      <if test="mark != null">
+        mark = #{mark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.mc.refillCard.entity.Menu">
+    update menu
+    set menu_name = #{menuName,jdbcType=VARCHAR},
+      parent_id = #{parentId,jdbcType=BIGINT},
+      display_name = #{displayName,jdbcType=VARCHAR},
+      display_order = #{displayOrder,jdbcType=INTEGER},
+      url = #{url,jdbcType=VARCHAR},
+      state = #{state,jdbcType=INTEGER},
+      img_url = #{imgUrl,jdbcType=VARCHAR},
+      station_id = #{stationId,jdbcType=BIGINT},
+      company_id = #{companyId,jdbcType=BIGINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      mark_picture = #{markPicture,jdbcType=VARCHAR},
+      colour = #{colour,jdbcType=VARCHAR},
+      mark = #{mark,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="findAllByParentId" parameterType="java.util.List" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from menu
+    where parent_id in
+    <foreach item = "id" index = "index" collection = "menuIds" open = "(" separator = "," close = ")">
+      #{id}
+    </foreach>
+  </select>
+
+
+</mapper>

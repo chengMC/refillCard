@@ -1,0 +1,150 @@
+package com.mc.refillCard.controller;
+
+import cn.hutool.core.collection.CollUtil;
+import com.alibaba.fastjson.JSON;
+import com.github.pagehelper.PageInfo;
+import com.mc.refillCard.common.Enum.DictCodeEnum;
+import com.mc.refillCard.common.Result;
+import com.mc.refillCard.dto.TransactionDto;
+import com.mc.refillCard.entity.SysDict;
+import com.mc.refillCard.entity.Transaction;
+import com.mc.refillCard.entity.UserRelate;
+import com.mc.refillCard.service.SysDictService;
+import com.mc.refillCard.service.TransactionService;
+import com.mc.refillCard.service.UserRelateService;
+import com.mc.refillCard.service.UserService;
+import com.mc.refillCard.util.BaiDuMapApiUtil;
+import com.mc.refillCard.vo.TaobaoDoMemoUpdateVo;
+import com.mc.refillCard.vo.TaobaoTransactionVo;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/****
+ * @Author: MC
+ * @Description:
+ * @Date 2021-3-20 20:24:42
+ *****/
+@RestController
+@RequestMapping("/transaction")
+@CrossOrigin(origins = "*", allowCredentials = "true", maxAge = 3600)
+public class TransactionController {
+
+    private static String appSecret;
+    @Value("${agiso.appSecret}")
+    public static void setAppSecret(String appSecret) {
+        TransactionController.appSecret = appSecret;
+    }
+
+    @Autowired
+    private TransactionService transactionService;
+    @Autowired
+    private UserRelateService userRelateService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private SysDictService sysDictService;
+
+    /***
+     * 多条件搜索transaction数据
+     * @param transactionDto
+     * @return
+     */
+    @GetMapping(value = "/page/{page}/{size}")
+    public Result findPage(TransactionDto transactionDto,@PathVariable int page, @PathVariable int size) {
+        //调用AccessoryService实现分页条件查询Accessory
+        PageInfo pageInfo = transactionService.findPage(transactionDto, page, size);
+        return Result.success("查询成功", pageInfo);
+    }
+
+    @RequestMapping("/push/receiveMsg")
+    public Result receivedMsg(@RequestParam("timestamp") long timestamp, @RequestParam("json") String json,
+                              @RequestParam("aopic") long aopic, @RequestParam("sign") String sign) {
+//          json = "{\"Platform\":\"TAOBAO\",\"PlatformUserId\":\"2567518478\",\"ReceiverName\":null,\"ReceiverMobile\":null,\"ReceiverPhone\":null,\"ReceiverAddress\":\"QQ:569741817\\r\\n备注:\",\"BuyerArea\":null,\"ExtendedFields\":{},\"Tid\":1660873104587781269,\"TidStr\":\"1660873104587781269\",\"Status\":\"WAIT_SELLER_SEND_GOODS\",\"SellerNick\":\"劲舞团24小时充值\",\"BuyerNick\":\"启动蓝色\",\"Type\":null,\"BuyerMessage\":null,\"Price\":\"9.99\",\"Num\":1,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PayTime\":null,\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"PostFee\":\"0.00\",\"Created\":\"2021-03-21 19:18:40\",\"TradeFrom\":\"WAP,WAP\",\"Orders\":[{\"Oid\":1660873104587781269,\"OidStr\":\"1660873104587781269\",\"NumIid\":640359390526,\"OuterIid\":\"10\",\"OuterSkuId\":null,\"Title\":\"【谨防诈骗】腾讯qq币10qbQ币10个q币10qb10个qb10QB 自动充值\",\"Price\":\"9.99\",\"Num\":1,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"SkuId\":null,\"SkuPropertiesName\":null,\"DivideOrderFee\":null,\"PartMjzDiscount\":null}],\"SellerMemo\":null,\"SellerFlag\":0,\"CreditCardFee\":null}";
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("json", json);
+        map.put("timestamp", String.valueOf(timestamp));
+        System.out.println("json---"+json);
+
+        TransactionDto transactionDto = JSON.parseObject(json, TransactionDto.class);
+        if(CollUtil.isEmpty(transactionDto.getOrders())){
+            return Result.fall("没有订单信息");
+        }
+        Transaction transaction = new Transaction();
+        transaction.setStatus(transactionDto.getStatus());
+        transaction.setTid(transactionDto.getTid());
+        List<Transaction> list = transactionService.findList(transaction);
+        if(CollUtil.isNotEmpty(list)){
+            Transaction transactionEntity = list.get(0);
+            Integer state = transactionEntity.getState();
+            if(state == 2){
+                TaobaoTransactionVo taobaoTransactionVo = new TaobaoTransactionVo();
+                taobaoTransactionVo.setDoDummySend(true);
+                taobaoTransactionVo.setAliwwMsg("充值成功");
+                TaobaoDoMemoUpdateVo taobaoDoMemoUpdateVo = new TaobaoDoMemoUpdateVo();
+                taobaoDoMemoUpdateVo.setFlag(-1);
+                taobaoDoMemoUpdateVo.setMemo("");
+                taobaoTransactionVo.setDoMemoUpdate(taobaoDoMemoUpdateVo);
+                return Result.success("推送成功",taobaoTransactionVo);
+            }else  if(state == 1){
+                return Result.fall("订单ID："+transactionDto.getTid()+"已存在。待推送");
+            }else  if(state == 3){
+                return Result.fall("订单ID："+transactionDto.getTid()+"已存在。推送失败");
+            }else{
+                return Result.fall("订单ID："+transactionDto.getTid()+"已存在");
+            }
+        }
+        //保存订单
+        Long transactionId = transactionService.addDto(transactionDto);
+        transactionDto.setId(transactionId);
+        String platformUserId = transactionDto.getPlatformUserId();
+        String sellerNick = transactionDto.getSellerNick();
+        //根据平台用户id查询对照关系
+        UserRelate userRelate = userRelateService.findByPlatformUserId(platformUserId);
+        //第一次先创建用户和对照关系
+        if(userRelate == null){
+            userRelate = userService.save(platformUserId, sellerNick);
+        }
+        if(userRelate == null || StringUtils.isEmpty(userRelate.getFuluSercret())){
+            return Result.fall("订单推送失败，请先填写相关配置");
+        }
+        //推送订单
+        System.out.println(transactionDto);
+        Map resultMap = transactionService.placeOrder(transactionDto, userRelate);
+        if(resultMap.get("fail") != null){
+            Object fail = resultMap.get("fail");
+            return Result.fall("推送失败：",fail);
+        }else if(resultMap.get("success") != null){
+            TaobaoTransactionVo taobaoTransactionVo = new TaobaoTransactionVo();
+            taobaoTransactionVo.setDoDummySend(true);
+            taobaoTransactionVo.setAliwwMsg("充值成功");
+            TaobaoDoMemoUpdateVo taobaoDoMemoUpdateVo = new TaobaoDoMemoUpdateVo();
+            taobaoDoMemoUpdateVo.setFlag(-1);
+            taobaoDoMemoUpdateVo.setMemo("");
+            taobaoTransactionVo.setDoMemoUpdate(taobaoDoMemoUpdateVo);
+            return Result.success("推送成功",taobaoTransactionVo);
+        }
+        return Result.fall("推送失败");
+    }
+
+
+
+    @GetMapping("/location")
+    public void location(){
+        List<SysDict> listByCode = sysDictService.findListByCode(DictCodeEnum.BAIDUAK.getName());
+        String ip ="183.95.62.69";
+        BaiDuMapApiUtil.location(ip,listByCode);
+
+
+    }
+
+
+
+
+
+}

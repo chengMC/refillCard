@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mc.refillCard.dao.TransactionMapper">
+  <resultMap id="BaseResultMap" type="com.mc.refillCard.entity.Transaction">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="plat_form" jdbcType="VARCHAR" property="platForm" />
+    <result column="platform_user_id" jdbcType="VARCHAR" property="platformUserId" />
+    <result column="tid" jdbcType="VARCHAR" property="tid" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+    <result column="seller_nick" jdbcType="VARCHAR" property="sellerNick" />
+    <result column="buyer_nick" jdbcType="VARCHAR" property="buyerNick" />
+    <result column="buyer_message" jdbcType="VARCHAR" property="buyerMessage" />
+    <result column="price" jdbcType="VARCHAR" property="price" />
+    <result column="num" jdbcType="BIGINT" property="num" />
+    <result column="total_fee" jdbcType="VARCHAR" property="totalFee" />
+    <result column="payment" jdbcType="VARCHAR" property="payment" />
+    <result column="pay_time" jdbcType="VARCHAR" property="payTime" />
+    <result column="created" jdbcType="VARCHAR" property="created" />
+    <result column="receiver_name" jdbcType="VARCHAR" property="receiverName" />
+    <result column="receiver_mobile" jdbcType="VARCHAR" property="receiverMobile" />
+    <result column="receiver_phone" jdbcType="VARCHAR" property="receiverPhone" />
+    <result column="receiver_address" jdbcType="VARCHAR" property="receiverAddress" />
+    <result column="buyer_area" jdbcType="VARCHAR" property="buyerArea" />
+    <result column="extended_fields" jdbcType="VARCHAR" property="extendedFields" />
+    <result column="seller_memo" jdbcType="VARCHAR" property="sellerMemo" />
+    <result column="seller_flag" jdbcType="VARCHAR" property="sellerFlag" />
+    <result column="credit_card_fee" jdbcType="VARCHAR" property="creditCardFee" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="state" jdbcType="INTEGER" property="state" />
+    <result column="create_emp" jdbcType="VARCHAR" property="createEmp" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="update_emp" jdbcType="VARCHAR" property="updateEmp" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, plat_form, platform_user_id, tid, status, seller_nick, buyer_nick, buyer_message, 
+    price, num, total_fee, payment, pay_time, created, receiver_name, receiver_mobile, 
+    receiver_phone, receiver_address, buyer_area, extended_fields, seller_memo, seller_flag, 
+    credit_card_fee, remark, state, create_emp, create_time, update_time, update_emp
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from transaction
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectByExample" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from transaction
+    where 1=1
+    <if test="tid != null">
+      and tid = #{tid,jdbcType=VARCHAR}
+    </if>
+    <if test="status != null">
+      and status = #{status,jdbcType=VARCHAR}
+    </if>
+  </select>
+  <select id="findByTid" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from transaction
+    where 1=1
+      and tid = #{tid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from transaction
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.mc.refillCard.entity.Transaction">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into transaction (plat_form, platform_user_id, tid, 
+      status, seller_nick, buyer_nick, 
+      buyer_message, price, num, 
+      total_fee, payment, pay_time, 
+      created, receiver_name, receiver_mobile, 
+      receiver_phone, receiver_address, buyer_area, 
+      extended_fields, seller_memo, seller_flag, 
+      credit_card_fee, remark, state, 
+      create_emp, create_time, update_time, 
+      update_emp)
+    values (#{platForm,jdbcType=VARCHAR}, #{platformUserId,jdbcType=VARCHAR}, #{tid,jdbcType=VARCHAR}, 
+      #{status,jdbcType=VARCHAR}, #{sellerNick,jdbcType=VARCHAR}, #{buyerNick,jdbcType=VARCHAR}, 
+      #{buyerMessage,jdbcType=VARCHAR}, #{price,jdbcType=VARCHAR}, #{num,jdbcType=BIGINT}, 
+      #{totalFee,jdbcType=VARCHAR}, #{payment,jdbcType=VARCHAR}, #{payTime,jdbcType=VARCHAR}, 
+      #{created,jdbcType=VARCHAR}, #{receiverName,jdbcType=VARCHAR}, #{receiverMobile,jdbcType=VARCHAR}, 
+      #{receiverPhone,jdbcType=VARCHAR}, #{receiverAddress,jdbcType=VARCHAR}, #{buyerArea,jdbcType=VARCHAR}, 
+      #{extendedFields,jdbcType=VARCHAR}, #{sellerMemo,jdbcType=VARCHAR}, #{sellerFlag,jdbcType=VARCHAR}, 
+      #{creditCardFee,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, #{state,jdbcType=INTEGER}, 
+      #{createEmp,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, 
+      #{updateEmp,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.mc.refillCard.entity.Transaction">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into transaction
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="platForm != null">
+        plat_form,
+      </if>
+      <if test="platformUserId != null">
+        platform_user_id,
+      </if>
+      <if test="tid != null">
+        tid,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="sellerNick != null">
+        seller_nick,
+      </if>
+      <if test="buyerNick != null">
+        buyer_nick,
+      </if>
+      <if test="buyerMessage != null">
+        buyer_message,
+      </if>
+      <if test="price != null">
+        price,
+      </if>
+      <if test="num != null">
+        num,
+      </if>
+      <if test="totalFee != null">
+        total_fee,
+      </if>
+      <if test="payment != null">
+        payment,
+      </if>
+      <if test="payTime != null">
+        pay_time,
+      </if>
+      <if test="created != null">
+        created,
+      </if>
+      <if test="receiverName != null">
+        receiver_name,
+      </if>
+      <if test="receiverMobile != null">
+        receiver_mobile,
+      </if>
+      <if test="receiverPhone != null">
+        receiver_phone,
+      </if>
+      <if test="receiverAddress != null">
+        receiver_address,
+      </if>
+      <if test="buyerArea != null">
+        buyer_area,
+      </if>
+      <if test="extendedFields != null">
+        extended_fields,
+      </if>
+      <if test="sellerMemo != null">
+        seller_memo,
+      </if>
+      <if test="sellerFlag != null">
+        seller_flag,
+      </if>
+      <if test="creditCardFee != null">
+        credit_card_fee,
+      </if>
+      <if test="remark != null">
+        remark,
+      </if>
+      <if test="state != null">
+        state,
+      </if>
+      <if test="createEmp != null">
+        create_emp,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+      <if test="updateEmp != null">
+        update_emp,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="platForm != null">
+        #{platForm,jdbcType=VARCHAR},
+      </if>
+      <if test="platformUserId != null">
+        #{platformUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="tid != null">
+        #{tid,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerNick != null">
+        #{sellerNick,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerNick != null">
+        #{buyerNick,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerMessage != null">
+        #{buyerMessage,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null">
+        #{price,jdbcType=VARCHAR},
+      </if>
+      <if test="num != null">
+        #{num,jdbcType=BIGINT},
+      </if>
+      <if test="totalFee != null">
+        #{totalFee,jdbcType=VARCHAR},
+      </if>
+      <if test="payment != null">
+        #{payment,jdbcType=VARCHAR},
+      </if>
+      <if test="payTime != null">
+        #{payTime,jdbcType=VARCHAR},
+      </if>
+      <if test="created != null">
+        #{created,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverName != null">
+        #{receiverName,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverMobile != null">
+        #{receiverMobile,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverPhone != null">
+        #{receiverPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverAddress != null">
+        #{receiverAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerArea != null">
+        #{buyerArea,jdbcType=VARCHAR},
+      </if>
+      <if test="extendedFields != null">
+        #{extendedFields,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerMemo != null">
+        #{sellerMemo,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerFlag != null">
+        #{sellerFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="creditCardFee != null">
+        #{creditCardFee,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null">
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null">
+        #{state,jdbcType=INTEGER},
+      </if>
+      <if test="createEmp != null">
+        #{createEmp,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateEmp != null">
+        #{updateEmp,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.mc.refillCard.entity.Transaction">
+    update transaction
+    <set>
+      <if test="platForm != null">
+        plat_form = #{platForm,jdbcType=VARCHAR},
+      </if>
+      <if test="platformUserId != null">
+        platform_user_id = #{platformUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="tid != null">
+        tid = #{tid,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerNick != null">
+        seller_nick = #{sellerNick,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerNick != null">
+        buyer_nick = #{buyerNick,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerMessage != null">
+        buyer_message = #{buyerMessage,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null">
+        price = #{price,jdbcType=VARCHAR},
+      </if>
+      <if test="num != null">
+        num = #{num,jdbcType=BIGINT},
+      </if>
+      <if test="totalFee != null">
+        total_fee = #{totalFee,jdbcType=VARCHAR},
+      </if>
+      <if test="payment != null">
+        payment = #{payment,jdbcType=VARCHAR},
+      </if>
+      <if test="payTime != null">
+        pay_time = #{payTime,jdbcType=VARCHAR},
+      </if>
+      <if test="created != null">
+        created = #{created,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverName != null">
+        receiver_name = #{receiverName,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverMobile != null">
+        receiver_mobile = #{receiverMobile,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverPhone != null">
+        receiver_phone = #{receiverPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverAddress != null">
+        receiver_address = #{receiverAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerArea != null">
+        buyer_area = #{buyerArea,jdbcType=VARCHAR},
+      </if>
+      <if test="extendedFields != null">
+        extended_fields = #{extendedFields,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerMemo != null">
+        seller_memo = #{sellerMemo,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerFlag != null">
+        seller_flag = #{sellerFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="creditCardFee != null">
+        credit_card_fee = #{creditCardFee,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null">
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null">
+        state = #{state,jdbcType=INTEGER},
+      </if>
+      <if test="createEmp != null">
+        create_emp = #{createEmp,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateEmp != null">
+        update_emp = #{updateEmp,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.mc.refillCard.entity.Transaction">
+    update transaction
+    set plat_form = #{platForm,jdbcType=VARCHAR},
+      platform_user_id = #{platformUserId,jdbcType=VARCHAR},
+      tid = #{tid,jdbcType=VARCHAR},
+      status = #{status,jdbcType=VARCHAR},
+      seller_nick = #{sellerNick,jdbcType=VARCHAR},
+      buyer_nick = #{buyerNick,jdbcType=VARCHAR},
+      buyer_message = #{buyerMessage,jdbcType=VARCHAR},
+      price = #{price,jdbcType=VARCHAR},
+      num = #{num,jdbcType=BIGINT},
+      total_fee = #{totalFee,jdbcType=VARCHAR},
+      payment = #{payment,jdbcType=VARCHAR},
+      pay_time = #{payTime,jdbcType=VARCHAR},
+      created = #{created,jdbcType=VARCHAR},
+      receiver_name = #{receiverName,jdbcType=VARCHAR},
+      receiver_mobile = #{receiverMobile,jdbcType=VARCHAR},
+      receiver_phone = #{receiverPhone,jdbcType=VARCHAR},
+      receiver_address = #{receiverAddress,jdbcType=VARCHAR},
+      buyer_area = #{buyerArea,jdbcType=VARCHAR},
+      extended_fields = #{extendedFields,jdbcType=VARCHAR},
+      seller_memo = #{sellerMemo,jdbcType=VARCHAR},
+      seller_flag = #{sellerFlag,jdbcType=VARCHAR},
+      credit_card_fee = #{creditCardFee,jdbcType=VARCHAR},
+      remark = #{remark,jdbcType=VARCHAR},
+      state = #{state,jdbcType=INTEGER},
+      create_emp = #{createEmp,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      update_emp = #{updateEmp,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>
