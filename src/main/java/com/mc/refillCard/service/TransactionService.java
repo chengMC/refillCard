@@ -6,6 +6,8 @@ import com.mc.refillCard.entity.Transaction;
 import com.mc.refillCard.entity.UserRelate;
 import com.mc.refillCard.vo.TransactionVo;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 
@@ -82,4 +84,14 @@ public interface TransactionService {
      * @return
      */
     Map placeOrder(TransactionDto transactionDto, UserRelate userRelate);
+
+    /**
+     *
+     * @param tid
+     * @param token
+     * @return
+     */
+    String getBuyerIp(String tid, String token) throws UnsupportedEncodingException, NoSuchAlgorithmException;
+
+    Boolean changeTBOrderStatus(String tid, String token) throws UnsupportedEncodingException, NoSuchAlgorithmException;
 }

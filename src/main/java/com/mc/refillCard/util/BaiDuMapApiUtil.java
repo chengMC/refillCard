@@ -38,10 +38,9 @@ public class BaiDuMapApiUtil {
         String status = String.valueOf(resultMap.get("status"));
         //状态
         if("0".equals(status)){
-            Map content = JSON.parseObject(JSON.toJSONString(resultMap.get("content")));
-            String address = String.valueOf(content.get("address"));
-            Map addressDetail = JSON.parseObject(JSON.toJSONString(content.get("address_detail")));
-            province = String.valueOf(addressDetail.get("province"));
+            String address = String.valueOf(resultMap.get("address"));
+            String[] split = address.split("\\|");
+            province = split[1];
         }else{
             Integer statusInt = Integer.valueOf(status);
             //状态码地址 http://lbsyun.baidu.com/index.php?title=webapi/appendix
@@ -55,10 +54,9 @@ public class BaiDuMapApiUtil {
                         resultMap = JSON.parseObject(resultStr);
                         status = String.valueOf(resultMap.get("status"));
                         if ("0".equals(status)) {
-                            Map content = JSON.parseObject(JSON.toJSONString(resultMap.get("content")));
-                            String address = String.valueOf(content.get("address"));
-                            Map addressDetail = JSON.parseObject(JSON.toJSONString(content.get("address_detail")));
-                             province = String.valueOf(addressDetail.get("province"));
+                            String address = String.valueOf(resultMap.get("address"));
+                            String[] split = address.split("|");
+                            province = split[1];
                         }
                     }
                 }

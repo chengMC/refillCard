@@ -116,8 +116,8 @@ public class GoodsRelateServiceImpl implements GoodsRelateService {
     }
 
     @Override
-    public List<GoodsRelate> findByGoodId(Long goodId) {
-        return goodsRelateMapper.findByGoodId(goodId);
+    public List<GoodsRelate> findByGoodId(Long goodId, Long userId ) {
+        return goodsRelateMapper.findByGoodId(goodId,userId);
     }
 
 

@@ -34,5 +34,5 @@ public interface GoodsRelateMapper {
 
     List<GoodsRelateVo> findPageVoByExample(GoodsRelateDto goodsRelateDto);
 
-    List<GoodsRelate> findByGoodId(@Param("goodId") Long goodId);
+    List<GoodsRelate> findByGoodId(@Param("goodId") Long goodId, @Param("userId") Long userId);
 }

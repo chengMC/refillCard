@@ -1,6 +1,7 @@
 package com.mc.refillCard.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
@@ -47,11 +48,8 @@ import java.util.Map;
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-    private static String appSecret;
     @Value("${agiso.appSecret}")
-    public static void setAppSecret(String appSecret) {
-        TransactionServiceImpl.appSecret = appSecret;
-    }
+    private String appSecret;
 
     @Autowired
     private TransactionMapper transactionMapper;
@@ -205,10 +203,12 @@ public class TransactionServiceImpl implements TransactionService {
         Map resultOrderMap = new HashMap();
         String fuliAppKey = userRelate.getFuliAppKey();
         String fuluSercret = userRelate.getFuluSercret();
+        String accessToken = userRelate.getAccessToken();
+        Long userId = userRelate.getUserId();
         //订单保存添加人
         String tid = transactionDto.getTid();
         Transaction transaction = transactionMapper.findByTid(tid);
-        transaction.setCreateEmp(String.valueOf(userRelate.getUserId()));
+        transaction.setCreateEmp(String.valueOf(userId));
         transactionMapper.updateByPrimaryKeySelective(transaction);
 
         //订单
@@ -217,7 +217,7 @@ public class TransactionServiceImpl implements TransactionService {
             //订单的宝贝id
             Long numIid = order.getNumIid();
             //根据宝贝id查询商品对应关系
-            List<GoodsRelate> goodsRelates = goodsRelateService.findByGoodId(numIid);
+            List<GoodsRelate> goodsRelates = goodsRelateService.findByGoodId(numIid,userId);
             GoodsRelate goodsRelate = goodsRelates.get(0);
             Integer type = goodsRelate.getType();
             if (type.equals(GoodsRelateTypeEnum.QB.getCode())) {
@@ -282,6 +282,17 @@ public class TransactionServiceImpl implements TransactionService {
                     transaction.setRemark(resultStr);
                     transaction.setUpdateEmp(fuluOrderDto.getOrder_id());
                     transactionMapper.updateByPrimaryKeySelective(transaction);
+                    //更新发货状态
+                    try {
+                        Boolean aBoolean = changeTBOrderStatus(tid, accessToken);
+                        if(!aBoolean){
+                            System.out.println("阿奇索自动发货失败");
+                        }
+                    } catch (UnsupportedEncodingException e) {
+                        System.out.println("阿奇索自动发货失败1:"+e);
+                    } catch (NoSuchAlgorithmException e) {
+                        System.out.println("阿奇索自动发货失败2:"+e);
+                    }
                     break;
                 }else if (order_state.equals(FuluOrderTypeEnum.FAILED.getCode())) {
                     String failStr = "福禄平台充值失败,订单号：" + tid + "," + resultMap.get("message");
@@ -305,21 +316,21 @@ public class TransactionServiceImpl implements TransactionService {
     /**
      * 根据订单获取ip
      *
-     * @param transactionDto
-     * @param userRelate
+     * @param tid 订单号
+     * @param accessToken token
      * @return
      * @throws UnsupportedEncodingException
      * @throws NoSuchAlgorithmException
      */
-    public String getBuyerIp(TransactionDto transactionDto, UserRelate userRelate) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        String accessToken = userRelate.getAccessToken();
+    @Override
+    public String getBuyerIp(String tid, String accessToken) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         HashMap<String, String> headerMap = new HashMap<>();
         headerMap.put("Authorization", "Bearer "+ accessToken);
         headerMap.put("ApiVersion", "1");
 
         HashMap<String, String> paramMap = new HashMap<>();
         paramMap.put("timestamp", String.valueOf(DateUtil.currentSeconds()));
-        paramMap.put("tid", transactionDto.getTid());
+        paramMap.put("tid", tid);
         paramMap.put("selDataType", "tiqu");
         paramMap.put("sign", AccountUtils.getSign(paramMap, appSecret));
 
@@ -341,18 +352,57 @@ public class TransactionServiceImpl implements TransactionService {
         Map resultMap = JSON.parseObject(result);
         if("true".equals(String.valueOf(resultMap.get("IsSuccess")))){
             List<Map> resultDataMap = JSON.parseArray(JSON.toJSONString(resultMap.get("data")),Map.class);
-            RealIp = String.valueOf(resultDataMap.get(0).get("RealIp"));
+            if(CollUtil.isNotEmpty(resultDataMap)){
+                RealIp = String.valueOf(resultDataMap.get(0).get("RealIp"));
+            }
         }
         return RealIp;
     }
 
-    public void location(){
+    /**
+     *  百度地图根据IP获取地区
+     * @param ip
+     * @return
+     */
+    public String location(String ip){
         List<SysDict> listByCode = sysDictService.findListByCode(DictCodeEnum.BAIDUAK.getName());
-        String ip ="183.95.62.69";
-        BaiDuMapApiUtil.location(ip,listByCode);
-
-
+        String location = BaiDuMapApiUtil.location(ip, listByCode);
+        return location;
     }
+
+    @Override
+    public Boolean changeTBOrderStatus(String tid, String accessToken) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        HashMap<String, String> headerMap = new HashMap<>();
+        headerMap.put("Authorization", "Bearer "+ accessToken);
+        headerMap.put("ApiVersion", "1");
+
+        HashMap<String, String> paramMap = new HashMap<>();
+        paramMap.put("timestamp", String.valueOf(DateUtil.currentSeconds()));
+        paramMap.put("tids", tid);
+        paramMap.put("sign", AccountUtils.getSign(paramMap, appSecret));
+
+        HashMap<String, Object> dataMap = new HashMap<>();
+        dataMap.put("timestamp",  paramMap.get("timestamp"));
+        dataMap.put("tids", paramMap.get("tids"));
+        dataMap.put("sign",paramMap.get("sign"));
+
+        //接口调用
+        String result = HttpRequest.post("http://gw.api.agiso.com/alds/Trade/LogisticsDummySend")
+                .form(dataMap)
+                .addHeaders(headerMap)
+                .execute()
+                .body();
+        System.out.println(result);
+        //221.232.58.139
+        Boolean change = false;
+        Map resultMap = JSON.parseObject(result);
+        if("true".equals(String.valueOf(resultMap.get("IsSuccess")))){
+            change= true;
+        }
+        return change;
+    }
+
+
 
 
 }

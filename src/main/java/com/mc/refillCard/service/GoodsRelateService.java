@@ -74,8 +74,10 @@ public interface GoodsRelateService {
     /**
      * 根据宝贝id查询商品对应关系
      *
+     *
+     * @param goodId
      * @param goodId
      * @return
      */
-    List<GoodsRelate> findByGoodId(Long goodId);
+    List<GoodsRelate> findByGoodId(Long goodId, Long userId);
 }

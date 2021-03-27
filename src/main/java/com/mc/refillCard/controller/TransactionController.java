@@ -21,6 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import javax.websocket.server.PathParam;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +116,23 @@ public class TransactionController {
         if(userRelate == null || StringUtils.isEmpty(userRelate.getFuluSercret())){
             return JSON.toJSONString(Result.fall("订单推送失败，请先填写相关配置"));
         }
+//        String tid = transactionDto.getTid();
+//        String ip = "";
+//        try {
+//            ip = transactionService.getBuyerIp(tid,userRelate.getAccessToken());
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        } catch (NoSuchAlgorithmException e) {
+//            e.printStackTrace();
+//        }
+//        List<SysDict> listByCode = sysDictService.findListByCode(DictCodeEnum.BAIDUAK.getName());
+//        String location = "";
+////        String ip ="183.95.62.69";
+//        if(!"".equals(ip)){
+//            location = BaiDuMapApiUtil.location(ip, listByCode);
+//        }
+//
+//        System.out.println("location"+location);
         //推送订单
         System.out.println(transactionDto);
         Map resultMap = transactionService.placeOrder(transactionDto, userRelate);
@@ -133,16 +153,29 @@ public class TransactionController {
     }
 
 
-
     @GetMapping("/location")
-    public void location(){
+    public void location(@PathParam("tid") String tid) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        String token = "TbAldssngwbswy3kpt5tu6ykacpz4tu3xkaahzvgbcyp228vva";
+        String ip =  transactionService.getBuyerIp(tid,token);
         List<SysDict> listByCode = sysDictService.findListByCode(DictCodeEnum.BAIDUAK.getName());
-        String ip ="183.95.62.69";
-        BaiDuMapApiUtil.location(ip,listByCode);
-
+        String location = "";
+//        String ip ="183.95.62.69";
+        if(!"".equals(ip)){
+             location = BaiDuMapApiUtil.location(ip, listByCode);
+        }
+        System.out.println("location"+location);
 
     }
 
+    @GetMapping("/changeTBOrderStatus")
+    public void changeTBOrderStatus() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        String tid = "1678240369790554917";
+        String token = "TbAldssngwbswy3kpt5tu6ykacpz4tu3xkaahzvgbcyp228vva";
+        Boolean b = transactionService.changeTBOrderStatus(tid,token);
+
+        System.out.println(b);
+
+    }
 
 
 

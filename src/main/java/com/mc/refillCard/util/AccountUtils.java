@@ -50,6 +50,25 @@ public class AccountUtils {
         return byte2hex(md5byte);
     }
 
+    //参数签名
+    public static String Sign(Map<String, String> params,String appSecret) throws NoSuchAlgorithmException, UnsupportedEncodingException
+    {
+        String[] keys = params.keySet().toArray(new String[0]);
+        Arrays.sort(keys);
+
+        StringBuilder query = new StringBuilder();
+        query.append(appSecret);
+        for (String key : keys) {
+            String value = params.get(key);
+            query.append(key).append(value);
+        }
+        query.append(appSecret);
+
+        byte[] md5byte = encryptMD5(query.toString());
+
+        return  byte2hex(md5byte);
+    }
+
     // byte数组转成16进制字符串
     public static String byte2hex(byte[] bytes) {
         StringBuilder sign = new StringBuilder();
