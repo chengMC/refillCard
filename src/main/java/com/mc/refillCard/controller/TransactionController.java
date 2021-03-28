@@ -116,23 +116,7 @@ public class TransactionController {
         if(userRelate == null || StringUtils.isEmpty(userRelate.getFuluSercret())){
             return JSON.toJSONString(Result.fall("订单推送失败，请先填写相关配置"));
         }
-//        String tid = transactionDto.getTid();
-//        String ip = "";
-//        try {
-//            ip = transactionService.getBuyerIp(tid,userRelate.getAccessToken());
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        } catch (NoSuchAlgorithmException e) {
-//            e.printStackTrace();
-//        }
-//        List<SysDict> listByCode = sysDictService.findListByCode(DictCodeEnum.BAIDUAK.getName());
-//        String location = "";
-////        String ip ="183.95.62.69";
-//        if(!"".equals(ip)){
-//            location = BaiDuMapApiUtil.location(ip, listByCode);
-//        }
-//
-//        System.out.println("location"+location);
+
         //推送订单
         System.out.println(transactionDto);
         Map resultMap = transactionService.placeOrder(transactionDto, userRelate);
