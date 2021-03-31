@@ -20,6 +20,7 @@ import com.mc.refillCard.entity.*;
 import com.mc.refillCard.service.*;
 import com.mc.refillCard.util.AccountUtils;
 import com.mc.refillCard.util.BaiDuMapApiUtil;
+import com.mc.refillCard.util.IpUtil;
 import com.mc.refillCard.vo.TransactionVo;
 import fulu.sup.open.api.core.MethodConst;
 import fulu.sup.open.api.model.InputDirectOrderDto;
@@ -222,6 +223,7 @@ public class TransactionServiceImpl implements TransactionService {
         //订单
         List<OriginalOrderDto> orders = transactionDto.getOrders();
         for (OriginalOrderDto order : orders) {
+            Boolean matchingArea = false;
             //订单的宝贝id
             Long numIid = order.getNumIid();
              goodsRelateFulu = goodsRelateFuluService.findByGoodId(numIid, userId);
@@ -237,8 +239,10 @@ public class TransactionServiceImpl implements TransactionService {
                     String area = good.getArea();
                     if (buyerArea.indexOf(area) > -1) {
                         originalgoods = good;
+                        matchingArea = true;
                     }
                 }
+
                 originalOrder = order;
                 System.out.println("订单中的地区" + buyerArea);
                 System.out.println("匹配到的地区:" + originalgoods.getArea());
@@ -252,13 +256,18 @@ public class TransactionServiceImpl implements TransactionService {
                 if(buyNum < 20){
                     originalgoods = goods.get(0);
                 }
+                //如果地区无法匹配则分配随机IP,全国不需要IP
+                String ip ="";
+                if(!matchingArea){
+                    ip = IpUtil.getRandomIp();
+                }
 
-                Map resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, originaltid, order, goodsRelateFulu, originalgoods);
+                Map resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, originaltid, order, goodsRelateFulu, originalgoods,ip);
                 System.out.println("第一次推送:" + tid + "-resultMap-" + resultMap);
                 if (!"0".equals(String.valueOf(resultMap.get("code")))) {
                     //失败后默认到全国
                     tid = tid + "Q";
-                    resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, tid, order, goodsRelateFulu, defaultGood);
+                    resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, tid, order, goodsRelateFulu, defaultGood,"");
                     System.out.println("第二次推送:" + tid + "Q1" + "-resultMap-" + resultMap);
                     if (!"0".equals(String.valueOf(resultMap.get("code")))) {
                         String failStr = "福禄平台下单充值失败。订单号：" + tid + "," + resultMap.get("message");
@@ -322,7 +331,7 @@ public class TransactionServiceImpl implements TransactionService {
                             pushNum++;
                             tid = tid + "QB";
                             //失败后默认到全国
-                            resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, tid, originalOrder, goodsRelateFulu, defaultGood);
+                            resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, tid, originalOrder, goodsRelateFulu, defaultGood,"");
                             System.out.println("查询失败后第二次推送:" + tid + "-resultMap-" + resultMap);
                             if (!"0".equals(String.valueOf(resultMap.get("code")))) {
                                 String failStr = "福禄平台下单充值失败2。订单号：" + tid + "," + resultMap.get("message");
@@ -394,7 +403,7 @@ public class TransactionServiceImpl implements TransactionService {
      * @return
      */
     private Map qbOrderPush(TransactionDto transactionDto, String fuliAppKey, String fuluSercret,
-                            String tid, OriginalOrderDto order,  GoodsRelateFulu goodsRelate, Goods good) {
+                            String tid, OriginalOrderDto order,  GoodsRelateFulu goodsRelate, Goods good,String ip) {
         String receiverAddress = transactionDto.getReceiverAddress();
         String ChargeAccount = AccountUtils.findNumber(receiverAddress);
         //面值
@@ -413,6 +422,10 @@ public class TransactionServiceImpl implements TransactionService {
         dto.setChargeAccount(ChargeAccount);
         dto.setContactQq(ChargeAccount);
         dto.setChargeGameName(good.getProductName());
+        //IP不空表示全国或者匹配到地区
+        if(!"".equals(ip)){
+            dto.setChargeIp(ip);
+        }
         client.setBizObject(dto);
         System.out.println("第一次请求："+JSON.toJSONString(dto));
         String result = client.excute();
