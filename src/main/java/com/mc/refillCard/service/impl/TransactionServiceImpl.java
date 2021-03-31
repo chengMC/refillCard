@@ -242,6 +242,16 @@ public class TransactionServiceImpl implements TransactionService {
                 originalOrder = order;
                 System.out.println("订单中的地区" + buyerArea);
                 System.out.println("匹配到的地区:" + originalgoods.getArea());
+                //面值
+                Integer nominal = Integer.valueOf(goodsRelateFulu.getNominal());
+                //数量
+                Integer num = order.getNum().intValue();
+                //QB购买数等于面值乘数量
+                Integer buyNum = num * nominal;
+                //如果金额小于20，直接走去全国
+                if(buyNum < 20){
+                    originalgoods = goods.get(0);
+                }
 
                 Map resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, originaltid, order, goodsRelateFulu, originalgoods);
                 System.out.println("第一次推送:" + tid + "-resultMap-" + resultMap);
@@ -392,14 +402,14 @@ public class TransactionServiceImpl implements TransactionService {
         //数量
         Integer num = order.getNum().intValue();
         //QB购买数等于面值乘数量
-        Integer BuyNum = num * nominal;
+        Integer buyNum = num * nominal;
         //通过福禄API下单
         DefaultOpenApiClient client =
                 new DefaultOpenApiClient(FuliProperties.getUrl(), fuliAppKey, fuluSercret, MethodConst.OPEN_API_DIRECT_ORDER_ADD);
         InputDirectOrderDto dto = new InputDirectOrderDto();
         dto.setProductId(good.getProductId().intValue());
         dto.setCustomerOrderNo(tid);
-        dto.setBuyNum(BuyNum);
+        dto.setBuyNum(buyNum);
         dto.setChargeAccount(ChargeAccount);
         dto.setContactQq(ChargeAccount);
         dto.setChargeGameName(good.getProductName());
