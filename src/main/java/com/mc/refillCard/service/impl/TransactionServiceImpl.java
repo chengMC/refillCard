@@ -218,7 +218,8 @@ public class TransactionServiceImpl implements TransactionService {
         OriginalOrderDto originalOrder = null;
         GoodsRelateFulu goodsRelateFulu = null;
         Goods defaultGood = null;
-
+        //分配随机IP
+        String ip = IpUtil.getRandomIp();
         Integer type = 0;
         //订单
         List<OriginalOrderDto> orders = transactionDto.getOrders();
@@ -256,10 +257,18 @@ public class TransactionServiceImpl implements TransactionService {
                 if(buyNum < 20){
                     originalgoods = goods.get(0);
                 }
-                //如果地区无法匹配则分配随机IP,全国不需要IP
-                String ip ="";
+                //如果地区无法匹配就根据IP获取到地区
                 if(!matchingArea){
-                    ip = IpUtil.getRandomIp();
+                    String location = location(ip);
+                    for (Goods good : goods) {
+                        //地区匹配
+                        String area = good.getArea();
+                        if (location.indexOf(area) > -1) {
+                            originalgoods = good;
+                        }
+                    }
+                    System.out.println("未匹配后的：" + ip+"-"+"地区："+location);
+                    System.out.println("未匹配后的再次分配的地区:" + originalgoods.getArea());
                 }
 
                 Map resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, originaltid, order, goodsRelateFulu, originalgoods,ip);
@@ -267,7 +276,7 @@ public class TransactionServiceImpl implements TransactionService {
                 if (!"0".equals(String.valueOf(resultMap.get("code")))) {
                     //失败后默认到全国
                     tid = tid + "Q";
-                    resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, tid, order, goodsRelateFulu, defaultGood,"");
+                    resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, tid, order, goodsRelateFulu, defaultGood,ip);
                     System.out.println("第二次推送:" + tid + "Q1" + "-resultMap-" + resultMap);
                     if (!"0".equals(String.valueOf(resultMap.get("code")))) {
                         String failStr = "福禄平台下单充值失败。订单号：" + tid + "," + resultMap.get("message");
@@ -331,7 +340,7 @@ public class TransactionServiceImpl implements TransactionService {
                             pushNum++;
                             tid = tid + "QB";
                             //失败后默认到全国
-                            resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, tid, originalOrder, goodsRelateFulu, defaultGood,"");
+                            resultMap = qbOrderPush(transactionDto, fuliAppKey, fuluSercret, tid, originalOrder, goodsRelateFulu, defaultGood,ip);
                             System.out.println("查询失败后第二次推送:" + tid + "-resultMap-" + resultMap);
                             if (!"0".equals(String.valueOf(resultMap.get("code")))) {
                                 String failStr = "福禄平台下单充值失败2。订单号：" + tid + "," + resultMap.get("message");
@@ -422,10 +431,7 @@ public class TransactionServiceImpl implements TransactionService {
         dto.setChargeAccount(ChargeAccount);
         dto.setContactQq(ChargeAccount);
         dto.setChargeGameName(good.getProductName());
-        //IP不空表示全国或者匹配到地区
-        if(!"".equals(ip)){
-            dto.setChargeIp(ip);
-        }
+        dto.setChargeIp(ip);
         client.setBizObject(dto);
         System.out.println("第一次请求："+JSON.toJSONString(dto));
         String result = client.excute();
@@ -489,6 +495,7 @@ public class TransactionServiceImpl implements TransactionService {
         String location = BaiDuMapApiUtil.location(ip, listByCode);
         return location;
     }
+
 
     @Override
     public Boolean changeTBOrderStatus(String tid, String accessToken) throws UnsupportedEncodingException, NoSuchAlgorithmException {

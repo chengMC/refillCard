@@ -14,6 +14,7 @@ import com.mc.refillCard.service.TransactionService;
 import com.mc.refillCard.service.UserRelateService;
 import com.mc.refillCard.service.UserService;
 import com.mc.refillCard.util.BaiDuMapApiUtil;
+import com.mc.refillCard.util.IpUtil;
 import com.mc.refillCard.vo.TaobaoDoMemoUpdateVo;
 import com.mc.refillCard.vo.TaobaoTransactionVo;
 import org.apache.commons.lang.StringUtils;
@@ -21,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import javax.websocket.server.PathParam;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -138,9 +138,8 @@ public class TransactionController {
 
 
     @GetMapping("/location")
-    public void location(@PathParam("tid") String tid) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        String token = "TbAldssngwbswy3kpt5tu6ykacpz4tu3xkaahzvgbcyp228vva";
-        String ip =  transactionService.getBuyerIp(tid,token);
+    public void location() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        String ip = IpUtil.getRandomIp();
         List<SysDict> listByCode = sysDictService.findListByCode(DictCodeEnum.BAIDUAK.getName());
         String location = "";
 //        String ip ="183.95.62.69";
