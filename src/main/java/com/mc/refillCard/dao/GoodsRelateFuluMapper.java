@@ -35,4 +35,6 @@ public interface GoodsRelateFuluMapper {
     List<GoodsRelateFuluVo> findPageVoByExample(GoodsRelateFuluDto goodsRelateFuluDto);
 
     GoodsRelateFulu findByGoodId(@Param("goodId") Long goodId, @Param("userId") Long userId);
+
+    void batchAdd(@Param("goodsRelateFulus") List<GoodsRelateFulu> goodsRelateFulus);
 }

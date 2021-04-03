@@ -3,7 +3,9 @@ import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dto.GoodsRelateFuluDto;
 import com.mc.refillCard.entity.GoodsRelateFulu;
 import com.mc.refillCard.vo.GoodsRelateFuluVo;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 /****
  * @Author: MC
@@ -79,4 +81,6 @@ public interface GoodsRelateFuluService {
      * @return
      */
    GoodsRelateFulu findByGoodId(Long goodId, Long userId);
+
+    Integer importExcel(String userId, String type, MultipartFile file) throws IOException;
 }

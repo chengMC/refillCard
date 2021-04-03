@@ -78,4 +78,11 @@ public interface GoodsService {
      * @return
      */
     List<Goods> findListByType(Integer type);
+
+    /**
+     *
+     * @param productId
+     */
+    void saveGood(GoodsDto goodsDto);
+
 }

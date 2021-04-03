@@ -102,7 +102,18 @@
       </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.mc.refillCard.entity.GoodsRelateFulu">
+    <insert id="batchAdd">
+      insert into goods_relate_fulu (user_id,
+      good_id, nominal,
+      type, status)
+      values
+      <foreach collection="goodsRelateFulus" item="item" index="index" separator =",">
+       (#{item.userId,jdbcType=BIGINT},
+      #{item.goodId,jdbcType=BIGINT}, #{item.nominal,jdbcType=VARCHAR},
+      #{item.type,jdbcType=INTEGER}, #{item.status,jdbcType=INTEGER})
+      </foreach>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.mc.refillCard.entity.GoodsRelateFulu">
     update goods_relate_fulu
     <set>
       <if test="userId != null">

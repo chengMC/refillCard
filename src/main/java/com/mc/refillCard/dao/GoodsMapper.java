@@ -35,4 +35,6 @@ public interface GoodsMapper {
     List<GoodsVo> findPageVoByExample(GoodsDto goodsDto);
 
     List<Goods> findListByType(@Param("type") Integer type);
+
+    Goods findByArea(@Param("area") String area);
 }

@@ -10,8 +10,10 @@ import java.util.Random;
 public class IpUtil {
 
     public static void main(String[] args) {
-        String randomIp = getRandomIp();
-        System.out.println(randomIp);
+//        String randomIp = getRandomIp();
+//        String areaRandomIp = getAreaRandomIp("1.192.0.0","1.192.7.255");
+        String areaRandomIp = getAreaRandomIp("1.192.52.0","1.192.55.255");
+        System.out.println(areaRandomIp);
     }
     public static String getRandomIp(){
         //ip范围
@@ -45,5 +47,34 @@ public class IpUtil {
 
         return x;
     }
+
+
+    public static String getAreaRandomIp(String startIp,String endIp) {
+        Integer startNum,endNum;
+        String resultIp ="";
+
+        String[] startIpSplit = startIp.split("\\.");
+        String[] endIpSplit = endIp.split("\\.");
+
+        //获取IP第三个值随机数并组合
+        resultIp = startIpSplit[0]+"."+startIpSplit[1];
+         startNum = Integer.valueOf(startIpSplit[2]);
+         endNum = Integer.valueOf(endIpSplit[2]);
+        Integer areaRandomIp = createAreaRandomIp(startNum, endNum);
+        resultIp += "."+areaRandomIp;
+        //获取IP第四个值随机数并组合
+        startNum = Integer.valueOf(startIpSplit[3]);
+        endNum = Integer.valueOf(endIpSplit[3]);
+         areaRandomIp = createAreaRandomIp(startNum, endNum);
+        resultIp += "."+areaRandomIp;
+
+        return resultIp;
+    }
+
+    public static Integer createAreaRandomIp(Integer startNum,Integer endNum) {
+        Random random = new Random();
+        return random.nextInt(endNum - startNum + 1) + startNum;
+    }
+
 
 }

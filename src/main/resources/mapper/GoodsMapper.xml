@@ -30,7 +30,13 @@
     from goods
     where type =#{type,jdbcType=INTEGER}
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    <select id="findByArea" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from goods
+      where area = #{area,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from goods
     where id = #{id,jdbcType=BIGINT}
   </delete>

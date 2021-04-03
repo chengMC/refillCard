@@ -120,5 +120,12 @@ public class GoodsServiceImpl implements GoodsService {
         return goodsMapper.findListByType(type);
     }
 
+    @Override
+    public void saveGood(GoodsDto goodsDto) {
+        Goods goods = goodsMapper.findByArea(goodsDto.getArea());
+        goods.setProductId(goodsDto.getProductId());
+        goodsMapper.insertSelective(goods);
+    }
+
 
 }
