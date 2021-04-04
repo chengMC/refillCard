@@ -147,8 +147,14 @@ public class GoodsRelateFuluServiceImpl implements GoodsRelateFuluService {
             }
            //数量
             String nominal = getCellValue(hssfRow.getCell(0));
+            if(nominal.indexOf(" ")>-1){
+                nominal = nominal.replace(" ","");
+            }
             //宝贝ID
             String goodId = getCellValue(hssfRow.getCell(1));
+            if(goodId.indexOf(" ")>-1){
+                 goodId = goodId.replace(" ","");
+            }
             if(StringUtils.isNotBlank(goodId)){
                 GoodsRelateFulu goodsRelateFulu = new GoodsRelateFulu();
                 goodsRelateFulu.setUserId(Long.valueOf(userId));

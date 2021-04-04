@@ -244,9 +244,9 @@ public class TransactionServiceImpl implements TransactionService {
                             String tid, OriginalOrderDto originalOrderDto,GoodsRelateFulu goodsRelateFulu) {
         Integer type = goodsRelateFulu.getType();
 
+        String originalTid = tid;
         //地区
-//        String buyerArea = transactionDto.getBuyerArea();
-        String buyerArea = "湖北移动";
+        String buyerArea = transactionDto.getBuyerArea();
         //根据类型查询所对应福禄商品
         List<Goods> goods = goodsService.findListByType(type);
         //查询IP段
@@ -264,7 +264,7 @@ public class TransactionServiceImpl implements TransactionService {
         Integer buyNum = num * nominal;
         //如果金额小于20，直接走去全国
         if(buyNum < 20){
-            Map qbNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+            Map qbNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
             return qbNationwidePushResultMap;
         }
 
@@ -280,7 +280,7 @@ public class TransactionServiceImpl implements TransactionService {
         //地区匹配不成功后
         if(matchingGoods == null){
             //获取到真实的随机地区
-            Integer areaRandom = IpUtil.createAreaRandomIp(0, nationwideIpList.size());
+            Integer areaRandom = IpUtil.createAreaRandomIp(0, nationwideIpList.size()-1);
             NationwideIp nationwideIp = nationwideIpList.get(areaRandom);
             String startIp = nationwideIp.getStartIp();
             String endIp = nationwideIp.getEndIp();
@@ -295,19 +295,20 @@ public class TransactionServiceImpl implements TransactionService {
                 }
             }
             //走河南或者山东的IP
-            Map qbWtoNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,userRelate,matchingGoods, chargeAccount, buyNum,areaRandomIp);
+            Map qbWtoNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate,matchingGoods, chargeAccount, buyNum,areaRandomIp);
             if(qbWtoNationwidePushResultMap.get("fail") != null){
+                tid = tid+"QB";
                 //失败后再次走全国
-                Map qbThreeNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+                Map qbThreeNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
                 return qbThreeNationwidePushResultMap;
             }
             return qbWtoNationwidePushResultMap;
         }else{
             //地区匹配成功后直接根据地区商品下单
-            Map qbNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,userRelate,matchingGoods, chargeAccount, buyNum,"");
+            Map qbNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate,matchingGoods, chargeAccount, buyNum,"");
             if(qbNationwidePushResultMap.get("fail") != null){
                 //获取到真实的随机地区
-                Integer areaRandom = IpUtil.createAreaRandomIp(0, nationwideIpList.size());
+                Integer areaRandom = IpUtil.createAreaRandomIp(0, nationwideIpList.size()-1);
                 NationwideIp nationwideIp = nationwideIpList.get(areaRandom);
                 String startIp = nationwideIp.getStartIp();
                 String endIp = nationwideIp.getEndIp();
@@ -321,11 +322,13 @@ public class TransactionServiceImpl implements TransactionService {
                         matchingGoods = good;
                     }
                 }
+                tid = tid+"Q";
                 //走河南或者山东的IP
-                Map qbWtoNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,userRelate,matchingGoods, chargeAccount, buyNum,areaRandomIp);
+                Map qbWtoNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate,matchingGoods, chargeAccount, buyNum,areaRandomIp);
                 if(qbWtoNationwidePushResultMap.get("fail") != null){
+                    tid = tid+"QB";
                     //失败后再次走全国
-                    Map qbThreeNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+                    Map qbThreeNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
                     return qbThreeNationwidePushResultMap;
                 }
                 return qbWtoNationwidePushResultMap;
@@ -346,7 +349,7 @@ public class TransactionServiceImpl implements TransactionService {
      * @param ip
      * @return
      */
-    private Map QbOrderPushAndQueryResult(Transaction transaction, String tid,UserRelate userRelate, Goods goods,
+    private Map QbOrderPushAndQueryResult(Transaction transaction, String tid,String originalTid,UserRelate userRelate, Goods goods,
                                           String chargeAccount, Integer buyNum,String ip) {
         String fuliAppKey = userRelate.getFuliAppKey();
         String fuluSercret = userRelate.getFuluSercret();
@@ -378,7 +381,7 @@ public class TransactionServiceImpl implements TransactionService {
         transactionMapper.updateByPrimaryKeySelective(transaction);
         //更新发货状态
         try {
-            Boolean aBoolean = changeTBOrderStatus(tid, accessToken);
+            Boolean aBoolean = changeTBOrderStatus(originalTid, accessToken);
             if (!aBoolean) {
                 log.error("阿奇索自动发货失败");
             }
@@ -456,7 +459,7 @@ public class TransactionServiceImpl implements TransactionService {
             FuluOrderDto fuluOrderDto = JSON.parseObject(resultStr, FuluOrderDto.class);
             String order_state = fuluOrderDto.getOrder_state();
             if (order_state.equals(FuluOrderTypeEnum.SUCCESS.getCode())) {
-                resultOrderMap.put("success", fuluOrderDto);
+                resultOrderMap.put("success", resultStr);
                 return resultOrderMap;
             } else if (order_state.equals(FuluOrderTypeEnum.FAILED.getCode())) {
                 String failStr = "福禄平台全国QB充值失败。订单号：" + tid + "," + resultMap.get("message");
