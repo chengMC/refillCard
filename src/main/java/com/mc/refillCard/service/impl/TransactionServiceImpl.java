@@ -26,8 +26,8 @@ import fulu.sup.open.api.core.MethodConst;
 import fulu.sup.open.api.model.InputDirectOrderDto;
 import fulu.sup.open.api.model.InputOrderGetDto;
 import fulu.sup.open.api.sdk.DefaultOpenApiClient;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -44,10 +44,9 @@ import java.util.Map;
  * @Description: Transaction业务层接口实现类
  * @Date 2021-3-20 20:24:42
  *****/
+@Slf4j
 @Service
 public class TransactionServiceImpl implements TransactionService {
-
-    private static Logger log = Logger.getLogger(TransactionServiceImpl.class);
 
     @Value("${agiso.appSecret}")
     private String appSecret;

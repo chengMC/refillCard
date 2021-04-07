@@ -11,8 +11,9 @@ import com.mc.refillCard.entity.UserRelate;
 import com.mc.refillCard.service.*;
 import com.mc.refillCard.vo.TaobaoDoMemoUpdateVo;
 import com.mc.refillCard.vo.TaobaoTransactionVo;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -29,12 +30,11 @@ import java.util.Map;
  * @Description:
  * @Date 2021-3-20 20:24:42
  *****/
+@Log4j2
 @RestController
 @RequestMapping("/transaction")
 @CrossOrigin(origins = "*", allowCredentials = "true", maxAge = 3600)
 public class TransactionController {
-
-    private static Logger log = Logger.getLogger(TransactionController.class);
 
     private static String appSecret;
     @Value("${agiso.appSecret}")
@@ -143,8 +143,8 @@ public class TransactionController {
 
     @GetMapping("/location")
     public void location() throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        String black = "tb91269863,汪彦辛,tb1149279783,t_1515504973110_0990,74111111gy,grp丶布勒斯特,tb883468160,国家认证顶级保镖,xiaochunmei1978,弥足珍贵的字,tb656361274,完整子豪,t_1487937049091_0196,tb718443754,tb773839588,slyans,我叫空白的美男子,不忘初心0075,金木丶研尼玛,心！剑天,卖游戏和代练,tb155256744，baozhong29279961,tb788015418,tb479479720,mxzsbd,宝专用号,ddddd390020350,t_1513062352824_0957,gyp5779310235,王东梅梅子95853921,t_1497365893182_0624,tb99848179,tb962157042,tb988374839,tb202927453,t_1513809298808_0761,tb927906176,tb34126745,tb5519712,tb507431253,tb19967196,tb33710731,寿光人筱泳,天喜运动系列,你旁边的小萝莉,tb3244858892,tb946612229,薛春芝魏建全,我们的天空59251739,qian19970903,燧宇玄芒柯,tb996193084,一笑倾诚,88888888wrx,t_1502098227232_0166,tb0809520_11,tb16188635,tb770952613,tb204151701,爱萝莉爱h漫,tb2036023637,tb883322078,tb492495132,支付一人666,tb670555494,挥洒小东哥丶,tb572116272,tb150107036,lkd15263686306,微暖0坏孩子,tb23920930,tb883322078,夜夜夜2596,tb06997122,t_1516435017623_0718,街道的寂寞90848980,cf1542551485,tb444157355,hf463949590,微笑的蓝天7807,花花呐波,楼下的李白哥哥,yilin程程,万志英,情战蓝狱杀手狐,tb442109275,tb50879474,tb100089835,n1u姣姣,tb88490969,取什么名字都不好1,南风iboy,找不到好的名字了20172014,tb022348138,玉面小达摩1982,dertuobcxs,梨花之殇34473948,花开花落175477020,张梓平、,t_1509779984346_0927,tb532370113,qq51071904,tb218465888,tb8135362717,jkluul,i黑猫大人,tb890169826,脚打后脑勺510,zyj99953668226,tb84564068,tb283543004,tb066853109,tb14186153,tb899521141,瑾瑜灬火,tb1027779483,zu13087915059,韩娇娇18,tb0192853915,一骑红尘傲九天,1114620960wb,tb917886335";
-        blacklistService.batchAdd(black);
+//        String black = "tb91269863,汪彦辛,tb1149279783,t_1515504973110_0990,74111111gy,grp丶布勒斯特,tb883468160,国家认证顶级保镖,xiaochunmei1978,弥足珍贵的字,tb656361274,完整子豪,t_1487937049091_0196,tb718443754,tb773839588,slyans,我叫空白的美男子,不忘初心0075,金木丶研尼玛,心！剑天,卖游戏和代练,tb155256744，baozhong29279961,tb788015418,tb479479720,mxzsbd,宝专用号,ddddd390020350,t_1513062352824_0957,gyp5779310235,王东梅梅子95853921,t_1497365893182_0624,tb99848179,tb962157042,tb988374839,tb202927453,t_1513809298808_0761,tb927906176,tb34126745,tb5519712,tb507431253,tb19967196,tb33710731,寿光人筱泳,天喜运动系列,你旁边的小萝莉,tb3244858892,tb946612229,薛春芝魏建全,我们的天空59251739,qian19970903,燧宇玄芒柯,tb996193084,一笑倾诚,88888888wrx,t_1502098227232_0166,tb0809520_11,tb16188635,tb770952613,tb204151701,爱萝莉爱h漫,tb2036023637,tb883322078,tb492495132,支付一人666,tb670555494,挥洒小东哥丶,tb572116272,tb150107036,lkd15263686306,微暖0坏孩子,tb23920930,tb883322078,夜夜夜2596,tb06997122,t_1516435017623_0718,街道的寂寞90848980,cf1542551485,tb444157355,hf463949590,微笑的蓝天7807,花花呐波,楼下的李白哥哥,yilin程程,万志英,情战蓝狱杀手狐,tb442109275,tb50879474,tb100089835,n1u姣姣,tb88490969,取什么名字都不好1,南风iboy,找不到好的名字了20172014,tb022348138,玉面小达摩1982,dertuobcxs,梨花之殇34473948,花开花落175477020,张梓平、,t_1509779984346_0927,tb532370113,qq51071904,tb218465888,tb8135362717,jkluul,i黑猫大人,tb890169826,脚打后脑勺510,zyj99953668226,tb84564068,tb283543004,tb066853109,tb14186153,tb899521141,瑾瑜灬火,tb1027779483,zu13087915059,韩娇娇18,tb0192853915,一骑红尘傲九天,1114620960wb,tb917886335";
+//        blacklistService.batchAdd(black);
 
 //        String ip = IpUtil.getRandomIp();
 //        List<SysDict> listByCode = sysDictService.findListByCode(DictCodeEnum.BAIDUAK.getName());
@@ -153,7 +153,7 @@ public class TransactionController {
 //        if(!"".equals(ip)){
 //             location = BaiDuMapApiUtil.location(ip, listByCode);
 //        }
-//        log.info("location1-"+location);
+        log.info("location1-");
 //        log.error("location1112-"+location);
 //        System.out.println("location"+location);
 

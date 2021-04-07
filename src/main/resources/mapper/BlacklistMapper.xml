@@ -25,7 +25,7 @@
     <include refid="Base_Column_List" />
     from blacklist
     where account = #{account,jdbcType=VARCHAR}
-    nad user_id = #{userId,jdbcType=BIGINT}
+    and user_id = #{userId,jdbcType=BIGINT}
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from blacklist
