@@ -4,7 +4,9 @@ package com.mc.refillCard.common.Enum;
  * @author
  */
 public enum GoodsRelateTypeEnum {
-    QB(1,"Q币");
+    QB(1,"QB"),
+    MOMO(2,"陌陌"),
+    TANTAN(3,"探探");
 
     private Integer code;
     private String name;
