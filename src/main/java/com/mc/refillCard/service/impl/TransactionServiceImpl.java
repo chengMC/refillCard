@@ -323,8 +323,8 @@ public class TransactionServiceImpl implements TransactionService {
         Integer num = originalOrderDto.getNum().intValue();
         //QB购买数等于面值乘数量
         Integer buyNum = num * nominal;
-        //如果金额小于20，直接走去全国
-        if(buyNum < 20){
+        //如果金额小于等于20，直接走去全国
+        if(buyNum <= 20){
             String randomIp = IpUtil.getRandomIp();
             //地区商品下单失败后，拿到河南或者山东IP后下单
             Map qbNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,randomIp);
@@ -567,7 +567,7 @@ public class TransactionServiceImpl implements TransactionService {
         } catch (Exception e) {
             log.error("线程异常");
         }
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 500; i++) {
             DefaultOpenApiClient client =
                     new DefaultOpenApiClient(FuliProperties.getUrl(), fuliAppKey, fuluSercret, MethodConst.OPEN_API_ORDER_GET);
             InputOrderGetDto dto = new InputOrderGetDto();
