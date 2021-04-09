@@ -220,6 +220,10 @@ public class TransactionServiceImpl implements TransactionService {
             //订单的宝贝id
             Long numIid = orderDto.getNumIid();
             GoodsRelateFulu  goodsRelateFulu = goodsRelateFuluService.findByGoodId(numIid, userId);
+              if(goodsRelateFulu == null){
+                  resultOrderMap.put("fail", "订单号：" + tid+",没有找到对应的宝贝Id："+numIid);
+                  return resultOrderMap;
+              }
             Integer type = goodsRelateFulu.getType();
             //类型是QB 下单
             if (type.equals(GoodsRelateTypeEnum.QB.getCode())) {
@@ -321,7 +325,9 @@ public class TransactionServiceImpl implements TransactionService {
         Integer buyNum = num * nominal;
         //如果金额小于20，直接走去全国
         if(buyNum < 20){
-            Map qbNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+            String randomIp = IpUtil.getRandomIp();
+            //地区商品下单失败后，拿到河南或者山东IP后下单
+            Map qbNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,randomIp);
             return qbNationwidePushResultMap;
         }
 
@@ -339,6 +345,7 @@ public class TransactionServiceImpl implements TransactionService {
             //获取到真实的随机地区
             Integer areaRandom = IpUtil.createAreaRandomIp(0, nationwideIpList.size()-1);
             NationwideIp nationwideIp = nationwideIpList.get(areaRandom);
+            log.info("无匹配，"+ JSON.toJSONString(nationwideIp));
             String startIp = nationwideIp.getStartIp();
             String endIp = nationwideIp.getEndIp();
             String area = nationwideIp.getArea();
@@ -361,26 +368,32 @@ public class TransactionServiceImpl implements TransactionService {
             }
             return qbWtoNationwidePushResultMap;
         }else{
-            //地区匹配成功后直接根据地区商品下单
-            Map qbNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate,matchingGoods, chargeAccount, buyNum,"");
-            if(qbNationwidePushResultMap.get("fail") != null){
-                //获取到真实的随机地区
+            //匹配到的地区
+            String matchingGoodsArea = matchingGoods.getArea();
+            SysDict areaIp = sysDictService.findByCode("areaIp");
+            String areaStr = areaIp.getDataValue();
+            //没问题的地区，直接下单不要IP，失败走全国
+            if(areaStr.indexOf(matchingGoodsArea)>-1){
+                //地区匹配成功后直接根据地区商品下单，失败后走全国
+                Map qbNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate,matchingGoods, chargeAccount, buyNum,"");
+                if(qbNationwidePushResultMap.get("fail") != null){
+                    tid = tid+"QB";
+                    //失败后再次走全国
+                    Map qbThreeNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+                    return qbThreeNationwidePushResultMap;
+                }
+                return qbNationwidePushResultMap;
+            }else{
+                //有问题的地区，匹配到问题地区的IP再下单，失败走全国
+                nationwideIpList = nationwideIpService.findListByArea(matchingGoodsArea);
+                //获取到问题地区的IP
                 Integer areaRandom = IpUtil.createAreaRandomIp(0, nationwideIpList.size()-1);
                 NationwideIp nationwideIp = nationwideIpList.get(areaRandom);
                 String startIp = nationwideIp.getStartIp();
                 String endIp = nationwideIp.getEndIp();
-                String area = nationwideIp.getArea();
-                //地区商品下单失败后，拿到河南或者山东IP后下单
+                log.info("有匹配有问题地区，"+ JSON.toJSONString(nationwideIp));
                 String areaRandomIp = IpUtil.getAreaRandomIp(startIp, endIp);
-                matchingGoods = null;
-                for (Goods good : goods) {
-                    //地区匹配
-                    if (area.indexOf(good.getArea()) > -1) {
-                        matchingGoods = good;
-                    }
-                }
-                tid = tid+"Q";
-                //走河南或者山东的IP
+                //有问题的地区加IP
                 Map qbWtoNationwidePushResultMap = QbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate,matchingGoods, chargeAccount, buyNum,areaRandomIp);
                 if(qbWtoNationwidePushResultMap.get("fail") != null){
                     tid = tid+"QB";
@@ -390,7 +403,6 @@ public class TransactionServiceImpl implements TransactionService {
                 }
                 return qbWtoNationwidePushResultMap;
             }
-            return qbNationwidePushResultMap;
         }
     }
 

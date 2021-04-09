@@ -1,5 +1,7 @@
 package com.mc.refillCard.service.impl;
+
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dao.NationwideIpMapper;
@@ -7,9 +9,18 @@ import com.mc.refillCard.dto.NationwideIpDto;
 import com.mc.refillCard.entity.NationwideIp;
 import com.mc.refillCard.service.NationwideIpService;
 import com.mc.refillCard.vo.NationwideIpVo;
+import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 /****
  * @Author: MC
@@ -113,6 +124,79 @@ public class NationwideIpServiceImpl implements NationwideIpService {
     @Override
     public List<NationwideIp> findAll() {
         return nationwideIpMapper.findAll();
+    }
+
+    @Override
+    public List<NationwideIp> findListByArea(String area) {
+        return nationwideIpMapper.findListByArea(area);
+    }
+
+    @Override
+    public Integer importDataIp(MultipartFile file) throws IOException {
+        List<NationwideIp> nationwideIpList = new ArrayList<>();
+        //获得一个工作薄
+        XSSFWorkbook hssf = new XSSFWorkbook(file.getInputStream());
+        //获得工作薄中第一个表单
+        XSSFSheet hssfSheet = hssf.getSheetAt(0);
+        int rows = hssfSheet.getPhysicalNumberOfRows();
+        //读取行
+        for (int i = 1; i <= rows; i++) {
+            XSSFRow hssfRow = hssfSheet.getRow(i);
+            if (hssfRow == null) {
+                continue;
+            }
+            //地区
+            String area = getCellValue(hssfRow.getCell(0));
+            if(area.indexOf(" ")>-1){
+                area = area.replace(" ","");
+            }
+            //开始IP
+            String startIp = getCellValue(hssfRow.getCell(1));
+            if(startIp.indexOf(" ")>-1){
+                startIp = startIp.replace(" ","");
+            }
+            //结束IP
+            String endIp = getCellValue(hssfRow.getCell(2));
+            if(endIp.indexOf(" ")>-1){
+                endIp = endIp.replace(" ","");
+            }
+            //问题地区类型 1没问题 2有问题
+            String status = getCellValue(hssfRow.getCell(3));
+            if(status.indexOf(" ")>-1){
+                status = status.replace(" ","");
+            }
+            if(StringUtils.isNotBlank(area)){
+                NationwideIp nationwideIp = new NationwideIp();
+                nationwideIp.setArea(area);
+                nationwideIp.setStartIp(startIp);
+                nationwideIp.setEndIp(endIp);
+                nationwideIp.setStatus(Integer.valueOf(status));
+                nationwideIpList.add(nationwideIp);
+            }
+        }
+        if(CollUtil.isNotEmpty(nationwideIpList)){
+            nationwideIpMapper.batchAdd(nationwideIpList);
+        }
+        return nationwideIpList.size();
+    }
+
+    public String getCellValue(XSSFCell cell) {
+        if(cell == null){
+            return "";
+        }
+        switch (cell.getCellType()) {
+            case Cell.CELL_TYPE_BOOLEAN:
+                return cell.getBooleanCellValue() ? "TRUE" : "FALSE";
+            case Cell.CELL_TYPE_FORMULA:
+                return cell.getCellFormula();
+            case Cell.CELL_TYPE_NUMERIC:
+                cell.setCellType(Cell.CELL_TYPE_STRING);
+                return cell.getStringCellValue();
+            case Cell.CELL_TYPE_STRING:
+                return cell.getStringCellValue();
+            default:
+                return "";
+        }
     }
 
 

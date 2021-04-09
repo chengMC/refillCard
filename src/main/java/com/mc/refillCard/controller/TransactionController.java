@@ -6,6 +6,7 @@ import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.dto.GoodsDto;
 import com.mc.refillCard.dto.TransactionDto;
+import com.mc.refillCard.entity.Goods;
 import com.mc.refillCard.entity.Transaction;
 import com.mc.refillCard.entity.UserRelate;
 import com.mc.refillCard.service.*;
@@ -13,7 +14,6 @@ import com.mc.refillCard.vo.TaobaoDoMemoUpdateVo;
 import com.mc.refillCard.vo.TaobaoTransactionVo;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang.StringUtils;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -55,7 +55,7 @@ public class TransactionController {
     @Autowired
     private GoodsRelateFuluService goodsRelateFuluService;
     @Autowired
-    private BlacklistService blacklistService;
+    private NationwideIpService nationwideIpService;
 
     /***
      * 多条件搜索transaction数据
@@ -175,6 +175,12 @@ public class TransactionController {
         return Result.success("修改成功");
     }
 
+    @GetMapping("/updateGood/{goodId}")
+    public Result updateGood(@PathVariable String goodId) {
+        Goods goods = goodsService.updateGood(goodId);
+        return Result.success("修改成功",goods);
+    }
+
     @PostMapping("/excel")
     public Result importData(@RequestParam("userId") String userId,@RequestParam("type") String type,
                              @RequestParam(value = "file") MultipartFile file) {
@@ -188,5 +194,16 @@ public class TransactionController {
     }
 
 
+
+    @PostMapping("/ip/excel")
+    public Result importDataIp( @RequestParam(value = "file") MultipartFile file) {
+        try {
+            Integer integer = nationwideIpService.importDataIp(file);
+            return Result.success("导入成功"+integer+"条");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.fall("导入失败-"+e.getMessage());
+        }
+    }
 
 }

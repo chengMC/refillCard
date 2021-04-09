@@ -81,8 +81,9 @@ public interface GoodsService {
 
     /**
      *
-     * @param productId
+     * @param
      */
     void saveGood(GoodsDto goodsDto);
 
+    Goods updateGood(String goodId);
 }

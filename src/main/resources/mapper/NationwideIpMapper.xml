@@ -25,7 +25,13 @@
     from nationwide_ip
     where status = 1
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    <select id="findListByArea" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from nationwide_ip
+      where area = #{area,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from nationwide_ip
     where id = #{id,jdbcType=BIGINT}
   </delete>
@@ -85,6 +91,16 @@
         #{updateTime,jdbcType=TIMESTAMP},
       </if>
     </trim>
+  </insert>
+  <insert id="batchAdd">
+    insert into nationwide_ip (start_ip, end_ip, area,
+    status)
+    values
+    <foreach collection="nationwideIpList" item="item" index="index" separator =",">
+      (#{item.startIp,jdbcType=VARCHAR}, #{item.endIp,jdbcType=VARCHAR}, #{item.area,jdbcType=VARCHAR},
+      #{item.status,jdbcType=INTEGER}
+      )
+    </foreach>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.mc.refillCard.entity.NationwideIp">
     update nationwide_ip

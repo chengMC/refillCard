@@ -124,7 +124,15 @@ public class GoodsServiceImpl implements GoodsService {
     public void saveGood(GoodsDto goodsDto) {
         Goods goods = goodsMapper.findByArea(goodsDto.getArea());
         goods.setProductId(goodsDto.getProductId());
-        goodsMapper.insertSelective(goods);
+        goodsMapper.updateByPrimaryKeySelective(goods);
+    }
+
+    @Override
+    public Goods updateGood(String goodId) {
+        Goods goods = goodsMapper.findByArea("全国");
+        goods.setProductId(Long.valueOf(goodId));
+        goodsMapper.updateByPrimaryKeySelective(goods);
+        return goodsMapper.findByArea("全国");
     }
 
 

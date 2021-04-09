@@ -3,7 +3,9 @@ import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dto.NationwideIpDto;
 import com.mc.refillCard.entity.NationwideIp;
 import com.mc.refillCard.vo.NationwideIpVo;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 /****
  * @Author: MC
@@ -70,4 +72,8 @@ public interface NationwideIpService {
      * @return
      */
     List<NationwideIp> findAll();
+
+    List<NationwideIp> findListByArea(String area);
+
+    Integer importDataIp(MultipartFile file) throws IOException;
 }

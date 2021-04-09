@@ -1,8 +1,10 @@
 package com.mc.refillCard.dao;
+
 import com.mc.refillCard.entity.NationwideIp;
 import com.mc.refillCard.dto.NationwideIpDto;
 import com.mc.refillCard.vo.NationwideIpVo;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -31,4 +33,8 @@ public interface NationwideIpMapper {
     List<NationwideIp> findAll();
 
     List<NationwideIpVo> findPageVoByExample(NationwideIpDto nationwideIpDto);
+
+    List<NationwideIp> findListByArea(@Param("area") String area);
+
+    void batchAdd(@Param("nationwideIpList") List<NationwideIp> nationwideIpList);
 }
