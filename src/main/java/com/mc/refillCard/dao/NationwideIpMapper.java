@@ -37,4 +37,7 @@ public interface NationwideIpMapper {
     List<NationwideIp> findListByArea(@Param("area") String area);
 
     void batchAdd(@Param("nationwideIpList") List<NationwideIp> nationwideIpList);
+
+    List<NationwideIp> findList();
+
 }

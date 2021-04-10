@@ -579,6 +579,7 @@ public class TransactionServiceImpl implements TransactionService {
             }
             Map resultMap = JSON.parseObject(result);
             if (!"0".equals(String.valueOf(resultMap.get("code")))) {
+                log.info("福禄平台查询充值---"+result);
                 String failStr = "福禄平台查询充值失败,订单号：" + tid + "," + resultMap.get("message");
                 log.info(failStr);
             }
@@ -590,7 +591,7 @@ public class TransactionServiceImpl implements TransactionService {
                 resultOrderMap.put("success", resultStr);
                 return resultOrderMap;
             } else if (order_state.equals(FuluOrderTypeEnum.FAILED.getCode())) {
-                String failStr = "福禄平台查询充值失败。订单号：" + tid + "," + resultMap.get("message");
+                String failStr = "福禄平台充值失败。订单号：" + tid + "," + resultMap.get("message");
                 resultOrderMap.put("fail", failStr);
                 return resultOrderMap;
             }
@@ -760,7 +761,10 @@ public class TransactionServiceImpl implements TransactionService {
         return change;
     }
 
-
+    @Override
+    public List<Transaction> findListByParam(Transaction transaction) {
+       return transactionMapper.findListByParam(transaction);
+    }
 
 
 }

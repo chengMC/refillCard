@@ -1,4 +1,5 @@
 package com.mc.refillCard.service;
+
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dto.NationwideIpDto;
 import com.mc.refillCard.entity.NationwideIp;
@@ -6,7 +7,9 @@ import com.mc.refillCard.vo.NationwideIpVo;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+
 /****
  * @Author: MC
  * @Description:NationwideIp业务层接口
@@ -76,4 +79,7 @@ public interface NationwideIpService {
     List<NationwideIp> findListByArea(String area);
 
     Integer importDataIp(MultipartFile file) throws IOException;
+
+    LinkedHashMap statistics();
+
 }

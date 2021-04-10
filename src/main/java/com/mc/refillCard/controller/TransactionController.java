@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -175,6 +176,12 @@ public class TransactionController {
         return Result.success("修改成功");
     }
 
+    @GetMapping("/statistics")
+    public Result statistics() {
+        LinkedHashMap map = nationwideIpService.statistics();
+        return Result.success(map);
+    }
+
     @GetMapping("/updateGood/{goodId}")
     public Result updateGood(@PathVariable String goodId) {
         Goods goods = goodsService.updateGood(goodId);
@@ -205,5 +212,8 @@ public class TransactionController {
             return Result.fall("导入失败-"+e.getMessage());
         }
     }
+
+
+
 
 }

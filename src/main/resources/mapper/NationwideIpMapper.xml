@@ -31,7 +31,12 @@
       from nationwide_ip
       where area = #{area,jdbcType=VARCHAR}
     </select>
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+  <select id="findList" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from nationwide_ip
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from nationwide_ip
     where id = #{id,jdbcType=BIGINT}
   </delete>

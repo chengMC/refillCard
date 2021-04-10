@@ -7,7 +7,9 @@ import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dao.NationwideIpMapper;
 import com.mc.refillCard.dto.NationwideIpDto;
 import com.mc.refillCard.entity.NationwideIp;
+import com.mc.refillCard.entity.Transaction;
 import com.mc.refillCard.service.NationwideIpService;
+import com.mc.refillCard.service.TransactionService;
 import com.mc.refillCard.vo.NationwideIpVo;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
@@ -20,8 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
 /****
  * @Author: MC
  * @Description: NationwideIp业务层接口实现类
@@ -32,6 +34,8 @@ public class NationwideIpServiceImpl implements NationwideIpService {
 
     @Autowired
     private NationwideIpMapper nationwideIpMapper;
+    @Autowired
+    private TransactionService transactionService;
 
     /**
      NationwideIp条件+分页查询
@@ -178,6 +182,39 @@ public class NationwideIpServiceImpl implements NationwideIpService {
             nationwideIpMapper.batchAdd(nationwideIpList);
         }
         return nationwideIpList.size();
+    }
+
+    @Override
+    public LinkedHashMap statistics() {
+        LinkedHashMap  linkedHashMap = new LinkedHashMap();
+        Map<String, Integer>  map = new HashMap();
+        List<NationwideIp> all = nationwideIpMapper.findList();
+        for (NationwideIp nationwideIp : all) {
+            String area = nationwideIp.getArea();
+            Transaction transaction = new Transaction();
+            transaction.setBuyerArea(area);
+            List<Transaction> listByParam = transactionService.findListByParam(transaction);
+            map.put(area,listByParam.size());
+        }
+        // 由于HashMap不属于list子类，所以无法使用Collections.sort方法来进行排序，所以我们将hashmap中的entryset取出放入一个ArrayList中
+        List<Map.Entry<String, Integer>> list = new ArrayList<>(map.entrySet());
+
+        // 根据entryset中value的值，对ArrayList中的entryset进行排序，最终达到我们对hashmap的值进行排序的效果
+        Collections.sort(list, (o1, o2) -> {
+            // 升序排序
+            return o1.getValue().compareTo(o2.getValue());
+        });
+
+        //用迭代器对list中的元素遍历
+        Iterator<Map.Entry<String, Integer>> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, Integer> entry = iterator.next();
+            String key = entry.getKey();
+            int value = entry.getValue();
+            linkedHashMap.put(key,value);
+            System.out.println(key + "：" + value);
+        }
+        return linkedHashMap;
     }
 
     public String getCellValue(XSSFCell cell) {

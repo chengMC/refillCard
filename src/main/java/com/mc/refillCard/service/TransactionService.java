@@ -94,4 +94,7 @@ public interface TransactionService {
     String getBuyerIp(String tid, String token) throws UnsupportedEncodingException, NoSuchAlgorithmException;
 
     Boolean changeTBOrderStatus(String tid, String token) throws UnsupportedEncodingException, NoSuchAlgorithmException;
+
+    List<Transaction> findListByParam(Transaction transaction);
+
 }

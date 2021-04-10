@@ -63,7 +63,14 @@
     where 1=1
       and tid = #{tid,jdbcType=VARCHAR}
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    <select id="findListByParam" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from transaction
+      where 1=1
+      and buyer_area like concat('%',#{buyerArea,jdbcType=VARCHAR},'%')
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from transaction
     where id = #{id,jdbcType=BIGINT}
   </delete>

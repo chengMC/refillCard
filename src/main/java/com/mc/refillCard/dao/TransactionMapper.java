@@ -33,4 +33,6 @@ public interface TransactionMapper {
     List<TransactionVo> findPageVoByExample(TransactionDto transactionDto);
 
     Transaction findByTid(String tid);
+
+    List<Transaction> findListByParam(Transaction transaction);
 }
