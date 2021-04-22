@@ -31,8 +31,16 @@ public class AccountUtils {
         return m.matches();
     }
 
-    // 参数签名
-    public static String getSign(Map<String, String> params, String appSecret)
+    /**
+     * 阿奇索签名验证
+     *
+     * @param params
+     * @param appSecret
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws UnsupportedEncodingException
+     */
+    public static String getAqusuoSign(Map<String, String> params, String appSecret)
             throws NoSuchAlgorithmException, UnsupportedEncodingException {
         String[] keys = params.keySet().toArray(new String[0]);
         Arrays.sort(keys);
@@ -49,6 +57,33 @@ public class AccountUtils {
 
         return byte2hex(md5byte);
     }
+
+    /**
+     * 蜀山签名
+     *
+     * @param params
+     * @param appSecret
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws UnsupportedEncodingException
+     */
+    public static String getShuShanSign(Map<String, Object> params,String appSecret) throws NoSuchAlgorithmException, UnsupportedEncodingException
+    {
+        String[] keys = params.keySet().toArray(new String[0]);
+        Arrays.sort(keys);
+
+        StringBuilder query = new StringBuilder();
+        for (String key : keys) {
+            String value = String.valueOf(params.get(key));
+            query.append(value);
+        }
+        query.append(appSecret);
+
+        byte[] md5byte = encryptMD5(query.toString());
+
+        return  byte2hex(md5byte);
+    }
+
 
     //参数签名
     public static String Sign(Map<String, String> params,String appSecret) throws NoSuchAlgorithmException, UnsupportedEncodingException

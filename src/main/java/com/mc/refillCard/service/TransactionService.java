@@ -79,11 +79,20 @@ public interface TransactionService {
     List<Transaction> findAll();
 
     /**
-     * 下单
+     * 福禄下单
      * @param transactionDto
      * @return
      */
-    Map placeOrder(TransactionDto transactionDto, UserRelate userRelate);
+    Map fuliPlaceOrder(TransactionDto transactionDto, UserRelate userRelate);
+
+    /**
+     * 蜀山下单
+     *
+     * @param transactionDto
+     * @param userRelate
+     * @return
+     */
+    Map shushanPlaceOrder(TransactionDto transactionDto, UserRelate userRelate);
 
     /**
      *
@@ -97,4 +106,12 @@ public interface TransactionService {
 
     List<Transaction> findListByParam(Transaction transaction);
 
+    /**
+     * 推送订单
+     *
+     * @param transactionDto
+     * @param userRelate
+     * @return
+     */
+    Map placeOrder(TransactionDto transactionDto, UserRelate userRelate);
 }

@@ -60,18 +60,18 @@ public class IpUtil {
         resultIp = startIpSplit[0]+"."+startIpSplit[1];
          startNum = Integer.valueOf(startIpSplit[2]);
          endNum = Integer.valueOf(endIpSplit[2]);
-        Integer areaRandomIp = createAreaRandomIp(startNum, endNum);
+        Integer areaRandomIp = createRandom(startNum, endNum);
         resultIp += "."+areaRandomIp;
         //获取IP第四个值随机数并组合
         startNum = Integer.valueOf(startIpSplit[3]);
         endNum = Integer.valueOf(endIpSplit[3]);
-         areaRandomIp = createAreaRandomIp(startNum, endNum);
+         areaRandomIp = createRandom(startNum, endNum);
         resultIp += "."+areaRandomIp;
 
         return resultIp;
     }
 
-    public static Integer createAreaRandomIp(Integer startNum,Integer endNum) {
+    public static Integer createRandom(Integer startNum, Integer endNum) {
         Random random = new Random();
         return random.nextInt(endNum - startNum + 1) + startNum;
     }

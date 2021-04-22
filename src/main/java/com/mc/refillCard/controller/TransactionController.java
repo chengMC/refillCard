@@ -1,15 +1,19 @@
 package com.mc.refillCard.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.common.Result;
+import com.mc.refillCard.config.fulu.ShuShanApiProperties;
 import com.mc.refillCard.dto.GoodsDto;
 import com.mc.refillCard.dto.TransactionDto;
 import com.mc.refillCard.entity.Goods;
 import com.mc.refillCard.entity.Transaction;
 import com.mc.refillCard.entity.UserRelate;
 import com.mc.refillCard.service.*;
+import com.mc.refillCard.util.AccountUtils;
+import com.mc.refillCard.util.XmlUtils;
 import com.mc.refillCard.vo.TaobaoDoMemoUpdateVo;
 import com.mc.refillCard.vo.TaobaoTransactionVo;
 import lombok.extern.log4j.Log4j2;
@@ -121,7 +125,6 @@ public class TransactionController {
         if(userRelate == null || StringUtils.isEmpty(userRelate.getFuluSercret())){
             return JSON.toJSONString(Result.fall("订单推送失败，请先填写相关配置"));
         }
-
         //推送订单
         System.out.println(transactionDto);
         Map resultMap = transactionService.placeOrder(transactionDto, userRelate);
@@ -200,6 +203,17 @@ public class TransactionController {
         }
     }
 
+    @PostMapping("/goods/excel")
+    public Result goodsImportData(@RequestParam("platform") String platform,@RequestParam("type") String type,
+                             @RequestParam(value = "file") MultipartFile file) {
+        try {
+            Integer integer = goodsService.goodsImportData(platform, type, file);
+            return Result.success("导入成功"+integer+"条");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.fall("导入失败-"+e.getMessage());
+        }
+    }
 
 
     @PostMapping("/ip/excel")
@@ -211,6 +225,28 @@ public class TransactionController {
             e.printStackTrace();
             return Result.fall("导入失败-"+e.getMessage());
         }
+    }
+
+
+    @GetMapping("/getInfo")
+    public void getInfo() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+
+        HashMap<String, Object> dataMap = new HashMap<>();
+        dataMap.put("MerchantID",ShuShanApiProperties.getMerchantID());
+        String shuShanSign = AccountUtils.getShuShanSign(dataMap, ShuShanApiProperties.getAppSecret());
+        dataMap.put("Sign",shuShanSign);
+
+        //接口调用
+        String result = HttpRequest.post("http://api.shushanzx.shucard.com/Api/QueryMerchant")
+                .form(dataMap)
+//                .addHeaders(headerMap)
+                .execute()
+                .body();
+        System.out.println(result);
+        String json = XmlUtils.xml2json(result);
+
+        System.out.println(json);
+
     }
 
 

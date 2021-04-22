@@ -1,18 +1,13 @@
 package com.mc.refillCard.common.Enum;
 
 /**
- *  数据字典code
+ *  供应商平台字典
  *
  * @author
  */
-public enum DictCodeEnum {
-    BAIDUAK(1,"baiduak"),
-    AREA_IP(2,"areaIp"),
-    RANKING(3,"ranking"),
-    PATTERN(4,"pattern"),
-    PLATFORM(5,"platform"),
-    NATIONWIDE(6,"nationwide"),
-    REGION(7,"region");
+public enum PlatformEnum {
+    FULU(1,"fulu"),
+    SHUSHAN(2,"shushan");
 
     private Integer code;
     private String name;
@@ -20,7 +15,7 @@ public enum DictCodeEnum {
     /**
      * 构造方法
      */
-    DictCodeEnum(Integer code, String name) {
+    PlatformEnum(Integer code, String name) {
         this.code = code;
         this.name = name;
     }
@@ -34,7 +29,7 @@ public enum DictCodeEnum {
     }
 
     public static String getNameByCode(Integer code) {
-        for (DictCodeEnum typeEnum : DictCodeEnum.values()) {
+        for (PlatformEnum typeEnum : PlatformEnum.values()) {
             if (typeEnum.getCode().equals(code)) {
                 return typeEnum.getName();
             }

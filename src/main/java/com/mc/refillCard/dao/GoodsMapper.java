@@ -34,7 +34,9 @@ public interface GoodsMapper {
 
     List<GoodsVo> findPageVoByExample(GoodsDto goodsDto);
 
-    List<Goods> findListByType(@Param("type") Integer type);
+    List<Goods> findListByType(@Param("platform") Integer platform, @Param("type") Integer type);
 
     Goods findByArea(@Param("area") String area);
+
+    void batchAdd(@Param("goodsList") List<Goods> goodsList);
 }

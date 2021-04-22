@@ -3,7 +3,9 @@ import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dto.GoodsDto;
 import com.mc.refillCard.entity.Goods;
 import com.mc.refillCard.vo.GoodsVo;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 /****
  * @Author: MC
@@ -74,10 +76,12 @@ public interface GoodsService {
     /**
      * 根据类型查询商品
      *
+     *
+     * @param platform
      * @param type
      * @return
      */
-    List<Goods> findListByType(Integer type);
+    List<Goods> findListByTypeAndPlatform(Integer platform, Integer type);
 
     /**
      *
@@ -86,4 +90,14 @@ public interface GoodsService {
     void saveGood(GoodsDto goodsDto);
 
     Goods updateGood(String goodId);
+
+    /**
+     * 导入商品
+     *
+     * @param platform
+     * @param type
+     * @param file
+     * @return
+     */
+    Integer goodsImportData(String platform, String type, MultipartFile file) throws IOException;
 }

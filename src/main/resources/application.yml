@@ -19,10 +19,16 @@ logging:
     com.mc.refillCard: debug
 
 
-
+#阿奇索密钥和token 调用接口使用
 agiso:
   appSecret: ak6mr75ettb7yktzv7spspwu322f374y
   AccssToken: TbAlds5gt3bhurg6zsupfhvecndpxszavyxwch9tx62atd9y5s
+
+#蜀山密钥和商户ID 调用接口使用
+shushan:
+  appSecret: y3htuqkbk8awjlf
+  merchantID: 17860
+
 
 fuli:
   appKey: +gViu2wfFwlHcca4U4FR+ijRebmrPjLu9+9JLeKukYjh3aqGj5g1BLO+soJ7Npix
