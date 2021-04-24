@@ -43,4 +43,5 @@ public interface UserMapper {
      */
     Integer getCountByPhone(String userName);
 
+    User findPlatformUserId(@Param("platformUserId") String platformUserId);
 }

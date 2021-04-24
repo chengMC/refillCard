@@ -114,4 +114,5 @@ public interface UserService {
     UserRelate save(String platformUserId, String sellerNick);
 
 
+    User findPlatformUserId(String platformUserId);
 }

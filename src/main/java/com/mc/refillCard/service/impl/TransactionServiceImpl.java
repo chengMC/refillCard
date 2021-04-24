@@ -210,7 +210,6 @@ public class TransactionServiceImpl implements TransactionService {
         String tid = transactionDto.getTid();
         //地区
         String buyerArea = transactionDto.getBuyerArea();
-
         //订单
         OriginalOrderDto orderDto = transactionDto.getOrders().get(0);
         //订单的宝贝id
@@ -242,20 +241,23 @@ public class TransactionServiceImpl implements TransactionService {
                 Integer nationwideValue = Integer.valueOf(nationwideCode.getDataValue());
                //下单平台 1 福禄 2 蜀山
                 if(PlatformEnum.SHUSHAN.getCode().equals(nationwideValue)){
-                    shushanPlaceOrder(transactionDto, userRelate);
+                    Map qbOrderPushMap = shushanPlaceOrder(transactionDto, userRelate);
+                    return qbOrderPushMap;
                 }else if(PlatformEnum.FULU.getCode().equals(nationwideValue)){
-                    fuliPlaceOrder(transactionDto, userRelate);
+                    Map qbOrderPushMap =  fuliPlaceOrder(transactionDto, userRelate);
+                    return qbOrderPushMap;
                 }
-
             }else{
                 //查询区域下单平台
                 SysDict regionCode = sysDictService.findByCode(DictCodeEnum.REGION.getName());
                 Integer regionValue = Integer.valueOf(regionCode.getDataValue());
                 //下单平台 1 福禄 2 蜀山
                 if(PlatformEnum.SHUSHAN.getCode().equals(regionValue)){
-                    shushanPlaceOrder(transactionDto, userRelate);
+                    Map qbOrderPushMap =  shushanPlaceOrder(transactionDto, userRelate);
+                    return qbOrderPushMap;
                 }else if(PlatformEnum.FULU.getCode().equals(regionValue)){
-                    fuliPlaceOrder(transactionDto, userRelate);
+                    Map qbOrderPushMap =fuliPlaceOrder(transactionDto, userRelate);
+                    return qbOrderPushMap;
                 }
             }
         }
@@ -388,14 +390,15 @@ public class TransactionServiceImpl implements TransactionService {
             Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
             return qbNationwidePushResultMap;
         }
-
         //默认全国
         Goods matchingGoods = null;
-        for (Goods good : goods) {
-            //地区匹配
-            String area = good.getArea();
-            if (buyerArea.indexOf(area) > -1) {
-                matchingGoods = good;
+        if(StringUtils.isNotBlank(buyerArea)){
+            for (Goods good : goods) {
+                //地区匹配
+                String area = good.getArea();
+                if (buyerArea.indexOf(area) > -1) {
+                    matchingGoods = good;
+                }
             }
         }
         //地区匹配不成功后 走全国
@@ -657,7 +660,7 @@ public class TransactionServiceImpl implements TransactionService {
     private Map shuShanQbOrderPushAndQueryResult(Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
                                                  String chargeAccount, Integer buyNum, String area) {
         String accessToken = userRelate.getAccessToken();
-        log.info("蜀山qb下单后查询返回，地区："+goods.getArea());
+        log.info("蜀山qb下单后查询返回，地区："+area);
 
         Map qbNationwidePushResultMap = shushanQbNationwidePush(tid, buyNum, chargeAccount, goods,area);
         //下单失败后直接返回

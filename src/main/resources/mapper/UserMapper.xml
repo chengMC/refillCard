@@ -92,11 +92,17 @@
        or phone =#{userName,jdbcType=VARCHAR}
       limit 1
     </select>
+    <select id="findPlatformUserId" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from user
+      where status != 0
+      and remark =#{platformUserId,jdbcType=VARCHAR}
+    </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from user
     where id = #{id,jdbcType=BIGINT}
   </delete>
-
 
   <insert id="insert" parameterType="com.mc.refillCard.entity.User">
     insert into user (id, user_name, password,

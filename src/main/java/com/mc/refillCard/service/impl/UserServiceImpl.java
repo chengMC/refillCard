@@ -209,6 +209,11 @@ public class UserServiceImpl implements UserService {
         return userRelate;
     }
 
+    @Override
+    public User findPlatformUserId(String platformUserId) {
+        return userMapper.findPlatformUserId(platformUserId);
+    }
+
     /**
      * 增加User
      * @param user
