@@ -45,7 +45,6 @@ public class UserController {
         return Result.success("查询成功", pageInfo);
     }
 
-
     /***
      * 查询User全部数据
      * @return

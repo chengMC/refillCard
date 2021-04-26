@@ -1,6 +1,9 @@
 package com.mc.refillCard.entity;
 
+import lombok.Data;
+
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /****
@@ -8,6 +11,7 @@ import java.util.Date;
  * @Description:User构建
  * @Date 2020-11-19 14:11:56
  *****/
+@Data
 public class User implements Serializable{
 
 	private Long id;//id
@@ -50,151 +54,11 @@ public class User implements Serializable{
 	 */
 	private String departmentName;
 
-	//get方法
-	public Long getId() {
-		return id;
-	}
+	/***
+	 * 余额
+	 */
+	private BigDecimal balance;
 
-	//set方法
-	public void setId(Long id) {
-		this.id = id;
-	}
-	//get方法
-	public String getUserName() {
-		return userName;
-	}
+	private Integer isHidden;
 
-	//set方法
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-
-	public String getValidUserName() {
-		return validUserName;
-	}
-
-	public void setValidUserName(String validUserName) {
-		this.validUserName = validUserName;
-	}
-
-	//get方法
-	public String getPassword() {
-		return password;
-	}
-
-	//set方法
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	//get方法
-	public String getPhone() {
-		return phone;
-	}
-
-	//set方法
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
-	//get方法
-	public String getRemark() {
-		return remark;
-	}
-
-	//set方法
-	public void setRemark(String remark) {
-		this.remark = remark;
-	}
-	//get方法
-	public Integer getStatus() {
-		return status;
-	}
-
-	//set方法
-	public void setStatus(Integer status) {
-		this.status = status;
-	}
-	//get方法
-	public String getCreateEmp() {
-		return createEmp;
-	}
-
-	//set方法
-	public void setCreateEmp(String createEmp) {
-		this.createEmp = createEmp;
-	}
-	//get方法
-	public Date getCreateTime() {
-		return createTime;
-	}
-
-	//set方法
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
-	}
-	//get方法
-	public Date getUpdateTime() {
-		return updateTime;
-	}
-
-	//set方法
-	public void setUpdateTime(Date updateTime) {
-		this.updateTime = updateTime;
-	}
-	//get方法
-	public String getUpdateEmp() {
-		return updateEmp;
-	}
-
-	//set方法
-	public void setUpdateEmp(String updateEmp) {
-		this.updateEmp = updateEmp;
-	}
-	//get方法
-	public String getLogo() {
-		return logo;
-	}
-
-	//set方法
-	public void setLogo(String logo) {
-		this.logo = logo;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getRoleName() {
-		return roleName;
-	}
-
-	public void setRoleName(String roleName) {
-		this.roleName = roleName;
-	}
-
-	public Long getRoleId() {
-		return roleId;
-	}
-
-	public void setRoleId(Long roleId) {
-		this.roleId = roleId;
-	}
-	public Long getDepartmentId() {
-		return departmentId;
-	}
-
-	public void setDepartmentId(Long departmentId) {
-		this.departmentId = departmentId;
-	}
-
-	public String getDepartmentName() {
-		return departmentName;
-	}
-
-	public void setDepartmentName(String departmentName) {
-		this.departmentName = departmentName;
-	}
 }

@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +65,12 @@ public class TransactionServiceImpl implements TransactionService {
     private SysDictService sysDictService;
     @Autowired
     private BlacklistService blacklistService;
+    @Autowired
+    private UserPricingService userPricingService;
+    @Autowired
+    private UserRelateService userRelateService;
+    @Autowired
+    private UserService userService;
 
     /**
      Transaction条件+分页查询
@@ -276,6 +283,7 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = transactionMapper.findByTid(tid);
         transaction.setCreateEmp(String.valueOf(userId));
         transaction.setCreditCardFee(String.valueOf(platform));
+        transaction.setUpdateTime(DateUtil.date());
         transactionMapper.updateByPrimaryKeySelective(transaction);
 
         //订单
@@ -291,17 +299,47 @@ public class TransactionServiceImpl implements TransactionService {
             Integer type = goodsRelateFulu.getType();
             //类型是QB 下单
             if (type.equals(GoodsRelateTypeEnum.QB.getCode())) {
+                //判断余额
+                Map judgeMap = judgeBalance(orderDto, goodsRelateFulu, userRelate, type);
+                //账号余额 大于订单总价格
+                if(judgeMap.get("fail") != null){
+                    return judgeMap;
+                }
                 Map qbOrderPushMap = fuluQbOrderPush(transaction, transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
+                if(qbOrderPushMap.get("success") != null){
+                    //更新余额
+                    updateBalance(orderDto, goodsRelateFulu, userRelate, type);
+                }
                 return qbOrderPushMap;
             }
             //下单是陌陌
             if (type.equals(GoodsRelateTypeEnum.MOMO.getCode())) {
+                //判断余额
+                Map judgeMap = judgeBalance(orderDto, goodsRelateFulu, userRelate, type);
+                //账号余额 大于订单总价格
+                if(judgeMap.get("fail") != null){
+                    return judgeMap;
+                }
                 Map qbOrderPushMap = fuluCommonOrderPush(transaction, transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
+                if(qbOrderPushMap.get("success") != null){
+                    //更新余额
+                    updateBalance(orderDto, goodsRelateFulu, userRelate, type);
+                }
                 return qbOrderPushMap;
             }
             //探探下单
             if (type.equals(GoodsRelateTypeEnum.TANTAN.getCode())) {
+                //判断余额
+                Map judgeMap = judgeBalance(orderDto, goodsRelateFulu, userRelate, type);
+                //账号余额 大于订单总价格
+                if(judgeMap.get("fail") != null){
+                    return judgeMap;
+                }
                 Map qbOrderPushMap = fuluCommonOrderPush(transaction, transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
+                if(qbOrderPushMap.get("success") != null){
+                    //更新余额
+                    updateBalance(orderDto, goodsRelateFulu, userRelate, type);
+                }
                 return qbOrderPushMap;
             }
         }
@@ -312,12 +350,14 @@ public class TransactionServiceImpl implements TransactionService {
     public Map shushanPlaceOrder(TransactionDto transactionDto, UserRelate userRelate) {
         Map resultOrderMap = new HashMap();
         Long userId = userRelate.getUserId();
+
         Integer platform = PlatformEnum.SHUSHAN.getCode();
         //订单保存添加人
         String tid = transactionDto.getTid();
         Transaction transaction = transactionMapper.findByTid(tid);
         transaction.setCreateEmp(String.valueOf(userId));
         transaction.setCreditCardFee(String.valueOf(platform));
+        transaction.setUpdateTime(DateUtil.date());
         transactionMapper.updateByPrimaryKeySelective(transaction);
 
         //订单
@@ -330,15 +370,99 @@ public class TransactionServiceImpl implements TransactionService {
                 resultOrderMap.put("fail", "订单号：" + tid+",没有找到对应的宝贝Id："+numIid);
                 return resultOrderMap;
             }
+
             Integer type = goodsRelateFulu.getType();
             //类型是QB 下单
             if (type.equals(GoodsRelateTypeEnum.QB.getCode())) {
+                //判断余额
+                Map judgeMap = judgeBalance(orderDto, goodsRelateFulu, userRelate, type);
+                //账号余额 大于订单总价格
+                if(judgeMap.get("fail") != null){
+                    return judgeMap;
+                }
+                //QB下单
                 Map qbOrderPushMap = shuShanQbOrderPush(transaction, transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
+                if(qbOrderPushMap.get("success") != null){
+                    //更新余额
+                    updateBalance(orderDto, goodsRelateFulu, userRelate, type);
+                }
                 return qbOrderPushMap;
             }
         }
+        resultOrderMap.put("fail", "订单号：" + tid);
+        return resultOrderMap;
+    }
 
-        return null;
+    /**
+     * 更新价格
+     *
+     * @param orderDto
+     * @param goodsRelateFulu
+     * @param userRelate
+     * @param type
+     */
+    private void updateBalance(OriginalOrderDto orderDto,GoodsRelateFulu goodsRelateFulu,UserRelate userRelate,Integer type) {
+        //账号余额
+        BigDecimal balance = userRelate.getBalance();
+        Long userId = userRelate.getUserId();
+        UserPricing userPricing = userPricingService.findByUserIdAndType(userId,type);
+        //计算商品价格
+        BigDecimal totalPrice = calculatePrice(orderDto, goodsRelateFulu, userPricing);
+        //成功后减少余额
+        BigDecimal subtract = balance.subtract(totalPrice);
+        //获取到最新余额
+        User user = userService.findById(userId);
+        user.setBalance(subtract);
+        userService.update(user);
+    }
+
+
+    /**
+     * 判断余额
+     * @param orderDto
+     * @param goodsRelateFulu
+     * @param userRelate
+     * @return
+     */
+    private Map judgeBalance(OriginalOrderDto orderDto,GoodsRelateFulu goodsRelateFulu,UserRelate userRelate,Integer type) {
+        Map resultOrderMap = new HashMap();
+        Long tid = orderDto.getOid();
+        //根据用户和商品类型查询定价
+        Long userId = userRelate.getUserId();
+        UserPricing userPricing = userPricingService.findByUserIdAndType(userId,type);
+        if(userPricing == null){
+            resultOrderMap.put("fail", "订单号：" + tid+",未定价");
+            return resultOrderMap;
+        }
+        //获取到最新余额
+        User user = userService.findById(userId);
+        //账号余额
+        BigDecimal balance = user.getBalance();
+        //计算商品价格
+        BigDecimal totalPrice = calculatePrice(orderDto, goodsRelateFulu, userPricing);
+        //账号余额 大于订单总价格
+        if (!(balance.compareTo(totalPrice) == 1)) {
+            resultOrderMap.put("fail", "订单号：" + tid + ",订单余额不足");
+            return resultOrderMap;
+        }
+        resultOrderMap.put("success","余额充足");
+        return resultOrderMap;
+    }
+
+    /**
+     *  计算价格
+     * @return
+     */
+    private BigDecimal calculatePrice(OriginalOrderDto orderDto,GoodsRelateFulu goodsRelateFulu,UserPricing userPricing){
+        //订单中宝贝数量
+        BigDecimal orderNumBig = new BigDecimal(orderDto.getNum());
+        //宝贝金额
+        BigDecimal nominalBig = new BigDecimal(goodsRelateFulu.getNominal());
+        //统一定价
+        BigDecimal unifyPrice = userPricing.getUnifyPrice();
+        //总价格=统一定价*以宝贝金额*订单中宝贝数量
+        BigDecimal totalPrice = unifyPrice.multiply(nominalBig).multiply(orderNumBig);
+        return totalPrice;
     }
 
     /**
@@ -407,7 +531,7 @@ public class TransactionServiceImpl implements TransactionService {
             return qbNationwidePushResultMap;
         }else{
             //走地区
-            Map qbWtoNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,matchingGoods.getArea());
+            Map qbWtoNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, matchingGoods, chargeAccount, buyNum,matchingGoods.getArea());
             if(qbWtoNationwidePushResultMap.get("fail") != null){
                 tid = tid+"QB";
                 //失败后再次走全国
@@ -660,7 +784,7 @@ public class TransactionServiceImpl implements TransactionService {
     private Map shuShanQbOrderPushAndQueryResult(Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
                                                  String chargeAccount, Integer buyNum, String area) {
         String accessToken = userRelate.getAccessToken();
-        log.info("蜀山qb下单后查询返回，地区："+area);
+        log.info("蜀山qb下单后查询返回，地区："+goods.getArea());
 
         Map qbNationwidePushResultMap = shushanQbNationwidePush(tid, buyNum, chargeAccount, goods,area);
         //下单失败后直接返回
@@ -891,7 +1015,8 @@ public class TransactionServiceImpl implements TransactionService {
             dataMap.put("MerchantOrderID", tid);
             String shuShanSign = null;
             try {
-                shuShanSign = AccountUtils.getShuShanSign(dataMap, ShuShanApiProperties.getAppSecret());
+                String Sign = ShuShanApiProperties.getMerchantID()+tid;
+                shuShanSign = AccountUtils.encryptMD5Str(Sign);
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             } catch (UnsupportedEncodingException e) {
@@ -991,7 +1116,8 @@ public class TransactionServiceImpl implements TransactionService {
         dataMap.put("TargetAccount", chargeAccount);
         String shuShanSign = null;
         try {
-            shuShanSign = AccountUtils.getShuShanSign(dataMap, ShuShanApiProperties.getAppSecret());
+            String Sign = ShuShanApiProperties.getMerchantID()+tid+good.getProductId()+buyNum+chargeAccount+ShuShanApiProperties.getAppSecret();
+            shuShanSign = AccountUtils.encryptMD5Str(Sign);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
@@ -1002,13 +1128,14 @@ public class TransactionServiceImpl implements TransactionService {
         }
         dataMap.put("Sign",shuShanSign);
 
+        System.out.println("蜀山QB下单请求参数："+dataMap);
         //接口调用
         String result = HttpRequest.post("http://api.shushanzx.shucard.com/Api/Pay")
                 .form(dataMap)
                 .execute()
                 .body();
         String json = XmlUtils.xml2json(result);
-        System.out.println("蜀山QB下单请求："+json);
+        System.out.println("蜀山QB下单接口返回："+json);
         Map resultMap = JSON.parseObject(json);
         return resultMap;
     }

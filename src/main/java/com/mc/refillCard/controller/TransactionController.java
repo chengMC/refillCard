@@ -78,7 +78,7 @@ public class TransactionController {
     @RequestMapping("/push/receiveMsg")
     public String receivedMsg(@RequestParam("timestamp") long timestamp, @RequestParam("json") String json,
                               @RequestParam("aopic") long aopic, @RequestParam("sign") String sign) {
-//          json = "{\"Platform\":\"TAOBAO\",\"PlatformUserId\":\"234234234\",\"ReceiverName\":null,\"ReceiverMobile\":null,\"ReceiverPhone\":null,\"ReceiverAddress\":\"QQ:569741817\\r\\n备注:\",\"BuyerArea\":\"湖北\",\"ExtendedFields\":{},\"Tid\":16608731045877812694,\"TidStr\":\"1660873104587781269\",\"Status\":\"WAIT_SELLER_SEND_GOODS\",\"SellerNick\":\"劲舞团24小时充值\",\"BuyerNick\":\"启动蓝色\",\"Type\":null,\"BuyerMessage\":null,\"Price\":\"9.99\",\"Num\":3,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PayTime\":null,\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"PostFee\":\"0.00\",\"Created\":\"2021-03-21 19:18:40\",\"TradeFrom\":\"WAP,WAP\",\"Orders\":[{\"Oid\":1660873104587781269,\"OidStr\":\"1660873104587781269\",\"NumIid\":640359390526,\"OuterIid\":\"10\",\"OuterSkuId\":null,\"Title\":\"【谨防诈骗】腾讯qq币10qbQ币10个q币10qb10个qb10QB 自动充值\",\"Price\":\"9.99\",\"Num\":3,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"SkuId\":null,\"SkuPropertiesName\":null,\"DivideOrderFee\":null,\"PartMjzDiscount\":null}],\"SellerMemo\":null,\"SellerFlag\":0,\"CreditCardFee\":null}";
+//          json = "{\"Platform\":\"TAOBAO\",\"PlatformUserId\":\"234234234\",\"ReceiverName\":null,\"ReceiverMobile\":null,\"ReceiverPhone\":null,\"ReceiverAddress\":\"QQ:569741817\\r\\n备注:\",\"BuyerArea\":\"湖北\",\"ExtendedFields\":{},\"Tid\":16608731045877812697,\"TidStr\":\"1660873104587781269\",\"Status\":\"WAIT_SELLER_SEND_GOODS\",\"SellerNick\":\"劲舞团24小时充值\",\"BuyerNick\":\"启动蓝色\",\"Type\":null,\"BuyerMessage\":null,\"Price\":\"9.99\",\"Num\":3,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PayTime\":null,\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"PostFee\":\"0.00\",\"Created\":\"2021-03-21 19:18:40\",\"TradeFrom\":\"WAP,WAP\",\"Orders\":[{\"Oid\":1660873104587781269,\"OidStr\":\"1660873104587781269\",\"NumIid\":640359390526,\"OuterIid\":\"10\",\"OuterSkuId\":null,\"Title\":\"【谨防诈骗】腾讯qq币10qbQ币10个q币10qb10个qb10QB 自动充值\",\"Price\":\"9.99\",\"Num\":3,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"SkuId\":null,\"SkuPropertiesName\":null,\"DivideOrderFee\":null,\"PartMjzDiscount\":null}],\"SellerMemo\":null,\"SellerFlag\":0,\"CreditCardFee\":null}";
         Map<String, String> map = new HashMap<String, String>();
         map.put("json", json);
         map.put("timestamp", String.valueOf(timestamp));
@@ -127,7 +127,7 @@ public class TransactionController {
         if(userRelate == null){
             userRelate = userService.save(platformUserId, sellerNick);
         }
-        if(userRelate == null || StringUtils.isEmpty(userRelate.getFuluSercret())){
+        if(userRelate == null || StringUtils.isEmpty(userRelate.getAccessToken())){
             return JSON.toJSONString(Result.fall("订单推送失败，请先填写相关配置"));
         }
         //推送订单

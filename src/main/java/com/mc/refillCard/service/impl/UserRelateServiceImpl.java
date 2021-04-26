@@ -3,13 +3,17 @@ import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dao.UserRelateMapper;
+import com.mc.refillCard.dto.UserBalanceDto;
 import com.mc.refillCard.dto.UserRelateDto;
+import com.mc.refillCard.entity.User;
 import com.mc.refillCard.entity.UserRelate;
 import com.mc.refillCard.service.UserRelateService;
+import com.mc.refillCard.service.UserService;
 import com.mc.refillCard.vo.UserRelateVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 /****
  * @Author: MC
@@ -21,13 +25,15 @@ public class UserRelateServiceImpl implements UserRelateService {
 
     @Autowired
     private UserRelateMapper userRelateMapper;
+    @Autowired
+    private UserService userService;
 
     /**
      UserRelate条件+分页查询
-     @param userRelateDto 查询条件
-     @param page      页码
-     @param size      页大小
      @return 分页结果
+      * @param userRelateDto 查询条件
+     * @param page      页码
+     * @param size      页大小
      */
     @Override
     public PageInfo findPage(UserRelateDto userRelateDto, int page, int size) {
@@ -118,6 +124,20 @@ public class UserRelateServiceImpl implements UserRelateService {
     @Override
     public UserRelate findByPlatformUserId(String platformUserId) {
         return userRelateMapper.findByPlatformUserId(platformUserId);
+    }
+
+    @Override
+    public void updateBalance(UserBalanceDto userBalanceDto) {
+        BigDecimal balance = userBalanceDto.getBalance();
+        UserRelate userRelate = userRelateMapper.selectByPrimaryKey(userBalanceDto.getId());
+        //根据用户id查询用户余额
+        Long userId = userRelate.getUserId();
+        User user = userService.findById(userId);
+        BigDecimal userBalance = user.getBalance();
+        //加款
+        BigDecimal ultimatelyBalance = userBalance.add(balance);
+        user.setBalance(ultimatelyBalance);
+        userService.update(user);
     }
 
 }

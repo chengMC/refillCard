@@ -1,5 +1,6 @@
 package com.mc.refillCard.service;
 import com.github.pagehelper.PageInfo;
+import com.mc.refillCard.dto.UserBalanceDto;
 import com.mc.refillCard.dto.UserRelateDto;
 import com.mc.refillCard.entity.UserRelate;
 import com.mc.refillCard.vo.UserRelateVo;
@@ -78,4 +79,11 @@ public interface UserRelateService {
      * @return
      */
     UserRelate findByPlatformUserId(String platformUserId);
+
+    /**
+     * 账号加款
+     *
+     * @param userBalanceDto
+     */
+    void updateBalance(UserBalanceDto userBalanceDto);
 }

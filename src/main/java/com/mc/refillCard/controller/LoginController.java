@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
  * @author hu
  * @date 2020/11/17 上午9:20
  */
+
 @CrossOrigin(origins = "*", allowCredentials = "true", maxAge = 3600)
 @RestController
 @RequestMapping("/login")
@@ -62,8 +63,6 @@ public class LoginController {
         //用户信息存入
         return Result.success("登录成功",userVo);
     }
-
-
 
     /**
      * 退出登录

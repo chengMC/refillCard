@@ -33,7 +33,7 @@ public class UserConstants {
      *
      * web端发短信后存入redis中的token过期天数
      */
-    public static final Integer USER_TOKEN_OUT = 7;
+    public static final Integer USER_TOKEN_OUT = 1;
 
     /**
      *

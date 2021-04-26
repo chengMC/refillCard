@@ -1,4 +1,4 @@
-package com.mc.refillCard.entity;
+package com.mc.refillCard.dto;
 
 import lombok.Data;
 
@@ -8,10 +8,10 @@ import java.math.BigDecimal;
 /****
  * @Author: MC
  * @Description:UserRelate构建
- * @Date 2021-3-26 16:48:32
+ * @Date 2021-3-21 16:20:43
  *****/
 @Data
-public class UserRelate implements Serializable{
+public class UserBalanceDto implements Serializable{
 
 	/**
 	 * 
@@ -19,24 +19,14 @@ public class UserRelate implements Serializable{
 	private Long id;
 
 	/**
-	 * token
+	 * 阿奇索密钥
 	 */
 	private String accessToken;
 
 	/**
-	 * 阿奇索推送中的用户id
+	 * 用户名
 	 */
-	private String agisoUserId;
-
-	/**
-	 * 福禄key
-	 */
-	private String fuliAppKey;
-
-	/**
-	 * 福禄密钥
-	 */
-	private String fuluSercret;
+	private String userName;
 
 	/**
 	 * 用户id

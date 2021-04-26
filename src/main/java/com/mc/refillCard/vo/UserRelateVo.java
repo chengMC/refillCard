@@ -1,12 +1,16 @@
 package com.mc.refillCard.vo;
 
+import lombok.Data;
+
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /****
  * @Author: MC
  * @Description:UserRelate构建
  * @Date 2021-3-26 16:48:32
  *****/
+@Data
 public class UserRelateVo implements Serializable{
 
 	/**
@@ -25,76 +29,22 @@ public class UserRelateVo implements Serializable{
 	private String agisoUserId;
 
 	/**
-	 * 福禄key
-	 */
-	private String fuliAppKey;
-
-	/**
-	 * 福禄密钥
-	 */
-	private String fuluSercret;
-
-	/**
 	 * 用户id
 	 */
 	private Long userId;
 
+	private String userName;
 
+	private String nickName;
 
-	//get方法
-	public Long getId() {
-		return id;
-	}
+	/**
+	 * 1 淘宝
+	 */
+	private Integer platform;
 
-	//set方法
-	public void setId(Long id) {
-		this.id = id;
-	}
-	//get方法
-	public String getAccessToken() {
-		return accessToken;
-	}
-
-	//set方法
-	public void setAccessToken(String accessToken) {
-		this.accessToken = accessToken;
-	}
-	//get方法
-	public String getAgisoUserId() {
-		return agisoUserId;
-	}
-
-	//set方法
-	public void setAgisoUserId(String agisoUserId) {
-		this.agisoUserId = agisoUserId;
-	}
-	//get方法
-	public String getFuliAppKey() {
-		return fuliAppKey;
-	}
-
-	//set方法
-	public void setFuliAppKey(String fuliAppKey) {
-		this.fuliAppKey = fuliAppKey;
-	}
-	//get方法
-	public String getFuluSercret() {
-		return fuluSercret;
-	}
-
-	//set方法
-	public void setFuluSercret(String fuluSercret) {
-		this.fuluSercret = fuluSercret;
-	}
-	//get方法
-	public Long getUserId() {
-		return userId;
-	}
-
-	//set方法
-	public void setUserId(Long userId) {
-		this.userId = userId;
-	}
-
+	/**
+	 * 余额
+	 */
+	private BigDecimal balance;
 
 }

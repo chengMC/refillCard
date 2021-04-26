@@ -69,6 +69,8 @@ public class AccountUtils {
      */
     public static String getShuShanSign(Map<String, Object> params,String appSecret) throws NoSuchAlgorithmException, UnsupportedEncodingException
     {
+        System.out.println("params-"+params);
+        System.out.println("appSecret-"+appSecret);
         String[] keys = params.keySet().toArray(new String[0]);
         Arrays.sort(keys);
 
@@ -78,7 +80,7 @@ public class AccountUtils {
             query.append(value);
         }
         query.append(appSecret);
-
+        System.out.println("query-"+query.toString());
         byte[] md5byte = encryptMD5(query.toString());
 
         return  byte2hex(md5byte);
@@ -121,6 +123,14 @@ public class AccountUtils {
     public static byte[] encryptMD5(String data) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         return md5.digest(data.getBytes("UTF-8"));
+    }
+
+
+    // Md5摘要
+    public static String encryptMD5Str(String data) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        byte[] md5byte = md5.digest(data.getBytes("UTF-8"));
+        return byte2hex(md5byte);
     }
 
 

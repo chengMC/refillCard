@@ -41,6 +41,13 @@ public class ShiroConfig {
         LinkedHashMap<String,String> filterChainDefinitionMap = new LinkedHashMap<>();
         //注意过滤器配置顺序 不能颠倒
         // 配置不会被拦截的链接 顺序判断
+        filterChainDefinitionMap.put("/swagger-ui.html", "anon");
+        filterChainDefinitionMap.put("/swagger/**", "anon");
+        filterChainDefinitionMap.put("/doc.html", "anon");
+        filterChainDefinitionMap.put("/swagger-resources/**", "anon");
+        filterChainDefinitionMap.put("/v2/**", "anon");
+        filterChainDefinitionMap.put("/webjars/**", "anon");
+        filterChainDefinitionMap.put("/configuration/**", "anon");
         filterChainDefinitionMap.put("/transaction/**", "anon");
         filterChainDefinitionMap.put("/login/**", "anon");
         filterChainDefinitionMap.put("/**", "authc");
