@@ -1,9 +1,9 @@
 package com.mc.refillCard.service;
-import com.mc.refillCard.entity.GoodType;
-import com.mc.refillCard.dto.GoodTypeDto;
-import com.mc.refillCard.vo.GoodTypeVo;
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.mc.refillCard.dto.GoodTypeDto;
+import com.mc.refillCard.entity.GoodType;
+import com.mc.refillCard.vo.GoodTypeEnumVo;
+
 import java.util.List;
 /****
  * @Author: MC
@@ -20,7 +20,7 @@ public interface GoodTypeService {
      * @param size
      * @return
      */
-    PageInfo<GoodTypeVo> findPage(GoodTypeDto goodTypeDto, int page, int size);
+    PageInfo<GoodTypeEnumVo> findPage(GoodTypeDto goodTypeDto, int page, int size);
 
     /***
      * GoodType多条件搜索方法
@@ -70,4 +70,7 @@ public interface GoodTypeService {
      * @return
      */
     List<GoodType> findAll();
+
+    List<GoodTypeEnumVo> findVoAll();
+
 }

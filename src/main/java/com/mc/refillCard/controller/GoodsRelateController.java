@@ -16,7 +16,7 @@ import java.util.List;
  * @Date 2021-3-21 16:36:30
  *****/
 @RestController
-@RequestMapping("/goodsRelate")
+@RequestMapping("/goodsRelate1")
 @CrossOrigin
 public class GoodsRelateController {
 

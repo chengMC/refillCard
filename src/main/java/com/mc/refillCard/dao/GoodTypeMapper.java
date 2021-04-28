@@ -1,7 +1,7 @@
 package com.mc.refillCard.dao;
 import com.mc.refillCard.entity.GoodType;
 import com.mc.refillCard.dto.GoodTypeDto;
-import com.mc.refillCard.vo.GoodTypeVo;
+import com.mc.refillCard.vo.GoodTypeEnumVo;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -30,5 +30,8 @@ public interface GoodTypeMapper {
 
     List<GoodType> findAll();
 
-    List<GoodTypeVo> findPageVoByExample(GoodTypeDto goodTypeDto);
+    List<GoodTypeEnumVo> findPageVoByExample(GoodTypeDto goodTypeDto);
+
+    List<GoodTypeEnumVo> findVoAll();
+
 }

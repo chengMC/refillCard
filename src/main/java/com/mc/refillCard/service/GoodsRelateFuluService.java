@@ -83,4 +83,6 @@ public interface GoodsRelateFuluService {
    GoodsRelateFulu findByGoodId(Long goodId, Long userId);
 
     Integer importExcel(String userId, String type, MultipartFile file) throws IOException;
+
+    void updateStatus(GoodsRelateFuluDto goodsRelateFuluDto);
 }

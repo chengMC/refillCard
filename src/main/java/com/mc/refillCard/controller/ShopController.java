@@ -1,11 +1,14 @@
 package com.mc.refillCard.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.mc.refillCard.annotation.SystemControllerLog;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.dto.UserBalanceDto;
 import com.mc.refillCard.dto.UserRelateDto;
 import com.mc.refillCard.entity.UserRelate;
 import com.mc.refillCard.service.UserRelateService;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -89,6 +92,8 @@ public class ShopController {
      * @param
      * @return
      */
+    @SystemControllerLog(description = "店铺管理:加款")
+    @RequiresRoles(value={"0","1"},logical= Logical.OR)
     @PostMapping(value="/update/balance")
     public Result update(@RequestBody UserBalanceDto userBalanceDto){
         //调用UserRelateService实现修改UserRelate
@@ -106,6 +111,8 @@ public class ShopController {
      * @param
      * @return
      */
+    @SystemControllerLog(description = "店铺管理:编辑店铺信息")
+    @RequiresRoles(value={"0","1"},logical= Logical.OR)
     @PostMapping(value="/update")
     public Result update(@RequestBody UserRelateDto userRelateDto){
         //调用UserRelateService实现修改UserRelate

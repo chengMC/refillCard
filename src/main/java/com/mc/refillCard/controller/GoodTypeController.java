@@ -6,6 +6,7 @@ import com.mc.refillCard.common.Result;
 import com.mc.refillCard.dto.GoodTypeDto;
 import com.mc.refillCard.entity.GoodType;
 import com.mc.refillCard.service.GoodTypeService;
+import com.mc.refillCard.vo.GoodTypeEnumVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +44,7 @@ public class GoodTypeController {
     @GetMapping(value = "/findAll" )
     public Result findAll(){
         //调用GoodTypeService实现查询所有GoodType
-        List<GoodType> list = goodTypeService.findAll();
+        List<GoodTypeEnumVo> list = goodTypeService.findVoAll();
         return Result.success("查询成功",list) ;
     }
 

@@ -5,6 +5,8 @@ import com.mc.refillCard.common.Result;
 import com.mc.refillCard.dto.GoodsRelateFuluDto;
 import com.mc.refillCard.entity.GoodsRelateFulu;
 import com.mc.refillCard.service.GoodsRelateFuluService;
+import com.mc.refillCard.vo.UserVo;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +18,7 @@ import java.util.List;
  * @Date 2021-3-28 20:16:38
  *****/
 @RestController
-@RequestMapping("/goodsRelateFulu")
+@RequestMapping("/goodsRelate")
 @CrossOrigin
 public class GoodsRelateFuluController {
 
@@ -30,6 +32,12 @@ public class GoodsRelateFuluController {
      */
     @GetMapping(value = "/page/{page}/{size}")
     public Result findPage(GoodsRelateFuluDto goodsRelateFuluDto,@PathVariable int page, @PathVariable int size) {
+        Long userId = goodsRelateFuluDto.getUserId();
+        if(userId==null){
+            UserVo user = (UserVo) SecurityUtils.getSubject().getPrincipal();
+            goodsRelateFuluDto.setUserId(user.getId());
+        }
+
         //调用AccessoryService实现分页条件查询Accessory
         PageInfo pageInfo = goodsRelateFuluService.findPage(goodsRelateFuluDto, page, size);
         return Result.success("查询成功", pageInfo);
@@ -100,13 +108,29 @@ public class GoodsRelateFuluController {
     }
 
     /***
+     * 修改GoodsRelateFulu数据
+     * @param goodsRelateFuluDto
+     * @param
+     * @return
+     */
+    @PostMapping(value="/update/status")
+    public Result updateStatus(@RequestBody GoodsRelateFuluDto goodsRelateFuluDto){
+        //调用GoodsRelateFuluService实现修改GoodsRelateFulu
+        Long id = goodsRelateFuluDto.getId();
+        if(id == null){
+            return Result.fall("无效ID");
+        }
+        goodsRelateFuluService.updateStatus(goodsRelateFuluDto);
+        return Result.success("操作成功");
+    }
+
+    /***
      * 新增GoodsRelateFulu数据
      * @param goodsRelateFuluDto
      * @return
      */
     @PostMapping(value="/add")
     public Result add(@RequestBody GoodsRelateFuluDto goodsRelateFuluDto){
-        //调用GoodsRelateFuluService实现添加GoodsRelateFulu
         goodsRelateFuluService.addDto(goodsRelateFuluDto);
         return Result.success("新增成功");
     }

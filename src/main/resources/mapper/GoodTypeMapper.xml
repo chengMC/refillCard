@@ -8,7 +8,14 @@
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
   </resultMap>
+  <resultMap id="BaseVoResultMap" type="com.mc.refillCard.vo.GoodTypeEnumVo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="type_name" jdbcType="VARCHAR" property="typeName" />
+  </resultMap>
   <sql id="Base_Column_List">
+    id, type_name, status, create_time, update_time
+  </sql>
+  <sql id="BaseVo_Column_List">
     id, type_name, status, create_time, update_time
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
@@ -16,6 +23,18 @@
     <include refid="Base_Column_List" />
     from good_type
     where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="findAll" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from good_type
+       where status =1
+    </select>
+  <select id="findVoAll" resultMap="BaseVoResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from good_type
+    where status =1
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from good_type

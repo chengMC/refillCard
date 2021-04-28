@@ -171,6 +171,14 @@ public class GoodsRelateFuluServiceImpl implements GoodsRelateFuluService {
         return goodsRelateFulus.size();
     }
 
+    @Override
+    public void updateStatus(GoodsRelateFuluDto goodsRelateFuluDto) {
+        GoodsRelateFulu goodsRelateFulu = new GoodsRelateFulu();
+        goodsRelateFulu.setId(goodsRelateFuluDto.getId());
+        goodsRelateFulu.setStatus(goodsRelateFuluDto.getStatus());
+        goodsRelateFuluMapper.updateByPrimaryKeySelective(goodsRelateFulu);
+    }
+
     public String getCellValue(HSSFCell cell) {
         if(cell == null){
             return "";

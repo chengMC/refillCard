@@ -12,7 +12,21 @@
     <result column="type" jdbcType="INTEGER" property="type" />
     <result column="status" jdbcType="INTEGER" property="status" />
   </resultMap>
+  <resultMap id="BaseVoResultMap" type="com.mc.refillCard.vo.GoodsRelateFuluVo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="product_id" jdbcType="BIGINT" property="productId" />
+    <result column="good_name" jdbcType="VARCHAR" property="goodName" />
+    <result column="good_id" jdbcType="BIGINT" property="goodId" />
+    <result column="nominal" jdbcType="VARCHAR" property="nominal" />
+    <result column="remake" jdbcType="VARCHAR" property="remake" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+  </resultMap>
   <sql id="Base_Column_List">
+    id, user_id, product_id, good_name, good_id, nominal, remake, type, status
+  </sql>
+  <sql id="BaseVo_Column_List">
     id, user_id, product_id, good_name, good_id, nominal, remake, type, status
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
@@ -29,7 +43,22 @@
     and user_id = #{userId,jdbcType=BIGINT}
     and status = 1
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    <select id="findPageVoByExample" resultMap="BaseVoResultMap">
+      select
+      <include refid="BaseVo_Column_List" />
+      from goods_relate_fulu
+      where user_id = #{userId,jdbcType=BIGINT}
+      <if test="goodName != null">
+        and goodName like concat('%',#{goodName,jdbcType=VARCHAR},'%'
+      </if>
+      <if test="goodId != null">
+        and good_id like concat('%',#{goodId,jdbcType=BIGINT},'%'
+      </if>
+      <if test="type != null">
+        and type = #{type,jdbcType=INTEGER}
+      </if>
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from goods_relate_fulu
     where id = #{id,jdbcType=BIGINT}
   </delete>

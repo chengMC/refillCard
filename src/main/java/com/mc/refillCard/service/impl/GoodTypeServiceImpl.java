@@ -1,15 +1,15 @@
 package com.mc.refillCard.service.impl;
-import com.mc.refillCard.dao.GoodTypeMapper;
-import com.mc.refillCard.entity.GoodType;
-import com.mc.refillCard.dto.GoodTypeDto;
-import com.mc.refillCard.vo.GoodTypeVo;
-import com.mc.refillCard.service.GoodTypeService;
+import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.mc.refillCard.dao.GoodTypeMapper;
+import com.mc.refillCard.dto.GoodTypeDto;
+import com.mc.refillCard.entity.GoodType;
+import com.mc.refillCard.service.GoodTypeService;
+import com.mc.refillCard.vo.GoodTypeEnumVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import cn.hutool.core.bean.BeanUtil;
+
 import java.util.List;
 /****
  * @Author: MC
@@ -33,7 +33,7 @@ public class GoodTypeServiceImpl implements GoodTypeService {
     public PageInfo findPage(GoodTypeDto goodTypeDto, int page, int size) {
         //分页
         PageHelper.startPage(page, size);
-        List<GoodTypeVo> goodTypeVos = goodTypeMapper.findPageVoByExample(goodTypeDto);
+        List<GoodTypeEnumVo> goodTypeVos = goodTypeMapper.findPageVoByExample(goodTypeDto);
         //执行搜索
         return new PageInfo(goodTypeVos);
     }
@@ -113,6 +113,11 @@ public class GoodTypeServiceImpl implements GoodTypeService {
     @Override
     public List<GoodType> findAll() {
         return goodTypeMapper.findAll();
+    }
+
+    @Override
+    public List<GoodTypeEnumVo> findVoAll() {
+        return goodTypeMapper.findVoAll();
     }
 
 
