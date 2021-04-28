@@ -133,5 +133,12 @@ public class BlacklistServiceImpl implements BlacklistService {
         return blacklistMapper.findListByAccount(blacklist);
     }
 
+    @Override
+    public void updateStatus(BlacklistDto blacklistDto) {
+        Blacklist blacklist = new Blacklist();
+        blacklist.setId(blacklistDto.getId());
+        blacklist.setStatus(blacklistDto.getStatus());
+        blacklistMapper.updateByPrimaryKeySelective(blacklist);
+    }
 
 }

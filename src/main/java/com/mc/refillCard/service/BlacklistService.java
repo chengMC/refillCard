@@ -76,7 +76,9 @@ public interface BlacklistService {
     /**
      * 查询黑名单
      *
-     * @param chargeAccount
+     * @param blacklist
      */
     List<Blacklist> findListByAccount(Blacklist blacklist);
+
+    void updateStatus(BlacklistDto blacklistDto);
 }

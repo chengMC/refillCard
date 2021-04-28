@@ -3,6 +3,9 @@ spring:
 #    active: dev
     active: test
 #    active: prod
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
 
 mybatis:
   mapper-locations: classpath*:mapper/*.xml

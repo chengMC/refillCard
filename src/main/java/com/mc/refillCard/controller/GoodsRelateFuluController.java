@@ -107,6 +107,8 @@ public class GoodsRelateFuluController {
         return Result.success("编辑成功");
     }
 
+
+
     /***
      * 修改GoodsRelateFulu数据
      * @param goodsRelateFuluDto
@@ -115,7 +117,6 @@ public class GoodsRelateFuluController {
      */
     @PostMapping(value="/update/status")
     public Result updateStatus(@RequestBody GoodsRelateFuluDto goodsRelateFuluDto){
-        //调用GoodsRelateFuluService实现修改GoodsRelateFulu
         Long id = goodsRelateFuluDto.getId();
         if(id == null){
             return Result.fall("无效ID");

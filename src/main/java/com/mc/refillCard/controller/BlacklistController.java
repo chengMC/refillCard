@@ -6,6 +6,8 @@ import com.mc.refillCard.common.Result;
 import com.mc.refillCard.dto.BlacklistDto;
 import com.mc.refillCard.entity.Blacklist;
 import com.mc.refillCard.service.BlacklistService;
+import com.mc.refillCard.vo.UserVo;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +33,11 @@ public class BlacklistController {
      */
     @GetMapping(value = "/page/{page}/{size}")
     public Result findPage(BlacklistDto blacklistDto,@PathVariable int page, @PathVariable int size) {
-        //调用AccessoryService实现分页条件查询Accessory
+        Long userId = blacklistDto.getUserId();
+        if(userId==null){
+            UserVo user = (UserVo) SecurityUtils.getSubject().getPrincipal();
+            blacklistDto.setUserId(user.getId());
+        }
         PageInfo pageInfo = blacklistService.findPage(blacklistDto, page, size);
         return Result.success("查询成功", pageInfo);
     }
@@ -98,6 +104,23 @@ public class BlacklistController {
        }
         blacklistService.updateDto(blacklistDto);
         return Result.success("编辑成功");
+    }
+
+    /***
+     * 修改Blacklist数据
+     * @param blacklistDto
+     * @param
+     * @return
+     */
+    @PostMapping(value="/update/status")
+    public Result updateStatus(@RequestBody BlacklistDto blacklistDto){
+        //调用BlacklistService实现修改Blacklist
+        Long id = blacklistDto.getId();
+        if(id == null){
+            return Result.fall("无效ID");
+        }
+        blacklistService.updateStatus(blacklistDto);
+        return Result.success("操作成功");
     }
 
     /***
