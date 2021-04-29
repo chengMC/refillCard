@@ -2,6 +2,7 @@ package com.mc.refillCard.service;
 
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dto.OriginalOrderDto;
+import com.mc.refillCard.dto.OriginalOrderQueryDto;
 import com.mc.refillCard.entity.OriginalOrder;
 import com.mc.refillCard.vo.OriginalOrderVo;
 
@@ -22,7 +23,7 @@ public interface OriginalOrderService {
      * @param size
      * @return
      */
-    PageInfo<OriginalOrderVo> findPage(OriginalOrderDto originalOrderDto, int page, int size);
+    PageInfo<OriginalOrderVo> findPage(OriginalOrderQueryDto originalOrderDto, int page, int size);
 
     /***
      * OriginalOrder多条件搜索方法

@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.annotation.SystemControllerLog;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.dto.OriginalOrderDto;
+import com.mc.refillCard.dto.OriginalOrderQueryDto;
 import com.mc.refillCard.entity.OriginalOrder;
 import com.mc.refillCard.service.OriginalOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public class OriginalOrderController {
      * @return
      */
     @GetMapping(value = "/page/{page}/{size}")
-    public Result findPage(OriginalOrderDto originalOrderDto,@PathVariable int page, @PathVariable int size) {
+    public Result findPage(OriginalOrderQueryDto originalOrderDto, @PathVariable int page, @PathVariable int size) {
         //调用AccessoryService实现分页条件查询Accessory
         PageInfo pageInfo = originalOrderService.findPage(originalOrderDto, page, size);
         return Result.success("查询成功", pageInfo);

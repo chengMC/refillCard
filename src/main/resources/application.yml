@@ -34,8 +34,8 @@ shushan:
 
 
 fuli:
-  appKey: +gViu2wfFwlHcca4U4FR+ijRebmrPjLu9+9JLeKukYjh3aqGj5g1BLO+soJ7Npix
-  sysSecret: 77126992853e4fcabf04014ce75afbfa
+  appKey: 1wqyNXf90RGYCwTPojXh7BKAPBmUcn36/YCIABCq2I0QWjLKWJXQ96Txd4ZTszsF
+  sysSecret: a7f8f390c8bf42b0a2da34caceb8915b
   url: http://openapi.fulu.com/api/getway
 
 #百度地图api

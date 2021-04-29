@@ -5,9 +5,12 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dao.OriginalOrderMapper;
 import com.mc.refillCard.dto.OriginalOrderDto;
+import com.mc.refillCard.dto.OriginalOrderQueryDto;
 import com.mc.refillCard.entity.OriginalOrder;
 import com.mc.refillCard.service.OriginalOrderService;
 import com.mc.refillCard.vo.OriginalOrderVo;
+import com.mc.refillCard.vo.UserVo;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +35,12 @@ public class OriginalOrderServiceImpl implements OriginalOrderService {
      @return 分页结果
      */
     @Override
-    public PageInfo findPage(OriginalOrderDto originalOrderDto, int page, int size) {
+    public PageInfo findPage(OriginalOrderQueryDto originalOrderDto, int page, int size) {
+        UserVo user = (UserVo) SecurityUtils.getSubject().getPrincipal();
+        //管理员
+        if(!"4".equals(user.getRoleId())){
+            originalOrderDto.setUserId(user.getId());
+        }
         //分页
         PageHelper.startPage(page, size);
         List<OriginalOrderVo> originalOrderVos = originalOrderMapper.findPageVoByExample(originalOrderDto);

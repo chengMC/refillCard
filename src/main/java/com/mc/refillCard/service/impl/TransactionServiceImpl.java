@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +57,7 @@ public class TransactionServiceImpl implements TransactionService {
     private TransactionMapper transactionMapper;
     @Autowired
     private OriginalOrderService originalOrderService;
+    @Lazy
     @Autowired
     private NationwideIpService nationwideIpService;
     @Autowired
@@ -311,6 +313,10 @@ public class TransactionServiceImpl implements TransactionService {
         String tid = transactionDto.getTid();
         Transaction transaction = transactionMapper.findByTid(tid);
 
+        //充值账号
+        String receiverAddress = transactionDto.getReceiverAddress();
+        String chargeAccount = AccountUtils.findNumber(receiverAddress);
+
         //订单
         List<OriginalOrderDto> orders = transactionDto.getOrders();
         for (OriginalOrderDto orderDto : orders) {
@@ -318,6 +324,7 @@ public class TransactionServiceImpl implements TransactionService {
             //保存订单记录
             OriginalOrder originalOrder = originalOrderService.findById(orderId);
             originalOrder.setCreateEmp(String.valueOf(userId));
+            originalOrder.setChargeAccount(chargeAccount);
             originalOrder.setSupplier(PlatformEnum.FULU.getName());
             originalOrderService.update(originalOrder);
 
@@ -383,6 +390,10 @@ public class TransactionServiceImpl implements TransactionService {
         Map resultOrderMap = new HashMap();
         Long userId = userRelate.getUserId();
 
+        //充值账号
+        String receiverAddress = transactionDto.getReceiverAddress();
+        String chargeAccount = AccountUtils.findNumber(receiverAddress);
+
         Integer platform = PlatformEnum.SHUSHAN.getCode();
         //订单保存添加人
         String tid = transactionDto.getTid();
@@ -393,6 +404,7 @@ public class TransactionServiceImpl implements TransactionService {
             Long orderId = orderDto.getId();
             OriginalOrder originalOrder = originalOrderService.findById(orderId);
             originalOrder.setCreateEmp(String.valueOf(userId));
+            originalOrder.setChargeAccount(chargeAccount);
             originalOrder.setSupplier(PlatformEnum.SHUSHAN.getName());
             originalOrderService.update(originalOrder);
 
@@ -435,16 +447,16 @@ public class TransactionServiceImpl implements TransactionService {
      * @param type
      */
     private void updateBalance(OriginalOrderDto orderDto,GoodsRelateFulu goodsRelateFulu,UserRelate userRelate,Integer type) {
-        //账号余额
-        BigDecimal balance = userRelate.getBalance();
         Long userId = userRelate.getUserId();
+        User user = userService.findById(userId);
         UserPricing userPricing = userPricingService.findByUserIdAndType(userId,type);
+        //账号余额
+        BigDecimal balance = user.getBalance();
         //计算商品价格
         BigDecimal totalPrice = calculatePrice(orderDto, goodsRelateFulu, userPricing);
         //成功后减少余额
         BigDecimal subtract = balance.subtract(totalPrice);
         //获取到最新余额
-        User user = userService.findById(userId);
         user.setBalance(subtract);
         userService.update(user);
         //更新价格
@@ -769,8 +781,8 @@ public class TransactionServiceImpl implements TransactionService {
      */
     private Map fuluQbOrderPushAndQueryResult(OriginalOrderDto originalOrderDto, Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
                                               String chargeAccount, Integer buyNum, String ip) {
-        String fuliAppKey = userRelate.getFuliAppKey();
-        String fuluSercret = userRelate.getFuluSercret();
+        String fuliAppKey = FuliProperties.getAppKey();
+        String fuluSercret = FuliProperties.getSysSecret();
         String accessToken = userRelate.getAccessToken();
          log.info("qb下单后查询返回，地区："+goods.getArea()+"-IP:"+ip);
 
@@ -891,8 +903,8 @@ public class TransactionServiceImpl implements TransactionService {
      */
     private Map commonOrderPushAndQueryResult(Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
                                               String chargeAccount, Integer buyNum) {
-        String fuliAppKey = userRelate.getFuliAppKey();
-        String fuluSercret = userRelate.getFuluSercret();
+        String fuliAppKey = FuliProperties.getAppKey();
+        String fuluSercret = FuliProperties.getSysSecret();
         String accessToken = userRelate.getAccessToken();
 
         Map resultMap = momoOrderPushFulu(fuliAppKey, fuluSercret, tid, buyNum, chargeAccount, goods);

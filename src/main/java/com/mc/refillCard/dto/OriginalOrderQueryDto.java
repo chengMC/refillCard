@@ -1,4 +1,4 @@
-package com.mc.refillCard.entity;
+package com.mc.refillCard.dto;
 
 import lombok.Data;
 
@@ -12,12 +12,16 @@ import java.util.Date;
  * @Date 2021-3-21 14:41:57
  *****/
 @Data
-public class OriginalOrder implements Serializable{
+public class OriginalOrderQueryDto implements Serializable{
 
 	/**
 	 * id
 	 */
 	private Long id;
+	/**
+	 * id
+	 */
+	private Long userId;
 
 	/**
 	 * 交易id
@@ -38,16 +42,6 @@ public class OriginalOrder implements Serializable{
 	 * 子订单编号
 	 */
 	private Long oId;
-
-	/**
-	 * 商家编码
-	 */
-	private String outerId;
-
-	/**
-	 * 商家商品sku编码
-	 */
-	private String outerSkuId;
 
 	/**
 	 * 实付金额
@@ -115,7 +109,7 @@ public class OriginalOrder implements Serializable{
 	private String failReason;
 
 	/**
-	 * 启用状态，1启用，0删除 2 关闭
+	 * 订单状态，1待推送，2推送成功  3推送失败
 	 */
 	private Integer orderStatus;
 
@@ -139,5 +133,24 @@ public class OriginalOrder implements Serializable{
 	 */
 	private String updateEmp;
 
+	/**
+	 * 商品类型
+	 */
+	private Integer type;
+
+	/**
+	 * 商品类型名称
+	 */
+	private String typeName;
+
+	/**
+	 * 卖家昵称
+	 */
+	private String sellerNick;
+
+	/**
+	 * 买家昵称
+	 */
+	private String buyerNick;
 
 }

@@ -1,6 +1,6 @@
 package com.mc.refillCard.dao;
 
-import com.mc.refillCard.dto.OriginalOrderDto;
+import com.mc.refillCard.dto.OriginalOrderQueryDto;
 import com.mc.refillCard.entity.OriginalOrder;
 import com.mc.refillCard.vo.OriginalOrderVo;
 import org.apache.ibatis.annotations.Mapper;
@@ -31,5 +31,5 @@ public interface OriginalOrderMapper {
 
     List<OriginalOrder> findAll();
 
-    List<OriginalOrderVo> findPageVoByExample(OriginalOrderDto originalOrderDto);
+    List<OriginalOrderVo> findPageVoByExample(OriginalOrderQueryDto originalOrderDto);
 }
