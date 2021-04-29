@@ -70,7 +70,7 @@ public interface TransactionService {
      * @param transactionDto
      * @return
      */
-    Long addDto(TransactionDto transactionDto);
+    TransactionDto addDto(TransactionDto transactionDto);
 
     /***
      * 查询所有Transaction

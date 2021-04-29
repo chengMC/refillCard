@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.config.fulu.ShuShanApiProperties;
 import com.mc.refillCard.dto.GoodsDto;
+import com.mc.refillCard.dto.OriginalOrderDto;
 import com.mc.refillCard.dto.TransactionDto;
 import com.mc.refillCard.entity.Goods;
 import com.mc.refillCard.entity.Transaction;
@@ -113,8 +114,14 @@ public class TransactionController {
             }
         }
         //保存订单
-        Long transactionId = transactionService.addDto(transactionDto);
-        transactionDto.setId(transactionId);
+        TransactionDto resultTransactions = transactionService.addDto(transactionDto);
+        List<OriginalOrderDto> resultOrders = resultTransactions.getOrders();
+        transactionDto.setId(resultTransactions.getId());
+        List<OriginalOrderDto> orders = transactionDto.getOrders();
+        for (int i = 0; i < orders.size(); i++) {
+            orders.get(i).setId(resultOrders.get(i).getId());
+        }
+        //判断账号
         String platformUserId = transactionDto.getPlatformUserId();
         String sellerNick = transactionDto.getSellerNick();
         User user = userService.findPlatformUserId(platformUserId);

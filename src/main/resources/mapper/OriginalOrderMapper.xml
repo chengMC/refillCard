@@ -16,7 +16,13 @@
     <result column="pay_time" jdbcType="VARCHAR" property="payTime" />
     <result column="total_fee" jdbcType="VARCHAR" property="totalFee" />
     <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="before_balance" jdbcType="DECIMAL" property="beforeBalance" />
+    <result column="after_balance" jdbcType="DECIMAL" property="afterBalance" />
+    <result column="deduct_price" jdbcType="DECIMAL" property="deductPrice" />
+    <result column="supplier" jdbcType="VARCHAR" property="supplier" />
+    <result column="external_order_id" jdbcType="VARCHAR" property="externalOrderId" />
     <result column="order_status" jdbcType="INTEGER" property="orderStatus" />
+    <result column="fail_reason" jdbcType="VARCHAR" property="failReason" />
     <result column="create_emp" jdbcType="VARCHAR" property="createEmp" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
@@ -24,8 +30,9 @@
   </resultMap>
   <sql id="Base_Column_List">
     id, transaction_id, num, num_id, o_id, outer_id, outer_sku_id, payment, price, sku_properties_name, 
-    title, pay_time, total_fee, remark, order_status, create_emp, create_time, update_time, 
-    update_emp
+    title, pay_time, total_fee, remark, before_balance, after_balance, deduct_price, 
+    supplier, external_order_id, order_status, fail_reason, create_emp, create_time, 
+    update_time, update_emp
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
@@ -45,14 +52,18 @@
       o_id, outer_id, outer_sku_id, 
       payment, price, sku_properties_name, 
       title, pay_time, total_fee, 
-      remark, order_status, create_emp, 
+      remark, before_balance, after_balance, 
+      deduct_price, supplier, external_order_id, 
+      order_status, fail_reason, create_emp, 
       create_time, update_time, update_emp
       )
     values (#{transactionId,jdbcType=BIGINT}, #{num,jdbcType=BIGINT}, #{numId,jdbcType=BIGINT}, 
       #{oId,jdbcType=BIGINT}, #{outerId,jdbcType=VARCHAR}, #{outerSkuId,jdbcType=VARCHAR}, 
       #{payment,jdbcType=VARCHAR}, #{price,jdbcType=VARCHAR}, #{skuPropertiesName,jdbcType=VARCHAR}, 
       #{title,jdbcType=VARCHAR}, #{payTime,jdbcType=VARCHAR}, #{totalFee,jdbcType=VARCHAR}, 
-      #{remark,jdbcType=VARCHAR}, #{orderStatus,jdbcType=INTEGER}, #{createEmp,jdbcType=VARCHAR}, 
+      #{remark,jdbcType=VARCHAR}, #{beforeBalance,jdbcType=DECIMAL}, #{afterBalance,jdbcType=DECIMAL}, 
+      #{deductPrice,jdbcType=DECIMAL}, #{supplier,jdbcType=VARCHAR}, #{externalOrderId,jdbcType=VARCHAR}, 
+      #{orderStatus,jdbcType=INTEGER}, #{failReason,jdbcType=VARCHAR}, #{createEmp,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{updateEmp,jdbcType=VARCHAR}
       )
   </insert>
@@ -101,8 +112,26 @@
       <if test="remark != null">
         remark,
       </if>
+      <if test="beforeBalance != null">
+        before_balance,
+      </if>
+      <if test="afterBalance != null">
+        after_balance,
+      </if>
+      <if test="deductPrice != null">
+        deduct_price,
+      </if>
+      <if test="supplier != null">
+        supplier,
+      </if>
+      <if test="externalOrderId != null">
+        external_order_id,
+      </if>
       <if test="orderStatus != null">
         order_status,
+      </if>
+      <if test="failReason != null">
+        fail_reason,
       </if>
       <if test="createEmp != null">
         create_emp,
@@ -157,8 +186,26 @@
       <if test="remark != null">
         #{remark,jdbcType=VARCHAR},
       </if>
+      <if test="beforeBalance != null">
+        #{beforeBalance,jdbcType=DECIMAL},
+      </if>
+      <if test="afterBalance != null">
+        #{afterBalance,jdbcType=DECIMAL},
+      </if>
+      <if test="deductPrice != null">
+        #{deductPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="supplier != null">
+        #{supplier,jdbcType=VARCHAR},
+      </if>
+      <if test="externalOrderId != null">
+        #{externalOrderId,jdbcType=VARCHAR},
+      </if>
       <if test="orderStatus != null">
         #{orderStatus,jdbcType=INTEGER},
+      </if>
+      <if test="failReason != null">
+        #{failReason,jdbcType=VARCHAR},
       </if>
       <if test="createEmp != null">
         #{createEmp,jdbcType=VARCHAR},
@@ -216,8 +263,26 @@
       <if test="remark != null">
         remark = #{remark,jdbcType=VARCHAR},
       </if>
+      <if test="beforeBalance != null">
+        before_balance = #{beforeBalance,jdbcType=DECIMAL},
+      </if>
+      <if test="afterBalance != null">
+        after_balance = #{afterBalance,jdbcType=DECIMAL},
+      </if>
+      <if test="deductPrice != null">
+        deduct_price = #{deductPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="supplier != null">
+        supplier = #{supplier,jdbcType=VARCHAR},
+      </if>
+      <if test="externalOrderId != null">
+        external_order_id = #{externalOrderId,jdbcType=VARCHAR},
+      </if>
       <if test="orderStatus != null">
         order_status = #{orderStatus,jdbcType=INTEGER},
+      </if>
+      <if test="failReason != null">
+        fail_reason = #{failReason,jdbcType=VARCHAR},
       </if>
       <if test="createEmp != null">
         create_emp = #{createEmp,jdbcType=VARCHAR},
@@ -249,7 +314,13 @@
       pay_time = #{payTime,jdbcType=VARCHAR},
       total_fee = #{totalFee,jdbcType=VARCHAR},
       remark = #{remark,jdbcType=VARCHAR},
+      before_balance = #{beforeBalance,jdbcType=DECIMAL},
+      after_balance = #{afterBalance,jdbcType=DECIMAL},
+      deduct_price = #{deductPrice,jdbcType=DECIMAL},
+      supplier = #{supplier,jdbcType=VARCHAR},
+      external_order_id = #{externalOrderId,jdbcType=VARCHAR},
       order_status = #{orderStatus,jdbcType=INTEGER},
+      fail_reason = #{failReason,jdbcType=VARCHAR},
       create_emp = #{createEmp,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP},

@@ -1,6 +1,9 @@
 package com.mc.refillCard.entity;
 
+import lombok.Data;
+
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /****
@@ -8,6 +11,7 @@ import java.util.Date;
  * @Description:OriginalOrder构建
  * @Date 2021-3-21 14:41:57
  *****/
+@Data
 public class OriginalOrder implements Serializable{
 
 	/**
@@ -81,6 +85,31 @@ public class OriginalOrder implements Serializable{
 	private String remark;
 
 	/**
+	 *扣款前余额
+	 */
+	private BigDecimal beforeBalance;
+	/**
+	 *扣款后余额
+	 */
+	private BigDecimal afterBalance;
+	/**
+	 *扣款金额
+	 */
+	private BigDecimal deductPrice;
+	/**
+	 * 供应商
+	 */
+	private String supplier;
+	/**
+	 *外部订单号
+	 */
+	private String externalOrderId;
+	/**
+	 *失败理由
+	 */
+	private String failReason;
+
+	/**
 	 * 启用状态，1启用，0删除 2 关闭
 	 */
 	private Integer orderStatus;
@@ -104,180 +133,6 @@ public class OriginalOrder implements Serializable{
 	 * 修改人
 	 */
 	private String updateEmp;
-
-
-
-	//get方法
-	public Long getId() {
-		return id;
-	}
-
-	//set方法
-	public void setId(Long id) {
-		this.id = id;
-	}
-	//get方法
-	public Long getTransactionId() {
-		return transactionId;
-	}
-
-	//set方法
-	public void setTransactionId(Long transactionId) {
-		this.transactionId = transactionId;
-	}
-	//get方法
-	public Long getNum() {
-		return num;
-	}
-
-	//set方法
-	public void setNum(Long num) {
-		this.num = num;
-	}
-	//get方法
-	public Long getNumId() {
-		return numId;
-	}
-
-	//set方法
-	public void setNumId(Long numId) {
-		this.numId = numId;
-	}
-	//get方法
-	public Long getOId() {
-		return oId;
-	}
-
-	//set方法
-	public void setOId(Long oId) {
-		this.oId = oId;
-	}
-	//get方法
-	public String getOuterId() {
-		return outerId;
-	}
-
-	//set方法
-	public void setOuterId(String outerId) {
-		this.outerId = outerId;
-	}
-	//get方法
-	public String getOuterSkuId() {
-		return outerSkuId;
-	}
-
-	//set方法
-	public void setOuterSkuId(String outerSkuId) {
-		this.outerSkuId = outerSkuId;
-	}
-	//get方法
-	public String getPayment() {
-		return payment;
-	}
-
-	//set方法
-	public void setPayment(String payment) {
-		this.payment = payment;
-	}
-	//get方法
-	public String getPrice() {
-		return price;
-	}
-
-	//set方法
-	public void setPrice(String price) {
-		this.price = price;
-	}
-	//get方法
-	public String getSkuPropertiesName() {
-		return skuPropertiesName;
-	}
-
-	//set方法
-	public void setSkuPropertiesName(String skuPropertiesName) {
-		this.skuPropertiesName = skuPropertiesName;
-	}
-	//get方法
-	public String getTitle() {
-		return title;
-	}
-
-	//set方法
-	public void setTitle(String title) {
-		this.title = title;
-	}
-	//get方法
-	public String getPayTime() {
-		return payTime;
-	}
-
-	//set方法
-	public void setPayTime(String payTime) {
-		this.payTime = payTime;
-	}
-	//get方法
-	public String getTotalFee() {
-		return totalFee;
-	}
-
-	//set方法
-	public void setTotalFee(String totalFee) {
-		this.totalFee = totalFee;
-	}
-	//get方法
-	public String getRemark() {
-		return remark;
-	}
-
-	//set方法
-	public void setRemark(String remark) {
-		this.remark = remark;
-	}
-	//get方法
-	public Integer getOrderStatus() {
-		return orderStatus;
-	}
-
-	//set方法
-	public void setOrderStatus(Integer orderStatus) {
-		this.orderStatus = orderStatus;
-	}
-	//get方法
-	public String getCreateEmp() {
-		return createEmp;
-	}
-
-	//set方法
-	public void setCreateEmp(String createEmp) {
-		this.createEmp = createEmp;
-	}
-	//get方法
-	public Date getCreateTime() {
-		return createTime;
-	}
-
-	//set方法
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
-	}
-	//get方法
-	public Date getUpdateTime() {
-		return updateTime;
-	}
-
-	//set方法
-	public void setUpdateTime(Date updateTime) {
-		this.updateTime = updateTime;
-	}
-	//get方法
-	public String getUpdateEmp() {
-		return updateEmp;
-	}
-
-	//set方法
-	public void setUpdateEmp(String updateEmp) {
-		this.updateEmp = updateEmp;
-	}
 
 
 }

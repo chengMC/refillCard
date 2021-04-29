@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,7 +144,8 @@ public class TransactionServiceImpl implements TransactionService {
      */
     @Transactional
     @Override
-    public Long addDto(TransactionDto transactionDto){
+    public TransactionDto addDto(TransactionDto transactionDto){
+        TransactionDto resultTransactions = new TransactionDto();
         List<OriginalOrderDto> orderDtos = transactionDto.getOrders();
         Transaction transaction = new Transaction();
         transaction.setPlatForm(transactionDto.getPlatform());
@@ -171,7 +173,10 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setCreated(transactionDto.getCreated());
 
         transactionMapper.insertSelective(transaction);
+        //保存订单id
         Long id = transaction.getId();
+        resultTransactions.setId(id);
+        List<OriginalOrderDto> resultOrders = new ArrayList<>();
         //保存订单详情
         for (OriginalOrderDto orderDto : orderDtos) {
             OriginalOrder order = new OriginalOrder();
@@ -187,8 +192,14 @@ public class TransactionServiceImpl implements TransactionService {
             order.setTitle(orderDto.getTitle());
             order.setTotalFee(orderDto.getTotalFee());
             originalOrderService.add(order);
+            //保存订单详情id
+            Long orderId = order.getId();
+            OriginalOrderDto originalOrderDto = new OriginalOrderDto();
+            originalOrderDto.setId(orderId);
+            resultOrders.add(originalOrderDto);
         }
-        return id;
+        resultTransactions.setOrders(resultOrders);
+        return resultTransactions;
     }
 
     /**
@@ -241,6 +252,7 @@ public class TransactionServiceImpl implements TransactionService {
                     matchingGoods = good;
                 }
             }
+            OriginalOrder originalOrder = originalOrderService.findById(transactionDto.getId());
             //地区匹配不成功后，走全国商品
             if(matchingGoods == null){
                 //查询全国下单平台
@@ -249,9 +261,13 @@ public class TransactionServiceImpl implements TransactionService {
                //下单平台 1 福禄 2 蜀山
                 if(PlatformEnum.SHUSHAN.getCode().equals(nationwideValue)){
                     Map qbOrderPushMap = shushanPlaceOrder(transactionDto, userRelate);
+                    //修改失败订单状态
+                    updataOrderStatus(originalOrder, qbOrderPushMap);
                     return qbOrderPushMap;
                 }else if(PlatformEnum.FULU.getCode().equals(nationwideValue)){
                     Map qbOrderPushMap =  fuliPlaceOrder(transactionDto, userRelate);
+                    //修改失败订单状态
+                    updataOrderStatus(originalOrder, qbOrderPushMap);
                     return qbOrderPushMap;
                 }
             }else{
@@ -261,9 +277,13 @@ public class TransactionServiceImpl implements TransactionService {
                 //下单平台 1 福禄 2 蜀山
                 if(PlatformEnum.SHUSHAN.getCode().equals(regionValue)){
                     Map qbOrderPushMap =  shushanPlaceOrder(transactionDto, userRelate);
+                    //修改失败订单状态
+                    updataOrderStatus(originalOrder, qbOrderPushMap);
                     return qbOrderPushMap;
                 }else if(PlatformEnum.FULU.getCode().equals(regionValue)){
                     Map qbOrderPushMap =fuliPlaceOrder(transactionDto, userRelate);
+                    //修改失败订单状态
+                    updataOrderStatus(originalOrder, qbOrderPushMap);
                     return qbOrderPushMap;
                 }
             }
@@ -272,6 +292,15 @@ public class TransactionServiceImpl implements TransactionService {
         return resultOrderMap;
     }
 
+    private void updataOrderStatus(OriginalOrder originalOrder, Map qbOrderPushMap) {
+        Object fail = qbOrderPushMap.get("fail");
+        if( qbOrderPushMap.get("fail") != null){
+            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+            originalOrder.setFailReason(String.valueOf(fail));
+            originalOrder.setUpdateTime(DateUtil.date());
+            originalOrderService.update(originalOrder);
+        }
+    }
 
     @Override
     public Map fuliPlaceOrder(TransactionDto transactionDto, UserRelate userRelate) {
@@ -281,14 +310,17 @@ public class TransactionServiceImpl implements TransactionService {
         //订单保存添加人
         String tid = transactionDto.getTid();
         Transaction transaction = transactionMapper.findByTid(tid);
-        transaction.setCreateEmp(String.valueOf(userId));
-        transaction.setCreditCardFee(String.valueOf(platform));
-        transaction.setUpdateTime(DateUtil.date());
-        transactionMapper.updateByPrimaryKeySelective(transaction);
 
         //订单
         List<OriginalOrderDto> orders = transactionDto.getOrders();
         for (OriginalOrderDto orderDto : orders) {
+            Long orderId = orderDto.getId();
+            //保存订单记录
+            OriginalOrder originalOrder = originalOrderService.findById(orderId);
+            originalOrder.setCreateEmp(String.valueOf(userId));
+            originalOrder.setSupplier(PlatformEnum.FULU.getName());
+            originalOrderService.update(originalOrder);
+
             //订单的宝贝id
             Long numIid = orderDto.getNumIid();
             GoodsRelateFulu  goodsRelateFulu = goodsRelateFuluService.findByGoodId(numIid, userId);
@@ -355,14 +387,15 @@ public class TransactionServiceImpl implements TransactionService {
         //订单保存添加人
         String tid = transactionDto.getTid();
         Transaction transaction = transactionMapper.findByTid(tid);
-        transaction.setCreateEmp(String.valueOf(userId));
-        transaction.setCreditCardFee(String.valueOf(platform));
-        transaction.setUpdateTime(DateUtil.date());
-        transactionMapper.updateByPrimaryKeySelective(transaction);
-
         //订单
         List<OriginalOrderDto> orders = transactionDto.getOrders();
         for (OriginalOrderDto orderDto : orders) {
+            Long orderId = orderDto.getId();
+            OriginalOrder originalOrder = originalOrderService.findById(orderId);
+            originalOrder.setCreateEmp(String.valueOf(userId));
+            originalOrder.setSupplier(PlatformEnum.SHUSHAN.getName());
+            originalOrderService.update(originalOrder);
+
             //订单的宝贝id
             Long numIid = orderDto.getNumIid();
             GoodsRelateFulu  goodsRelateFulu = goodsRelateFuluService.findByGoodId(numIid, userId);
@@ -414,6 +447,16 @@ public class TransactionServiceImpl implements TransactionService {
         User user = userService.findById(userId);
         user.setBalance(subtract);
         userService.update(user);
+        //更新价格
+        OriginalOrder originalOrder = originalOrderService.findById(orderDto.getId());
+        //扣款前余额
+        originalOrder.setBeforeBalance(balance);
+        //扣款后余额
+        originalOrder.setAfterBalance(subtract);
+        //扣款金额
+        originalOrder.setDeductPrice(totalPrice);
+        originalOrder.setUpdateTime(DateUtil.date());
+        originalOrderService.update(originalOrder);
     }
 
 
@@ -511,7 +554,7 @@ public class TransactionServiceImpl implements TransactionService {
         Integer buyNum = num * nominal;
         //如果金额小于30，直接走去全国
         if(buyNum < 30){
-            Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+            Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto,transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
             return qbNationwidePushResultMap;
         }
         //默认全国
@@ -527,15 +570,15 @@ public class TransactionServiceImpl implements TransactionService {
         }
         //地区匹配不成功后 走全国
         if(matchingGoods == null){
-            Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+            Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
             return qbNationwidePushResultMap;
         }else{
             //走地区
-            Map qbWtoNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, matchingGoods, chargeAccount, buyNum,matchingGoods.getArea());
+            Map qbWtoNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, matchingGoods, chargeAccount, buyNum,matchingGoods.getArea());
             if(qbWtoNationwidePushResultMap.get("fail") != null){
                 tid = tid+"QB";
                 //失败后再次走全国
-                Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+                Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
                 return qbNationwidePushResultMap;
             }
             return qbWtoNationwidePushResultMap;
@@ -627,7 +670,7 @@ public class TransactionServiceImpl implements TransactionService {
         Integer buyNum = num * nominal;
         //如果金额小于30，直接走去全国
         if(buyNum < 30){
-            Map qbNationwidePushResultMap = fuluQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+            Map qbNationwidePushResultMap = fuluQbOrderPushAndQueryResult(originalOrderDto,transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
             return qbNationwidePushResultMap;
         }
 
@@ -647,7 +690,7 @@ public class TransactionServiceImpl implements TransactionService {
             String patternValue = patternCode.getDataValue();
             if("一".equals(patternValue)){
                 //走全国
-                Map qbNationwidePushResultMap = fuluQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+                Map qbNationwidePushResultMap = fuluQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
                 return qbNationwidePushResultMap;
             }else{
                 //模式二：分配排行前6的地区拿到IP下单，失败走全国
@@ -677,11 +720,11 @@ public class TransactionServiceImpl implements TransactionService {
                     }
                 }
                 //走河南或者山东的IP
-                Map qbWtoNationwidePushResultMap = fuluQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate,matchingGoods, chargeAccount, buyNum,areaRandomIp);
+                Map qbWtoNationwidePushResultMap = fuluQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate,matchingGoods, chargeAccount, buyNum,areaRandomIp);
                 if(qbWtoNationwidePushResultMap.get("fail") != null){
                     tid = tid+"QB";
                     //失败后再次走全国
-                    Map qbThreeNationwidePushResultMap = fuluQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+                    Map qbThreeNationwidePushResultMap = fuluQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
                     return qbThreeNationwidePushResultMap;
                 }
                 return qbWtoNationwidePushResultMap;
@@ -699,11 +742,11 @@ public class TransactionServiceImpl implements TransactionService {
             log.info("匹配到的地地区-"+matchingGoodsArea+"，IP段-"+ JSON.toJSONString(nationwideIp));
             String areaRandomIp = IpUtil.getAreaRandomIp(startIp, endIp);
             //有问题的地区加IP
-            Map qbWtoNationwidePushResultMap = fuluQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate,matchingGoods, chargeAccount, buyNum,areaRandomIp);
+            Map qbWtoNationwidePushResultMap = fuluQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate,matchingGoods, chargeAccount, buyNum,areaRandomIp);
             if(qbWtoNationwidePushResultMap.get("fail") != null){
                 tid = tid+"QB";
                 //失败后再次走全国
-                Map qbThreeNationwidePushResultMap = fuluQbOrderPushAndQueryResult(transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+                Map qbThreeNationwidePushResultMap = fuluQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
                 return qbThreeNationwidePushResultMap;
             }
             return qbWtoNationwidePushResultMap;
@@ -713,6 +756,8 @@ public class TransactionServiceImpl implements TransactionService {
     /**
      * QB下单后查询结果并发返回
      *
+     *
+     * @param originalOrderDto
      * @param transaction
      * @param tid
      * @param userRelate
@@ -722,7 +767,7 @@ public class TransactionServiceImpl implements TransactionService {
      * @param ip
      * @return
      */
-    private Map fuluQbOrderPushAndQueryResult(Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
+    private Map fuluQbOrderPushAndQueryResult(OriginalOrderDto originalOrderDto, Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
                                               String chargeAccount, Integer buyNum, String ip) {
         String fuliAppKey = userRelate.getFuliAppKey();
         String fuluSercret = userRelate.getFuluSercret();
@@ -734,24 +779,26 @@ public class TransactionServiceImpl implements TransactionService {
         if(qbNationwidePushResultMap.get("fail") != null){
             return qbNationwidePushResultMap;
         }
+        //更新状态
+        OriginalOrder originalOrder = originalOrderService.findById(originalOrderDto.getId());
         //福禄下单成功后去查询
         Map queryOrderResultMap = fuliQueryOrderResult(fuliAppKey, fuluSercret, tid);
         //福禄查询充值失败后直接返回
         if(queryOrderResultMap.get("fail") != null){
             String fail = String.valueOf(queryOrderResultMap.get("fail"));
             log.error(fail);
-            transaction.setState(TransactionStateEnum.FAIL.getCode());
-            transaction.setRemark(fail);
-            transactionMapper.updateByPrimaryKeySelective(transaction);
+            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+            originalOrder.setFailReason(fail);
+            originalOrderService.update(originalOrder);
             return queryOrderResultMap;
         }
         //福禄查询充值成功后 转化对象
         String fuluOrderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
         FuluOrderDto fuluOrderDto = JSON.parseObject(fuluOrderDtoStr, FuluOrderDto.class);
-        transaction.setState(TransactionStateEnum.SUCCEED.getCode());
-        transaction.setRemark(fuluOrderDtoStr);
-        transaction.setUpdateEmp(fuluOrderDto.getOrder_id());
-        transactionMapper.updateByPrimaryKeySelective(transaction);
+        originalOrder.setOrderStatus(TransactionStateEnum.SUCCEED.getCode());
+        originalOrder.setRemark(fuluOrderDtoStr);
+        originalOrder.setExternalOrderId(fuluOrderDto.getOrder_id());
+        originalOrderService.update(originalOrder);
         //更新发货状态
         try {
             Boolean aBoolean = changeTBOrderStatus(originalTid, accessToken);
@@ -772,6 +819,8 @@ public class TransactionServiceImpl implements TransactionService {
     /**
      * QB下单后查询结果并发返回
      *
+     *
+     * @param originalOrderDto
      * @param transaction
      * @param tid
      * @param userRelate
@@ -781,7 +830,7 @@ public class TransactionServiceImpl implements TransactionService {
      * @param area
      * @return
      */
-    private Map shuShanQbOrderPushAndQueryResult(Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
+    private Map shuShanQbOrderPushAndQueryResult(OriginalOrderDto originalOrderDto, Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
                                                  String chargeAccount, Integer buyNum, String area) {
         String accessToken = userRelate.getAccessToken();
         log.info("蜀山qb下单后查询返回，地区："+goods.getArea());
@@ -791,24 +840,26 @@ public class TransactionServiceImpl implements TransactionService {
         if(qbNationwidePushResultMap.get("fail") != null){
             return qbNationwidePushResultMap;
         }
+        //更新状态
+        OriginalOrder originalOrder = originalOrderService.findById(originalOrderDto.getId());
+
         //下单成功后去查询
         Map queryOrderResultMap = shushanQueryOrderResult(tid);
         //查询充值失败后直接返回
         if(queryOrderResultMap.get("fail") != null){
             String fail = String.valueOf(queryOrderResultMap.get("fail"));
             log.error(fail);
-            transaction.setState(TransactionStateEnum.FAIL.getCode());
-            transaction.setRemark(fail);
-            transactionMapper.updateByPrimaryKeySelective(transaction);
+            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+            originalOrder.setFailReason(fail);
+            originalOrderService.update(originalOrder);
             return queryOrderResultMap;
         }
         //福禄查询充值成功后 转化对象
         String orderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
         Map orderDtoStrResult = JSON.parseObject(orderDtoStr);
-
-        transaction.setState(TransactionStateEnum.SUCCEED.getCode());
-        transaction.setRemark(orderDtoStr);
-        transaction.setUpdateEmp(String.valueOf(orderDtoStrResult.get("order-id")));
+        originalOrder.setOrderStatus(TransactionStateEnum.SUCCEED.getCode());
+        originalOrder.setRemark(orderDtoStr);
+        originalOrder.setExternalOrderId(String.valueOf(orderDtoStrResult.get("order-id")));
         transactionMapper.updateByPrimaryKeySelective(transaction);
         //更新发货状态
         try {
