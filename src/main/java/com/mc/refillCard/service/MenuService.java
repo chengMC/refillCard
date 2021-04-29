@@ -2,6 +2,7 @@ package com.mc.refillCard.service;
 
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.entity.Menu;
+import com.mc.refillCard.vo.MenuIndexUserVo;
 import com.mc.refillCard.vo.MenuIndexVo;
 import com.mc.refillCard.vo.MenuVo;
 
@@ -76,4 +77,5 @@ public interface MenuService {
 
     List<MenuVo> findTree();
 
+    List<MenuIndexUserVo> findMenuIndexUserVoByUserId(Long userId);
 }

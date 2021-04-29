@@ -8,6 +8,7 @@ import com.mc.refillCard.dto.UserSaveDto;
 import com.mc.refillCard.entity.User;
 import com.mc.refillCard.service.UserService;
 import com.mc.refillCard.vo.UserVo;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,14 +60,12 @@ public class UserController {
 
     /***
      * 根据ID查询User数据
-     * @param id
      * @return
      */
-    @RequiresRoles(value={"0","1"},logical= Logical.OR)
-    @GetMapping("/findById/{id}")
-    public Result<User> findById(@PathVariable Long id){
-        //调用UserService实现根据主键查询User
-        User user = userService.findById(id);
+    @GetMapping("/find")
+    public Result<UserVo> findById(){
+        UserVo uservo = (UserVo) SecurityUtils.getSubject().getPrincipal();
+        UserVo user = userService.findVoById(uservo.getId());
         return Result.success("查询成功",user);
     }
 

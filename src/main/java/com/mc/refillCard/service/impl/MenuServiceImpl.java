@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dao.MenuMapper;
 import com.mc.refillCard.entity.Menu;
 import com.mc.refillCard.service.MenuService;
+import com.mc.refillCard.vo.MenuIndexUserVo;
 import com.mc.refillCard.vo.MenuIndexVo;
 import com.mc.refillCard.vo.MenuVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,6 +158,44 @@ public class MenuServiceImpl implements MenuService {
         }
         return builderMenuIndexVoTree(menuIndexVoList);
     }
+
+    @Override
+    public List<MenuIndexUserVo> findMenuIndexUserVoByUserId(Long userId) {
+        List<MenuIndexUserVo> menuIndexVoList = new ArrayList<>();
+        //查询用户菜单
+        List<Menu> menuList = menuMapper.findMenuByUserId(userId);
+        for (Menu menu : menuList) {
+            MenuIndexUserVo menuIndexVo = new MenuIndexUserVo();
+            menuIndexVo.setId(menu.getId());
+            menuIndexVo.setParentId(menu.getParentId());
+            menuIndexVo.setIcon(menu.getImgUrl());
+            menuIndexVo.setIndex(menu.getUrl());
+            menuIndexVo.setTitle(menu.getDisplayName());
+            menuIndexVo.setSubs(null);
+            menuIndexVoList.add(menuIndexVo);
+        }
+        return builderMenuIndexUserVoTree(menuIndexVoList);
+    }
+
+    private List<MenuIndexUserVo> builderMenuIndexUserVoTree(List<MenuIndexUserVo> all) {
+        List<MenuIndexUserVo> resultList = new ArrayList();
+        if (all.isEmpty()){
+            return null;
+        }
+        for (MenuIndexUserVo m:all) {
+            if (m.getParentId()==0){
+                resultList.add(m);
+            }
+        }
+        for (MenuIndexUserVo m:resultList) {
+            List<MenuIndexUserVo> collect = all.stream().filter(menu -> menu.getParentId().equals(m.getId())).collect(Collectors.toList());
+            if(!CollectionUtils.isEmpty(collect)){
+                m.setSubs(collect);
+            }
+        }
+        return resultList;
+    }
+
 
     @Override
     public List<MenuVo> findTree() {

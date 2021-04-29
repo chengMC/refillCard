@@ -4,7 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.entity.Menu;
 import com.mc.refillCard.service.MenuService;
-import com.mc.refillCard.vo.MenuIndexVo;
+import com.mc.refillCard.vo.MenuIndexUserVo;
 import com.mc.refillCard.vo.MenuVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -125,10 +125,9 @@ public class MenuController {
     public Result findRoleByUserId(@PathVariable Long userId){
         //调用RoleService实现根据主键查询Role
 //        List<MenuVo> list =menuService.findMenuVoByUserId(userId);
-        List<MenuIndexVo> list =menuService.findMenuIndexVoByUserId(userId);
+        List<MenuIndexUserVo> list = menuService.findMenuIndexUserVoByUserId(userId);
         return Result.success("查询成功",list);
     }
-
 
     /***
      * 查询Menu全部数据--层级关系的

@@ -21,13 +21,14 @@
     <result column="nominal" jdbcType="VARCHAR" property="nominal" />
     <result column="remake" jdbcType="VARCHAR" property="remake" />
     <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="type_name" jdbcType="VARCHAR" property="typeName" />
     <result column="status" jdbcType="INTEGER" property="status" />
   </resultMap>
   <sql id="Base_Column_List">
     id, user_id, product_id, good_name, good_id, nominal, remake, type, status
   </sql>
   <sql id="BaseVo_Column_List">
-    id, user_id, product_id, good_name, good_id, nominal, remake, type, status
+   grf.id,grf.user_id,grf.product_id,grf.good_name,grf.good_id,grf.nominal,grf.remake,grf.type,grf.STATUS,gt.type_name
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
@@ -46,21 +47,22 @@
     <select id="findPageVoByExample" resultMap="BaseVoResultMap">
       select
       <include refid="BaseVo_Column_List" />
-      from goods_relate_fulu
-      where user_id = #{userId,jdbcType=BIGINT}
-      <if test="goodName != null">
-        and goodName like concat('%',#{goodName,jdbcType=VARCHAR},'%')
+      from goods_relate_fulu grf
+      left join good_type gt on grf.type = gt.id
+      where grf.user_id = #{userId,jdbcType=BIGINT}
+      <if test="goodName != null and goodName !='' ">
+        and grf.goodName like concat('%',#{goodName,jdbcType=VARCHAR},'%')
       </if>
       <if test="goodId != null">
-        and good_id like concat('%',#{goodId,jdbcType=BIGINT},'%')
+        and grf.good_id like concat('%',#{goodId,jdbcType=BIGINT},'%')
       </if>
       <if test="type != null">
-        and type = #{type,jdbcType=INTEGER}
+        and grf.type = #{type,jdbcType=INTEGER}
       </if>
-      order by id desc
+      order by grf.id desc
     </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
-    delete from goods_relate_fulu
+    delete from goods_relate_fulu/
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="com.mc.refillCard.entity.GoodsRelateFulu">
