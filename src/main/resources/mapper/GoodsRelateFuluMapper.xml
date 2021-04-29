@@ -49,14 +49,15 @@
       from goods_relate_fulu
       where user_id = #{userId,jdbcType=BIGINT}
       <if test="goodName != null">
-        and goodName like concat('%',#{goodName,jdbcType=VARCHAR},'%'
+        and goodName like concat('%',#{goodName,jdbcType=VARCHAR},'%')
       </if>
       <if test="goodId != null">
-        and good_id like concat('%',#{goodId,jdbcType=BIGINT},'%'
+        and good_id like concat('%',#{goodId,jdbcType=BIGINT},'%')
       </if>
       <if test="type != null">
         and type = #{type,jdbcType=INTEGER}
       </if>
+      order by id desc
     </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from goods_relate_fulu

@@ -45,7 +45,7 @@
     <include refid="BaseVo_Column_List" />
     FROM user_relate ur
     left join user u on u.id = ur.user_id
-    where u.status!=0
+    where u.status !=0
     <if test="userName != null">
       and (u.user_name like concat('%',#{userName,jdbcType=VARCHAR},'%')
       or u.create_emp like concat('%',#{userName,jdbcType=VARCHAR},'%'))
@@ -53,7 +53,7 @@
     <if test="platform != null">
      and ur.platform = #{platform}
     </if>
-    order by ur.id desc
+    order by u.id desc
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from user_relate

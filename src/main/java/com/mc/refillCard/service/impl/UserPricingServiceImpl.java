@@ -122,5 +122,13 @@ public class UserPricingServiceImpl implements UserPricingService {
         return userPricingMapper.findByUserIdAndType(userId,type);
     }
 
+    @Override
+    public void updatePricing(UserPricingDto userPricingDto) {
+        UserPricing userPricing = new UserPricing();
+        userPricing.setId(userPricingDto.getId());
+        userPricing.setUnifyPrice(userPricingDto.getUnifyPrice());
+        userPricingMapper.updateByPrimaryKeySelective(userPricing);
+    }
+
 
 }

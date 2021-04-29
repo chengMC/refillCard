@@ -9,6 +9,7 @@ import com.mc.refillCard.service.RoleService;
 import com.mc.refillCard.service.UserService;
 import com.mc.refillCard.util.AccountUtils;
 import com.mc.refillCard.util.JwtUtil;
+import com.mc.refillCard.util.RedisUtil;
 import com.mc.refillCard.vo.UserVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -53,13 +54,23 @@ public class LoginController {
         if (!entityPassword.equals(accountSecret)) {
             return Result.fall("手机号或验证码错误，请重新输入");
         }
-
         UserVo userVo = BeanUtil.copyProperties(userEntity, UserVo.class);
-        // 生成签名
-        String token = JwtUtil.sign(userId);
+        String token = "";
+        //获取缓存信息
+        Long seconds = redisTemplate.opsForValue().getOperations().getExpire(UserConstants.PREFIX_USER_TOKEN + userId);
+        //-2表示键不存在
+        Long redisStatus = -2L;
+        if (seconds.equals(redisStatus)) {
+            // 生成签名
+             token = JwtUtil.sign(userId);
+            //token过期时间设置
+            redisTemplate.opsForValue().set(UserConstants.PREFIX_USER_TOKEN + userId, token, UserConstants.USER_TOKEN_OUT, TimeUnit.DAYS);
+        }else{
+            //如果存在获取token后延长过期时间
+            token = RedisUtil.getStr(userId);
+            RedisUtil.stringSet(userId, token);
+        }
         userVo.setToken(token);
-        //token过期时间设置
-        redisTemplate.opsForValue().set(UserConstants.PREFIX_USER_TOKEN + userId, token, UserConstants.USER_TOKEN_OUT, TimeUnit.DAYS);
         //用户信息存入
         return Result.success("登录成功",userVo);
     }

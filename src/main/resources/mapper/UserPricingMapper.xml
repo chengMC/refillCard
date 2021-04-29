@@ -8,8 +8,21 @@
     <result column="good_type_name" jdbcType="VARCHAR" property="goodTypeName" />
     <result column="unify_price" jdbcType="DECIMAL" property="unifyPrice" />
   </resultMap>
+  <resultMap id="BaseVoResultMap" type="com.mc.refillCard.vo.UserPricingVo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="nick_name" jdbcType="VARCHAR" property="nickName" />
+    <result column="good_type_id" jdbcType="BIGINT" property="goodTypeId" />
+    <result column="good_type_name" jdbcType="VARCHAR" property="goodTypeName" />
+    <result column="unify_price" jdbcType="DECIMAL" property="unifyPrice" />
+  </resultMap>
   <sql id="Base_Column_List">
     id, user_id, good_type_id, good_type_name, unify_price
+  </sql>
+  <sql id="BaseVo_Column_List">
+    up.id,up.user_id,up.good_type_id,up.good_type_name,up.unify_price,
+    u.user_name,u.create_emp as nick_name
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
@@ -24,7 +37,21 @@
     where user_id = #{userId,jdbcType=BIGINT}
     and good_type_id = #{type}
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    <select id="findPageVoByExample" resultMap="BaseVoResultMap">
+      SELECT
+      <include refid="BaseVo_Column_List" />
+      FROM user_pricing up
+      left join user u on u.id = up.user_id
+      where u.status != 0
+      <if test="userId != null">
+        and up.user_id = #{userId}
+      </if>
+      <if test="goodTypeId != null">
+        and up.good_type_id = #{goodTypeId}
+      </if>
+      order by u.id
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from user_pricing
     where id = #{id,jdbcType=BIGINT}
   </delete>

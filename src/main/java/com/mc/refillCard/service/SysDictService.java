@@ -2,6 +2,7 @@ package com.mc.refillCard.service;
 
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.entity.SysDict;
+import com.mc.refillCard.vo.SysDictVo;
 
 import java.util.List;
 
@@ -72,4 +73,7 @@ public interface SysDictService {
      */
     SysDict findByCode(String code);
 
+    List<SysDict> findListTypeByCode(String dataCode);
+
+    List<SysDictVo> findListVoByCode(String dataCode);
 }

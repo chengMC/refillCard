@@ -12,6 +12,12 @@
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="type_name" jdbcType="VARCHAR" property="typeName" />
   </resultMap>
+  <resultMap id="BaseQueryResultMap" type="com.mc.refillCard.vo.GoodTypeVo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="type_name" jdbcType="VARCHAR" property="typeName" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
   <sql id="Base_Column_List">
     id, type_name, status, create_time, update_time
   </sql>
@@ -35,6 +41,12 @@
     <include refid="Base_Column_List" />
     from good_type
     where status =1
+  </select>
+  <select id="findPageVoByExample" resultMap="BaseQueryResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from good_type
+    where 1=1
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from good_type

@@ -14,6 +14,17 @@
     <result column="create_emp" jdbcType="VARCHAR" property="createEmp" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
+  <resultMap id="BaseVoResultMap" type="com.mc.refillCard.vo.GoodsVo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="product_id" jdbcType="BIGINT" property="productId" />
+    <result column="product_name" jdbcType="VARCHAR" property="productName" />
+    <result column="platform" jdbcType="INTEGER" property="platform" />
+    <result column="area" jdbcType="VARCHAR" property="area" />
+    <result column="remake" jdbcType="VARCHAR" property="remake" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
   <sql id="Base_Column_List">
     id, product_id, product_name, template_id, platform, area, remake, type, status, 
     create_emp, create_time
@@ -36,6 +47,25 @@
       <include refid="Base_Column_List" />
       from goods
       where area = #{area,jdbcType=VARCHAR}
+    </select>
+    <select id="findPageVoByExample" resultMap="BaseVoResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from goods
+      where 1=1
+      <if test="productName != null and productName !=''">
+        and product_name like concat('%',#{productName,jdbcType=VARCHAR},'%')
+      </if>
+      <if test="productId != null">
+        and product_id like concat('%',#{productId,jdbcType=BIGINT},'%')
+      </if>
+      <if test="type != null">
+        and type = #{type,jdbcType=INTEGER}
+      </if>
+      <if test="platform != null">
+        and platform = #{platform,jdbcType=INTEGER}
+      </if>
+      order by id desc
     </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from goods

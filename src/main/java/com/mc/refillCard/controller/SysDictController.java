@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.entity.SysDict;
 import com.mc.refillCard.service.SysDictService;
+import com.mc.refillCard.vo.SysDictVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +45,42 @@ public class SysDictController {
         //调用SysDictService实现查询所有SysDict
         List<SysDict> list = sysDictService.findAll();
         return Result.success("查询成功",list) ;
+    }
+
+    /***
+     * 多条件搜索sysDict数据
+     * @param sysDict
+     * @return
+     */
+    @GetMapping(value = "/findListTypeByCode" )
+    public Result  findListTypeByCode(SysDict sysDict){
+        //调用SysDictService实现条件查询SysDict
+        List<SysDict> list = sysDictService.findListTypeByCode(sysDict.getDataCode());
+        return Result.success("查询成功",list);
+    }
+
+    /***
+     * 多条件搜索sysDict数据
+     * @param sysDict
+     * @return
+     */
+    @GetMapping(value = "/findByCode" )
+    public Result  findByCode(SysDict sysDict){
+        //调用SysDictService实现条件查询SysDict
+        SysDict dict = sysDictService.findByCode(sysDict.getDataCode());
+        return Result.success("查询成功",dict);
+    }
+
+    /***
+     * 多条件搜索sysDict数据
+     * @param sysDict
+     * @return
+     */
+    @GetMapping(value = "/findListByCode" )
+    public Result findListByCode(SysDict sysDict){
+        //调用SysDictService实现条件查询SysDict
+        List<SysDictVo> list = sysDictService.findListVoByCode(sysDict.getDataCode());
+        return Result.success("查询成功",list);
     }
 
     /***

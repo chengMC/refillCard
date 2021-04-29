@@ -38,5 +38,9 @@ public class UserPricingVo implements Serializable{
 	 */
 	private BigDecimal unifyPrice;
 
+	private String userName;
+
+	private String nickName;
+
 
 }

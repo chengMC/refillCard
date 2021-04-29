@@ -166,7 +166,7 @@ public class UserController {
             return Result.fall("无效ID");
         }
         userService.updatePwd(userDto);
-        return Result.success("编辑成功");
+        return Result.success("修改成功");
     }
 
 }

@@ -1,13 +1,17 @@
 package com.mc.refillCard.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dao.SysDictMapper;
 import com.mc.refillCard.entity.SysDict;
 import com.mc.refillCard.service.SysDictService;
+import com.mc.refillCard.vo.SysDictVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /****
@@ -101,6 +105,25 @@ public class SysDictServiceImpl implements SysDictService {
     @Override
     public SysDict findByCode(String code) {
         return sysDictMapper.findByCode(code).get(0);
+    }
+
+    @Override
+    public List<SysDict> findListTypeByCode(String dataCode) {
+        SysDict byCode = findByCode(dataCode);
+        return null;
+    }
+
+    @Override
+    public List<SysDictVo> findListVoByCode(String dataCode) {
+        List<SysDictVo> dictVoList = new ArrayList<>();
+        List<SysDict> sysDictList = sysDictMapper.findByCode(dataCode);
+        if(CollUtil.isNotEmpty(sysDictList)){
+            for (SysDict dict : sysDictList) {
+                SysDictVo sysDictVo = BeanUtil.copyProperties(dict, SysDictVo.class);
+                dictVoList.add(sysDictVo);
+            }
+        }
+        return dictVoList;
     }
 
 

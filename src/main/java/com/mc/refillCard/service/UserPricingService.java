@@ -74,4 +74,7 @@ public interface UserPricingService {
     List<UserPricing> findAll();
 
     UserPricing findByUserIdAndType(Long userId, Integer type);
+
+    void updatePricing(UserPricingDto userPricingDto);
+
 }

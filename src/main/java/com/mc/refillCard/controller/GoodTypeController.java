@@ -55,8 +55,7 @@ public class GoodTypeController {
      */
     @GetMapping(value = "/findList" )
     public Result  findList(GoodType goodType){
-        //调用GoodTypeService实现条件查询GoodType
-        List<GoodType> list = goodTypeService.findList(goodType);
+        List<GoodTypeEnumVo> list = goodTypeService.findVoAll();
         return Result.success("查询成功",list);
     }
 
@@ -77,7 +76,7 @@ public class GoodTypeController {
      * @param id
      * @return
      */
-    @SystemControllerLog(description = "管理:删除")
+    @SystemControllerLog(description = "商品类目管理:删除")
     @PostMapping(value = "/deleteById/{id}" )
     public Result deleteById(@PathVariable Long id){
         //调用GoodTypeService实现根据主键删除
@@ -91,7 +90,7 @@ public class GoodTypeController {
      * @param
      * @return
      */
-    @SystemControllerLog(description = "管理:编辑")
+    @SystemControllerLog(description = "商品类目管理:编辑")
     @PostMapping(value="/update")
     public Result update(@RequestBody GoodTypeDto goodTypeDto){
         //调用GoodTypeService实现修改GoodType
@@ -108,7 +107,7 @@ public class GoodTypeController {
      * @param goodTypeDto
      * @return
      */
-    @SystemControllerLog(description = "管理:新增")
+    @SystemControllerLog(description = "商品类目管理:新增")
     @PostMapping(value="/add")
     public Result add(@RequestBody GoodTypeDto goodTypeDto){
         //调用GoodTypeService实现添加GoodType
