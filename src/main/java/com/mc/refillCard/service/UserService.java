@@ -115,4 +115,7 @@ public interface UserService {
 
 
     User findPlatformUserId(String platformUserId);
+
+    void resetPwd();
+
 }

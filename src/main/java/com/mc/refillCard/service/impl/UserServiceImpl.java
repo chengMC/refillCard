@@ -192,7 +192,7 @@ public class UserServiceImpl implements UserService {
         //保存用户
         userMapper.insertSelective(user);
         Long id = user.getId();
-        String accountSecret = AccountUtils.createAccountSecret(String.valueOf(id), "fulu123");
+        String accountSecret = AccountUtils.createAccountSecret(String.valueOf(id), "123456");
         user.setPassword(accountSecret);
         user.setId(id);
         userMapper.updateByPrimaryKeySelective(user);
@@ -212,6 +212,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findPlatformUserId(String platformUserId) {
         return userMapper.findPlatformUserId(platformUserId);
+    }
+
+    @Override
+    public void resetPwd() {
+        List<User> all = userMapper.findAll();
+        for (User user : all) {
+            if(!"admin".equals(user.getUserName())){
+                String accountSecret = AccountUtils.createAccountSecret(String.valueOf(user.getId()), "123456");
+                user.setPassword(accountSecret);
+                update(user);
+            }
+        }
     }
 
     /**

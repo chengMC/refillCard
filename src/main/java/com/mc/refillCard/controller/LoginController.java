@@ -45,14 +45,14 @@ public class LoginController {
         String password = user.getPassword();
         User userEntity = userService.findByUserName(userName);
         if (null == userEntity) {
-            return Result.fall("当前用户不存在,请重试");
+            return Result.fall("当前用户不存在,请联系管理员");
         }
         String userId = String.valueOf(userEntity.getId());
         //管理员登录
         String entityPassword = userEntity.getPassword();
         String accountSecret = AccountUtils.createAccountSecret(userId, password);
         if (!entityPassword.equals(accountSecret)) {
-            return Result.fall("手机号或验证码错误，请重新输入");
+            return Result.fall("账号或密码错误，请重新输入");
         }
         UserVo userVo = BeanUtil.copyProperties(userEntity, UserVo.class);
         String token = "";

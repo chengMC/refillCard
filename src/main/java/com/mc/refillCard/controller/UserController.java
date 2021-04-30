@@ -58,6 +58,16 @@ public class UserController {
         return Result.success("查询成功",list) ;
     }
 
+//    /***
+//     * 根据ID查询User数据
+//     * @return
+//     */
+//    @PostMapping("/reset/pwd")
+//    public Result resetPwd(){
+//        userService.resetPwd();
+//        return Result.success();
+//    }
+
     /***
      * 根据ID查询User数据
      * @return

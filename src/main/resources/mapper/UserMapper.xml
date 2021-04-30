@@ -41,7 +41,6 @@
     <include refid="Base_Column_List" />
     from user
     where user.id = #{id,jdbcType=BIGINT}
-    and user.status != 0
   </select>
 
   <select id="findUser" resultMap="BaseResultMap">
@@ -89,8 +88,8 @@
       from user
       where
       status != 0
-      and user_name =#{userName,jdbcType=VARCHAR}
-       or phone =#{userName,jdbcType=VARCHAR}
+      and (user_name =#{userName,jdbcType=VARCHAR}
+       or phone =#{userName,jdbcType=VARCHAR})
       limit 1
     </select>
     <select id="findPlatformUserId" resultMap="BaseResultMap">
@@ -99,6 +98,12 @@
       from user
       where status != 0
       and remark =#{platformUserId,jdbcType=VARCHAR}
+    </select>
+    <select id="findAll" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from user
+      where 1=1
     </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from user

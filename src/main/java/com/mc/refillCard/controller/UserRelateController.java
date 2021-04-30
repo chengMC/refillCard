@@ -5,6 +5,8 @@ import com.mc.refillCard.common.Result;
 import com.mc.refillCard.dto.UserRelateDto;
 import com.mc.refillCard.entity.UserRelate;
 import com.mc.refillCard.service.UserRelateService;
+import com.mc.refillCard.vo.UserVo;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +32,11 @@ public class UserRelateController {
      */
     @GetMapping(value = "/page/{page}/{size}")
     public Result findPage(UserRelateDto userRelateDto,@PathVariable int page, @PathVariable int size) {
-        //调用AccessoryService实现分页条件查询Accessory
+        Long userId = userRelateDto.getUserId();
+        if(userId==null){
+            UserVo user = (UserVo) SecurityUtils.getSubject().getPrincipal();
+            userRelateDto.setUserId(user.getId());
+        }
         PageInfo pageInfo = userRelateService.findPage(userRelateDto, page, size);
         return Result.success("查询成功", pageInfo);
     }
@@ -106,7 +112,11 @@ public class UserRelateController {
      */
     @PostMapping(value="/add")
     public Result add(@RequestBody UserRelateDto userRelateDto){
-        //调用UserRelateService实现添加UserRelate
+        Long userId = userRelateDto.getUserId();
+        if(userId==null){
+            UserVo user = (UserVo) SecurityUtils.getSubject().getPrincipal();
+            userRelateDto.setUserId(user.getId());
+        }
         userRelateService.addDto(userRelateDto);
         return Result.success("新增成功");
     }
