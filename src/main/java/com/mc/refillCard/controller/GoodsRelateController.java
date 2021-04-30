@@ -106,7 +106,6 @@ public class GoodsRelateController {
      */
     @PostMapping(value="/add")
     public Result add(@RequestBody GoodsRelateDto goodsRelateDto){
-        //调用GoodsRelateService实现添加GoodsRelate
         goodsRelateService.addDto(goodsRelateDto);
         return Result.success("新增成功");
     }

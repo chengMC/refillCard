@@ -84,7 +84,6 @@ public class BlacklistController {
      */
     @PostMapping(value = "/deleteById/{id}" )
     public Result deleteById(@PathVariable Long id){
-        //调用BlacklistService实现根据主键删除
         blacklistService.delete(id);
         return Result.success("删除成功");
     }
@@ -131,7 +130,11 @@ public class BlacklistController {
     @SystemControllerLog(description = "管理:新增")
     @PostMapping(value="/add")
     public Result add(@RequestBody BlacklistDto blacklistDto){
-        //调用BlacklistService实现添加Blacklist
+        Long userId = blacklistDto.getUserId();
+        if(userId==null){
+            UserVo user = (UserVo) SecurityUtils.getSubject().getPrincipal();
+            blacklistDto.setUserId(user.getId());
+        }
         blacklistService.addDto(blacklistDto);
         return Result.success("新增成功");
     }

@@ -112,11 +112,6 @@ public class UserRelateController {
      */
     @PostMapping(value="/add")
     public Result add(@RequestBody UserRelateDto userRelateDto){
-        Long userId = userRelateDto.getUserId();
-        if(userId==null){
-            UserVo user = (UserVo) SecurityUtils.getSubject().getPrincipal();
-            userRelateDto.setUserId(user.getId());
-        }
         userRelateService.addDto(userRelateDto);
         return Result.success("新增成功");
     }

@@ -132,6 +132,11 @@ public class GoodsRelateFuluController {
      */
     @PostMapping(value="/add")
     public Result add(@RequestBody GoodsRelateFuluDto goodsRelateFuluDto){
+        Long userId = goodsRelateFuluDto.getUserId();
+        if(userId==null){
+            UserVo user = (UserVo) SecurityUtils.getSubject().getPrincipal();
+            goodsRelateFuluDto.setUserId(user.getId());
+        }
         goodsRelateFuluService.addDto(goodsRelateFuluDto);
         return Result.success("新增成功");
     }
