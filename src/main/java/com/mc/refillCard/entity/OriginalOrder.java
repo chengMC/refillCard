@@ -115,7 +115,7 @@ public class OriginalOrder implements Serializable{
 	private String failReason;
 
 	/**
-	 * 启用状态，1启用，0删除 2 关闭
+	 * 启用状态，1 带推送 2 推送成功 3 推送失败
 	 */
 	private Integer orderStatus;
 
@@ -135,9 +135,8 @@ public class OriginalOrder implements Serializable{
 	private Date updateTime;
 
 	/**
-	 * 修改人
+	 * 创建人
 	 */
 	private String updateEmp;
-
 
 }

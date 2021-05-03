@@ -43,4 +43,8 @@ public class UserBalanceDto implements Serializable{
 	 */
 	private BigDecimal balance;
 
+	private String passWord;
+
+	private String remark;
+
 }

@@ -19,7 +19,7 @@
     <result column="user_name" jdbcType="VARCHAR" property="userName" />
     <result column="platform" jdbcType="INTEGER" property="platform" />
     <result column="balance" jdbcType="DECIMAL" property="balance" />
-    <result column="nick_name" jdbcType="DECIMAL" property="nickName" />
+    <result column="nick_name" jdbcType="VARCHAR" property="nickName" />
   </resultMap>
   <sql id="Base_Column_List">
     id, access_token, agiso_user_id, fuli_app_key, fulu_sercret, user_id, platform, balance

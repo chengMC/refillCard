@@ -1,6 +1,7 @@
 package com.mc.refillCard.dto;
 
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -22,6 +23,17 @@ public class OriginalOrderQueryDto implements Serializable{
 	 * id
 	 */
 	private Long userId;
+
+	/**
+	 * 开始时间
+	 */
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private Date startTime;
+	/**
+	 * 结束时间
+	 */
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private Date endTime;
 
 	/**
 	 * 交易id

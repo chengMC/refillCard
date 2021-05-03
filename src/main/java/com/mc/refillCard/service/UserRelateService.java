@@ -85,5 +85,19 @@ public interface UserRelateService {
      *
      * @param userBalanceDto
      */
-    void updateBalance(UserBalanceDto userBalanceDto);
+    void updateBalance(UserBalanceDto userBalanceDto) throws Exception;
+
+    /**
+     * 账号加款
+     *
+     * @param userBalanceDto
+     */
+    void updateBalanceV1(UserBalanceDto userBalanceDto) throws Exception;
+
+    /**
+     * 账号扣款
+     *
+     * @param userBalanceDto
+     */
+    void deductBalance(UserBalanceDto userBalanceDto) throws Exception;
 }

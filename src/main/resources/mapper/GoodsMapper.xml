@@ -65,7 +65,9 @@
       <if test="platform != null">
         and platform = #{platform,jdbcType=INTEGER}
       </if>
-      order by id desc
+      <if test="area != null and area !=''">
+        and area like concat('%',#{area,jdbcType=VARCHAR},'%')
+      </if>
     </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from goods

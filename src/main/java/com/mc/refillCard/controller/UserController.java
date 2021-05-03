@@ -76,6 +76,7 @@ public class UserController {
     public Result<UserVo> findById(){
         UserVo uservo = (UserVo) SecurityUtils.getSubject().getPrincipal();
         UserVo user = userService.findVoById(uservo.getId());
+        user.setDepartmentName("");
         return Result.success("查询成功",user);
     }
 

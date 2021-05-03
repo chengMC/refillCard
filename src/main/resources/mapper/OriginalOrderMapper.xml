@@ -54,6 +54,8 @@
     <result column="type_name" jdbcType="VARCHAR" property="typeName" />
     <result column="seller_nick" jdbcType="VARCHAR" property="sellerNick" />
     <result column="buyer_nick" jdbcType="VARCHAR" property="buyerNick" />
+    <result column="receiver_address" jdbcType="VARCHAR" property="receiverAddress" />
+    <result column="buyer_area" jdbcType="VARCHAR" property="buyerArea" />
 
   </resultMap>
   <sql id="Base_Column_List">
@@ -72,10 +74,11 @@
    SELECT
     oo.id,oo.transaction_id,oo.num,oo.num_id,oo.o_id,oo.outer_id,oo.outer_sku_id,oo.payment,oo.price,
     oo.sku_properties_name,oo.title,oo.pay_time,oo.total_fee,oo.remark,oo.before_balance,oo.after_balance,
-    oo.deduct_price,oo.supplier,oo.external_order_id,oo.order_status,oo.fail_reason,oo.create_emp,
+    oo.deduct_price,oo.supplier,oo.charge_account,oo.external_order_id,oo.order_status,oo.fail_reason,oo.create_emp,
     oo.create_time,oo.update_time,oo.update_emp,
     grf.type,
     gt.type_name,
+    tr.receiver_address,tr.buyer_area,
     tr.seller_nick,
     tr.buyer_nick
     FROM
@@ -87,6 +90,9 @@
     <if test="userId != null">
      <!--  and (oo.create_emp = #{userId} or tr.create_emp =#{userId} )-->
       and oo.create_emp = #{userId}
+    </if>
+    <if test="startTime !=null and endTime !=null">
+      AND oo.update_time between #{startTime} and #{endTime}
     </if>
     <if test="type != null">
       and grf.type = #{type,jdbcType=INTEGER}
@@ -121,23 +127,23 @@
       SELECT LAST_INSERT_ID()
     </selectKey>
     insert into original_order (transaction_id, num, num_id,
-    o_id, outer_id, outer_sku_id,
-    payment, price, sku_properties_name,
-    title, pay_time, total_fee,
-    remark, before_balance, after_balance,
-    deduct_price, supplier, external_order_id,
-    order_status, fail_reason, charge_account,
-    create_emp, create_time, update_time,
-    update_emp)
+      o_id, outer_id, outer_sku_id,
+      payment, price, sku_properties_name,
+      title, pay_time, total_fee,
+      remark, before_balance, after_balance,
+      deduct_price, supplier, external_order_id,
+      order_status, fail_reason, charge_account,
+      create_emp, create_time, update_time,
+      update_emp)
     values (#{transactionId,jdbcType=BIGINT}, #{num,jdbcType=BIGINT}, #{numId,jdbcType=BIGINT},
-    #{oId,jdbcType=BIGINT}, #{outerId,jdbcType=VARCHAR}, #{outerSkuId,jdbcType=VARCHAR},
-    #{payment,jdbcType=VARCHAR}, #{price,jdbcType=VARCHAR}, #{skuPropertiesName,jdbcType=VARCHAR},
-    #{title,jdbcType=VARCHAR}, #{payTime,jdbcType=VARCHAR}, #{totalFee,jdbcType=VARCHAR},
-    #{remark,jdbcType=VARCHAR}, #{beforeBalance,jdbcType=DECIMAL}, #{afterBalance,jdbcType=DECIMAL},
-    #{deductPrice,jdbcType=DECIMAL}, #{supplier,jdbcType=VARCHAR}, #{externalOrderId,jdbcType=VARCHAR},
-    #{orderStatus,jdbcType=INTEGER}, #{failReason,jdbcType=VARCHAR}, #{chargeAccount,jdbcType=VARCHAR},
-    #{createEmp,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP},
-    #{updateEmp,jdbcType=VARCHAR})
+      #{oId,jdbcType=BIGINT}, #{outerId,jdbcType=VARCHAR}, #{outerSkuId,jdbcType=VARCHAR},
+      #{payment,jdbcType=VARCHAR}, #{price,jdbcType=VARCHAR}, #{skuPropertiesName,jdbcType=VARCHAR},
+      #{title,jdbcType=VARCHAR}, #{payTime,jdbcType=VARCHAR}, #{totalFee,jdbcType=VARCHAR},
+      #{remark,jdbcType=VARCHAR}, #{beforeBalance,jdbcType=DECIMAL}, #{afterBalance,jdbcType=DECIMAL},
+      #{deductPrice,jdbcType=DECIMAL}, #{supplier,jdbcType=VARCHAR}, #{externalOrderId,jdbcType=VARCHAR},
+      #{orderStatus,jdbcType=INTEGER}, #{failReason,jdbcType=VARCHAR}, #{chargeAccount,jdbcType=VARCHAR},
+      #{createEmp,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP},
+      #{updateEmp,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.mc.refillCard.entity.OriginalOrder">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">

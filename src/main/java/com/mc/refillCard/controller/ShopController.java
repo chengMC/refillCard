@@ -92,6 +92,52 @@ public class ShopController {
      * @param
      * @return
      */
+    @SystemControllerLog(description = "店铺管理:扣款")
+    @RequiresRoles(value={"0","1"},logical= Logical.OR)
+    @PostMapping(value="/deduct/balance")
+    public Result deductBalance(@RequestBody UserBalanceDto userBalanceDto){
+        Long id = userBalanceDto.getId();
+        if(id == null){
+            return Result.fall("无效ID");
+        }
+        try {
+            userRelateService.deductBalance(userBalanceDto);
+        } catch (Exception e) {
+            return Result.fall(e.getMessage());
+        }
+        return Result.success("扣款成功");
+    }
+
+
+    /***
+     * 修改UserRelate数据
+     * @param
+     * @param
+     * @return
+     */
+    @SystemControllerLog(description = "店铺管理:加款")
+    @RequiresRoles(value={"0","1"},logical= Logical.OR)
+    @PostMapping(value="/update/balance/v1")
+    public Result updateBalanceV1(@RequestBody UserBalanceDto userBalanceDto){
+        //调用UserRelateService实现修改UserRelate
+        Long id = userBalanceDto.getId();
+        if(id == null){
+            return Result.fall("无效ID");
+        }
+        try {
+            userRelateService.updateBalanceV1(userBalanceDto);
+        } catch (Exception e) {
+            return Result.fall(e.getMessage());
+        }
+        return Result.success("加款成功");
+    }
+
+    /***
+     * 修改UserRelate数据
+     * @param
+     * @param
+     * @return
+     */
     @SystemControllerLog(description = "店铺管理:加款")
     @RequiresRoles(value={"0","1"},logical= Logical.OR)
     @PostMapping(value="/update/balance")
@@ -101,7 +147,11 @@ public class ShopController {
         if(id == null){
             return Result.fall("无效ID");
         }
-        userRelateService.updateBalance(userBalanceDto);
+        try {
+            userRelateService.updateBalance(userBalanceDto);
+        } catch (Exception e) {
+            return Result.fall(e.getMessage());
+        }
         return Result.success("加款成功");
     }
 

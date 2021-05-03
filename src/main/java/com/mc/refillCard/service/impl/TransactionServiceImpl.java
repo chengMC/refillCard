@@ -173,8 +173,13 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setPayment(transactionDto.getPayment());
         transaction.setPayTime(transactionDto.getPayTime());
         transaction.setCreated(transactionDto.getCreated());
+        transaction.setCreateTime(DateUtil.date());
 
         transactionMapper.insertSelective(transaction);
+        //充值账号
+        String receiverAddress = transactionDto.getReceiverAddress();
+        String chargeAccount = AccountUtils.findNumber(receiverAddress);
+
         //保存订单id
         Long id = transaction.getId();
         resultTransactions.setId(id);
@@ -193,6 +198,8 @@ public class TransactionServiceImpl implements TransactionService {
             order.setSkuPropertiesName(orderDto.getSkuPropertiesName());
             order.setTitle(orderDto.getTitle());
             order.setTotalFee(orderDto.getTotalFee());
+            order.setChargeAccount(chargeAccount);
+            order.setCreateTime(DateUtil.date());
             originalOrderService.add(order);
             //保存订单详情id
             Long orderId = order.getId();
@@ -279,8 +286,14 @@ public class TransactionServiceImpl implements TransactionService {
                 //下单平台 1 福禄 2 蜀山
                 if(PlatformEnum.SHUSHAN.getCode().equals(regionValue)){
                     Map qbOrderPushMap =  shushanPlaceOrder(transactionDto, userRelate);
-                    //修改失败订单状态
-                    updataOrderStatus(originalOrder, qbOrderPushMap);
+                    //蜀山地区失败后，走福禄的全国
+                    if(qbOrderPushMap.get("fail") != null){
+                        transactionDto.setBuyerArea("未知");
+                        Map qbOrderPushMapFulu = fuliPlaceOrder(transactionDto, userRelate);
+                        //修改失败订单状态
+                        updataOrderStatus(originalOrder, qbOrderPushMapFulu);
+                        return qbOrderPushMapFulu;
+                    }
                     return qbOrderPushMap;
                 }else if(PlatformEnum.FULU.getCode().equals(regionValue)){
                     Map qbOrderPushMap =fuliPlaceOrder(transactionDto, userRelate);
@@ -467,6 +480,7 @@ public class TransactionServiceImpl implements TransactionService {
         originalOrder.setAfterBalance(subtract);
         //扣款金额
         originalOrder.setDeductPrice(totalPrice);
+        originalOrder.setOrderStatus(TransactionStateEnum.SUCCEED.getCode());
         originalOrder.setUpdateTime(DateUtil.date());
         originalOrderService.update(originalOrder);
     }
@@ -587,12 +601,12 @@ public class TransactionServiceImpl implements TransactionService {
         }else{
             //走地区
             Map qbWtoNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, matchingGoods, chargeAccount, buyNum,matchingGoods.getArea());
-            if(qbWtoNationwidePushResultMap.get("fail") != null){
-                tid = tid+"QB";
-                //失败后再次走全国
-                Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
-                return qbNationwidePushResultMap;
-            }
+//            if(qbWtoNationwidePushResultMap.get("fail") != null){
+//                tid = tid+"QB";
+//                //失败后再次走全国
+//                Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+//                return qbNationwidePushResultMap;
+//            }
             return qbWtoNationwidePushResultMap;
         }
     }
@@ -860,7 +874,7 @@ public class TransactionServiceImpl implements TransactionService {
         //查询充值失败后直接返回
         if(queryOrderResultMap.get("fail") != null){
             String fail = String.valueOf(queryOrderResultMap.get("fail"));
-            log.error(fail);
+            log.error("蜀山下单查询后失败："+fail);
             originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
             originalOrder.setFailReason(fail);
             originalOrderService.update(originalOrder);
@@ -868,8 +882,9 @@ public class TransactionServiceImpl implements TransactionService {
         }
         //福禄查询充值成功后 转化对象
         String orderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
+        log.error("蜀山下单查询后成功："+orderDtoStr);
         Map orderDtoStrResult = JSON.parseObject(orderDtoStr);
-        originalOrder.setOrderStatus(TransactionStateEnum.SUCCEED.getCode());
+        originalOrder.setOrderStatus(2);
         originalOrder.setRemark(orderDtoStr);
         originalOrder.setExternalOrderId(String.valueOf(orderDtoStrResult.get("order-id")));
         transactionMapper.updateByPrimaryKeySelective(transaction);
@@ -909,7 +924,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         Map resultMap = momoOrderPushFulu(fuliAppKey, fuluSercret, tid, buyNum, chargeAccount, goods);
         if (!"0".equals(String.valueOf(resultMap.get("code")))) {
-            String failStr = "福禄平台下单失败。订单号：" + tid + "," + resultMap.get("message");
+            String failStr = "平台下单失败。订单号：" + tid + "," + resultMap.get("message");
             resultMap.put("fail", failStr);
             return resultMap;
         }
@@ -964,9 +979,9 @@ public class TransactionServiceImpl implements TransactionService {
         Map qbNationwidePushResultMap = new HashMap();
         String area = good.getArea();
         Map resultMap = qbOrderPushFulu(fuliAppKey, fuluSercret, tid, buyNum, chargeAccount, good,ip);
-        System.out.println("下单"+area+"QB:" + tid  + "-resultMap-" + resultMap);
+        System.out.println("福禄下单"+area+"QB:" + tid  + "-resultMap-" + resultMap);
         if (!"0".equals(String.valueOf(resultMap.get("code")))) {
-            String failStr = "福禄平台"+area+"QB下单失败。订单号：" + tid + "," + resultMap.get("message");
+            String failStr = "平台"+area+"QB下单失败。订单号：" + tid + "," + resultMap.get("message");
             qbNationwidePushResultMap.put("fail", failStr);
             return qbNationwidePushResultMap;
         }else{
@@ -994,7 +1009,7 @@ public class TransactionServiceImpl implements TransactionService {
             qbNationwidePushResultMap.put("success", "订单号：" + tid);
             return qbNationwidePushResultMap;
         }else{
-            String failStr = "蜀山平台"+area+"QB下单失败。订单号：" + tid + "," + resultMap.get("state-info");
+            String failStr = "平台"+area+"QB下单失败。订单号：" + tid + "," + resultMap.get("state-info");
             qbNationwidePushResultMap.put("fail", failStr);
             return qbNationwidePushResultMap;
         }
@@ -1029,7 +1044,7 @@ public class TransactionServiceImpl implements TransactionService {
             Map resultMap = JSON.parseObject(result);
             if (!"0".equals(String.valueOf(resultMap.get("code")))) {
                 log.info("福禄平台查询充值---"+result);
-                String failStr = "福禄平台查询充值失败,订单号：" + tid + "," + resultMap.get("message");
+                String failStr = "平台查询充值失败,订单号：" + tid + "," + resultMap.get("message");
                 log.info(failStr);
             }
             //解析结果
@@ -1040,7 +1055,7 @@ public class TransactionServiceImpl implements TransactionService {
                 resultOrderMap.put("success", resultStr);
                 return resultOrderMap;
             } else if (order_state.equals(FuluOrderTypeEnum.FAILED.getCode())) {
-                String failStr = "福禄平台充值失败。订单号：" + tid + "," + resultMap.get("message");
+                String failStr = "平台充值失败。订单号：" + tid + "," + resultMap.get("message");
                 resultOrderMap.put("fail", failStr);
                 return resultOrderMap;
             }
@@ -1051,7 +1066,7 @@ public class TransactionServiceImpl implements TransactionService {
                 log.error("线程异常");
             }
         }
-        String failStr = "福禄平台查询充值失败。订单号：" + tid;
+        String failStr = "平台查询充值失败。订单号：" + tid;
         resultOrderMap.put("fail", failStr);
         return resultOrderMap;
     }
@@ -1110,12 +1125,12 @@ public class TransactionServiceImpl implements TransactionService {
                 resultOrderMap.put("success", result);
                 return resultOrderMap;
             }else {
-                String failStr = "蜀山平台充值失败。订单号：" + tid + ",state-" + state;
+                String failStr = "平台充值失败。订单号：" + tid + ",state-" + state;
                 resultOrderMap.put("fail", failStr);
                 return resultOrderMap;
             }
         }
-        String failStr = "蜀山平台查询充值失败。订单号：" + tid;
+        String failStr = "平台查询充值失败。订单号：" + tid;
         resultOrderMap.put("fail", failStr);
         return resultOrderMap;
     }

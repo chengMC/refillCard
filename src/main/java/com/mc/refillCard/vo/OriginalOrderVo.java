@@ -1,5 +1,6 @@
 package com.mc.refillCard.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -36,12 +37,17 @@ public class OriginalOrderVo implements Serializable{
 	/**
 	 * 子订单编号
 	 */
+	@JsonFormat(shape = JsonFormat.Shape.STRING)
 	private Long oId;
 
 	/**
 	 * 实付金额
 	 */
 	private String payment;
+	/**
+	 * 付款时间
+	 */
+	private String payTime;
 
 	/**
 	 * 价格（原价）
@@ -81,6 +87,12 @@ public class OriginalOrderVo implements Serializable{
 	 * 充值账号
 	 */
 	private String chargeAccount;
+
+	//买家备注
+	private String receiverAddress;
+
+	//买家地区
+	private String buyerArea;
 
 	/**
 	 *失败理由

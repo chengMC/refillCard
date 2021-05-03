@@ -3,7 +3,6 @@ package com.mc.refillCard.dto;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 /****
  * @Author: MC
@@ -37,5 +36,9 @@ public class UserRelateDto implements Serializable{
 	 * 1 淘宝
 	 */
 	private Integer platform;
+
+	private String startTime;
+
+	private String endTime;
 
 }

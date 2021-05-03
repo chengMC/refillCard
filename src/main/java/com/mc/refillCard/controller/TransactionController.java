@@ -4,15 +4,13 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
+import com.mc.refillCard.common.Enum.TransactionStateEnum;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.config.fulu.ShuShanApiProperties;
 import com.mc.refillCard.dto.GoodsDto;
 import com.mc.refillCard.dto.OriginalOrderDto;
 import com.mc.refillCard.dto.TransactionDto;
-import com.mc.refillCard.entity.Goods;
-import com.mc.refillCard.entity.Transaction;
-import com.mc.refillCard.entity.User;
-import com.mc.refillCard.entity.UserRelate;
+import com.mc.refillCard.entity.*;
 import com.mc.refillCard.service.*;
 import com.mc.refillCard.util.AccountUtils;
 import com.mc.refillCard.util.XmlUtils;
@@ -27,10 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /****
  * @Author: MC
@@ -63,6 +58,8 @@ public class TransactionController {
     private GoodsRelateFuluService goodsRelateFuluService;
     @Autowired
     private NationwideIpService nationwideIpService;
+    @Autowired
+    private OriginalOrderService originalOrderService;
 
     /***
      * 多条件搜索transaction数据
@@ -141,7 +138,14 @@ public class TransactionController {
         System.out.println(transactionDto);
         Map resultMap = transactionService.placeOrder(transactionDto, userRelate);
         if(resultMap.get("fail") != null){
-            Object fail = resultMap.get("fail");
+            String fail = String.valueOf(resultMap.get("fail"));
+            for (OriginalOrderDto order : orders) {
+                OriginalOrder originalOrder = originalOrderService.findById(order.getId());
+                originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+                originalOrder.setFailReason(fail);
+                originalOrder.setUpdateTime(new Date());
+                originalOrderService.update(originalOrder);
+            }
             return JSON.toJSONString(Result.fall("推送失败：",fail));
         }else if(resultMap.get("success") != null){
             TaobaoTransactionVo taobaoTransactionVo = new TaobaoTransactionVo();

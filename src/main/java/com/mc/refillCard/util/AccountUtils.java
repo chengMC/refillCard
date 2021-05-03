@@ -31,6 +31,11 @@ public class AccountUtils {
         return m.matches();
     }
 
+    public static void main(String[] args) {
+        String accountSecret = createAccountSecret("admin", "admin123456");
+        System.out.println(accountSecret);
+    }
+
     /**
      * 阿奇索签名验证
      *
