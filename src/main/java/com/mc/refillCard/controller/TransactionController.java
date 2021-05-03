@@ -86,9 +86,10 @@ public class TransactionController {
         if(CollUtil.isEmpty(transactionDto.getOrders())){
             return JSON.toJSONString(Result.fall("没有订单信息"));
         }
+        String tid = transactionDto.getTid();
         Transaction transaction = new Transaction();
         transaction.setStatus(transactionDto.getStatus());
-        transaction.setTid(transactionDto.getTid());
+        transaction.setTid(tid);
         List<Transaction> list = transactionService.findList(transaction);
         if(CollUtil.isNotEmpty(list)){
             Transaction transactionEntity = list.get(0);
@@ -103,11 +104,11 @@ public class TransactionController {
                 taobaoTransactionVo.setDoMemoUpdate(taobaoDoMemoUpdateVo);
                 return JSON.toJSONString(taobaoTransactionVo);
             }else  if(state == 1){
-                return JSON.toJSONString(Result.fall("订单ID："+transactionDto.getTid()+"已存在。待推送"));
+                return JSON.toJSONString(Result.fall("订单ID："+ tid +"已存在。待推送"));
             }else  if(state == 3){
-                return JSON.toJSONString(Result.fall("订单ID："+transactionDto.getTid()+"已存在。推送失败"));
+                return JSON.toJSONString(Result.fall("订单ID："+ tid +"已存在。推送失败"));
             }else{
-                return JSON.toJSONString(Result.fall("订单ID："+transactionDto.getTid()+"已存在"));
+                return JSON.toJSONString(Result.fall("订单ID："+ tid +"已存在"));
             }
         }
         //保存订单
@@ -131,13 +132,27 @@ public class TransactionController {
         if(userRelate == null){
             userRelate = userService.save(platformUserId, sellerNick);
         }
-        if(userRelate == null || StringUtils.isEmpty(userRelate.getAccessToken())){
+        String accessToken = userRelate.getAccessToken();
+        if(userRelate == null || StringUtils.isEmpty(accessToken)){
             return JSON.toJSONString(Result.fall("订单推送失败，请先填写相关配置"));
         }
         //推送订单
         System.out.println(transactionDto);
         Map resultMap = transactionService.placeOrder(transactionDto, userRelate);
         if(resultMap.get("fail") != null){
+
+            //更新订单备注
+            try {
+                Boolean aBoolean = transactionService.failMemoUpdate(tid,accessToken);
+                if (!aBoolean) {
+                    log.error("更新订单备注失败");
+                }
+            } catch (UnsupportedEncodingException e) {
+                log.error("更新订单备注失败："+ e);
+            } catch (NoSuchAlgorithmException e) {
+                log.error("更新订单备注失败："+ e);
+            }
+
             String fail = String.valueOf(resultMap.get("fail"));
             for (OriginalOrderDto order : orders) {
                 OriginalOrder originalOrder = originalOrderService.findById(order.getId());
@@ -152,8 +167,8 @@ public class TransactionController {
             taobaoTransactionVo.setDoDummySend(true);
             taobaoTransactionVo.setAliwwMsg("充值成功");
             TaobaoDoMemoUpdateVo taobaoDoMemoUpdateVo = new TaobaoDoMemoUpdateVo();
-            taobaoDoMemoUpdateVo.setFlag(-1);
-            taobaoDoMemoUpdateVo.setMemo("");
+            taobaoDoMemoUpdateVo.setFlag(1);
+            taobaoDoMemoUpdateVo.setMemo("订单充值成功");
             taobaoTransactionVo.setDoMemoUpdate(taobaoDoMemoUpdateVo);
             return JSON.toJSONString(Result.success("推送成功",taobaoTransactionVo));
         }
@@ -185,7 +200,24 @@ public class TransactionController {
         String token = "TbAldssngwbswy3kpt5tu6ykacpz4tu3xkaahzvgbcyp228vva";
         Boolean b = transactionService.changeTBOrderStatus(tid,token);
 
-        System.out.println(b);
+    }
+
+
+    @GetMapping("/failMemoUpdate")
+    public void failMemoUpdate(String tid) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+//        String tid = "1767584306739696261";
+        String token = "TbAldssngwbswy3kpt5tu6ykacpz4tu3xkaahzvgbcyp228vva";
+        //更新卖家备注
+        try {
+            Boolean aBoolean = transactionService.failMemoUpdate(tid,token);
+            if (!aBoolean) {
+                log.error("更新订单备注失败");
+            }
+        } catch (UnsupportedEncodingException e) {
+            log.error("更新订单备注失败："+ e);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("更新订单备注失败："+ e);
+        }
 
     }
 

@@ -102,7 +102,26 @@ public interface TransactionService {
      */
     String getBuyerIp(String tid, String token) throws UnsupportedEncodingException, NoSuchAlgorithmException;
 
+    /**
+     * 成功后改变订单状态
+     * @param tid
+     * @param token
+     * @return
+     * @throws UnsupportedEncodingException
+     * @throws NoSuchAlgorithmException
+     */
     Boolean changeTBOrderStatus(String tid, String token) throws UnsupportedEncodingException, NoSuchAlgorithmException;
+
+    /**
+     *  失败后更新备注
+     * @param tid
+     * @param token
+     * @return
+     * @throws UnsupportedEncodingException
+     * @throws NoSuchAlgorithmException
+     */
+    Boolean failMemoUpdate(String tid, String token) throws UnsupportedEncodingException, NoSuchAlgorithmException;
+
 
     List<Transaction> findListByParam(Transaction transaction);
 

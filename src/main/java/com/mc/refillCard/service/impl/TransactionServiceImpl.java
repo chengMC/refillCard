@@ -1297,7 +1297,54 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     /**
-     * 福禄下单成功后调用阿奇索接口改变淘宝订单状态
+     *
+     *  下单失败修改卖家备注
+     *
+     * @param tid
+     * @param accessToken
+     * @return
+     * @throws UnsupportedEncodingException
+     * @throws NoSuchAlgorithmException
+     */
+    @Override
+    public Boolean failMemoUpdate(String tid, String accessToken) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        HashMap<String, String> headerMap = new HashMap<>();
+        headerMap.put("Authorization", "Bearer "+ accessToken);
+        headerMap.put("ApiVersion", "1");
+
+        HashMap<String, String> paramMap = new HashMap<>();
+        paramMap.put("timestamp", String.valueOf(DateUtil.currentSeconds()));
+        paramMap.put("tids", tid);
+        paramMap.put("memo", "充值失败");
+        paramMap.put("flag", "1");
+        paramMap.put("sign", AccountUtils.getAqusuoSign(paramMap, appSecret));
+
+        HashMap<String, Object> dataMap = new HashMap<>();
+        dataMap.put("timestamp",  paramMap.get("timestamp"));
+        dataMap.put("tids", paramMap.get("tids"));
+        dataMap.put("memo", "充值失败");
+        dataMap.put("flag", 1L);
+        dataMap.put("sign",paramMap.get("sign"));
+
+        //接口调用
+        String result = HttpRequest.post("http://gw.api.agiso.com/alds/Trade/MemoUpdate")
+                .form(dataMap)
+                .addHeaders(headerMap)
+                .execute()
+                .body();
+        System.out.println(result);
+        log.info("");
+        //221.232.58.139
+        Boolean change = false;
+        Map resultMap = JSON.parseObject(result);
+        if("true".equals(String.valueOf(resultMap.get("IsSuccess")))){
+            change= true;
+        }
+        return change;
+    }
+
+    /**
+     *下单成功后调用阿奇索接口改变淘宝订单状态
      *
      * @param tid
      * @param accessToken
@@ -1337,6 +1384,8 @@ public class TransactionServiceImpl implements TransactionService {
         }
         return change;
     }
+
+
 
     @Override
     public List<Transaction> findListByParam(Transaction transaction) {
