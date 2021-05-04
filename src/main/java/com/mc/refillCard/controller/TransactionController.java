@@ -60,6 +60,8 @@ public class TransactionController {
     private NationwideIpService nationwideIpService;
     @Autowired
     private OriginalOrderService originalOrderService;
+    @Autowired
+    private PlatformKeyService platformKeyService;
 
     /***
      * 多条件搜索transaction数据
@@ -122,10 +124,6 @@ public class TransactionController {
         //判断账号
         String platformUserId = transactionDto.getPlatformUserId();
         String sellerNick = transactionDto.getSellerNick();
-        User user = userService.findPlatformUserId(platformUserId);
-        if(user == null){
-            return JSON.toJSONString(Result.fall("未找到用户或用户账号已被冻结，请联系管理员"));
-        }
         //根据平台用户id查询对照关系
         UserRelate userRelate = userRelateService.findByPlatformUserId(platformUserId);
         //第一次先创建用户和对照关系
@@ -134,7 +132,17 @@ public class TransactionController {
         }
         String accessToken = userRelate.getAccessToken();
         if(userRelate == null || StringUtils.isEmpty(accessToken)){
-            return JSON.toJSONString(Result.fall("订单推送失败，请先填写相关配置"));
+            String fail = "订单推送失败，请先填写相关配置";
+            //订单失败修改状态
+            saveFailOrderStatus(orders, fail);
+            return JSON.toJSONString(Result.fall(fail));
+        }
+        User user = userService.findPlatformUserId(platformUserId);
+        if(user == null){
+            String fail = "未找到用户或用户账号已被冻结，请联系管理员";
+            //订单失败修改状态
+            saveFailOrderStatus(orders, fail);
+            return JSON.toJSONString(Result.fall(fail));
         }
         //推送订单
         System.out.println(transactionDto);
@@ -154,13 +162,8 @@ public class TransactionController {
             }
 
             String fail = String.valueOf(resultMap.get("fail"));
-            for (OriginalOrderDto order : orders) {
-                OriginalOrder originalOrder = originalOrderService.findById(order.getId());
-                originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
-                originalOrder.setFailReason(fail);
-                originalOrder.setUpdateTime(new Date());
-                originalOrderService.update(originalOrder);
-            }
+            //订单失败修改状态
+            saveFailOrderStatus(orders, fail);
             return JSON.toJSONString(Result.fall("推送失败：",fail));
         }else if(resultMap.get("success") != null){
             TaobaoTransactionVo taobaoTransactionVo = new TaobaoTransactionVo();
@@ -173,6 +176,16 @@ public class TransactionController {
             return JSON.toJSONString(Result.success("推送成功",taobaoTransactionVo));
         }
         return JSON.toJSONString(Result.fall("推送失败"));
+    }
+
+    private void saveFailOrderStatus(List<OriginalOrderDto> orders, String fail) {
+        for (OriginalOrderDto order : orders) {
+            OriginalOrder originalOrder = originalOrderService.findById(order.getId());
+            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+            originalOrder.setFailReason(fail);
+            originalOrder.setUpdateTime(new Date());
+            originalOrderService.update(originalOrder);
+        }
     }
 
 
@@ -297,6 +310,16 @@ public class TransactionController {
 
     }
 
+
+    /***
+     * 查询PlatformKey全部数据
+     * @return
+     */
+    @GetMapping(value = "/update/platformKey/{id}" )
+    public Result updatePlatformKey(@PathVariable String id){
+        PlatformKey platformKey = platformKeyService.updatePlatformKey(id);
+        return Result.success("修改成功",platformKey) ;
+    }
 
 
 

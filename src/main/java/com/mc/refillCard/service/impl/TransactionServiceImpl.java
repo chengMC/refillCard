@@ -74,6 +74,8 @@ public class TransactionServiceImpl implements TransactionService {
     private UserRelateService userRelateService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private PlatformKeyService platformKeyService;
 
     /**
      Transaction条件+分页查询
@@ -261,7 +263,7 @@ public class TransactionServiceImpl implements TransactionService {
                     matchingGoods = good;
                 }
             }
-            OriginalOrder originalOrder = originalOrderService.findById(transactionDto.getId());
+            OriginalOrder originalOrder = originalOrderService.findById(orderDto.getId());
             //地区匹配不成功后，走全国商品
             if(matchingGoods == null){
                 //查询全国下单平台
@@ -795,8 +797,11 @@ public class TransactionServiceImpl implements TransactionService {
      */
     private Map fuluQbOrderPushAndQueryResult(OriginalOrderDto originalOrderDto, Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
                                               String chargeAccount, Integer buyNum, String ip) {
-        String fuliAppKey = FuliProperties.getAppKey();
-        String fuluSercret = FuliProperties.getSysSecret();
+        PlatformKey platformKey = platformKeyService.findByAppType(PlatformEnum.FULU.getCode());
+        String fuliAppKey = platformKey.getAppKey();
+        String fuluSercret = platformKey.getAppSercret();
+//        String fuluSercret = FuliProperties.getSysSecret();
+
         String accessToken = userRelate.getAccessToken();
          log.info("qb下单后查询返回，地区："+goods.getArea()+"-IP:"+ip);
 
@@ -918,8 +923,10 @@ public class TransactionServiceImpl implements TransactionService {
      */
     private Map commonOrderPushAndQueryResult(Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
                                               String chargeAccount, Integer buyNum) {
-        String fuliAppKey = FuliProperties.getAppKey();
-        String fuluSercret = FuliProperties.getSysSecret();
+        PlatformKey platformKey = platformKeyService.findByAppType(PlatformEnum.FULU.getCode());
+        String fuliAppKey = platformKey.getAppKey();
+        String fuluSercret = platformKey.getAppSercret();
+
         String accessToken = userRelate.getAccessToken();
 
         Map resultMap = momoOrderPushFulu(fuliAppKey, fuluSercret, tid, buyNum, chargeAccount, goods);
