@@ -176,6 +176,7 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setPayTime(transactionDto.getPayTime());
         transaction.setCreated(transactionDto.getCreated());
         transaction.setCreateTime(DateUtil.date());
+        transaction.setUpdateTime(DateUtil.date());
 
         transactionMapper.insertSelective(transaction);
         //充值账号
@@ -202,6 +203,7 @@ public class TransactionServiceImpl implements TransactionService {
             order.setTotalFee(orderDto.getTotalFee());
             order.setChargeAccount(chargeAccount);
             order.setCreateTime(DateUtil.date());
+            order.setUpdateTime(DateUtil.date());
             originalOrderService.add(order);
             //保存订单详情id
             Long orderId = order.getId();
