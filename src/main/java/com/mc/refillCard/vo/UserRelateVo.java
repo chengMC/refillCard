@@ -37,6 +37,8 @@ public class UserRelateVo implements Serializable{
 
 	private String nickName;
 
+	private String phone;
+
 	/**
 	 * 1 淘宝
 	 */

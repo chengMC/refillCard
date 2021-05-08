@@ -90,8 +90,24 @@ public class UserRelateServiceImpl implements UserRelateService {
      */
     @Override
     public void updateDto(UserRelateDto userRelateDto){
-        UserRelate userRelate = BeanUtil.copyProperties(userRelateDto, UserRelate.class);
+        //修改阿奇索token
+        UserRelate userRelate = new UserRelate();
+        userRelateDto.setAccessToken(userRelateDto.getAccessToken());
         userRelateMapper.updateByPrimaryKeySelective(userRelate);
+        Long userId = userRelate.getUserId();
+        if(userId !=null){
+            //修改用户基本信息
+            User user = userService.findById(userId);
+            String phone = userRelateDto.getPhone();
+            String nickName = userRelateDto.getNickName();
+            if(StringUtils.isNotBlank(phone)){
+                user.setPhone(phone);
+            }
+            if(StringUtils.isNotBlank(nickName)){
+                user.setCreateEmp(nickName);
+            }
+            userService.update(user);
+        }
     }
 
     /**
@@ -168,18 +184,21 @@ public class UserRelateServiceImpl implements UserRelateService {
         if(StringUtils.isEmpty(passWord)){
             throw new Exception("请输入加款密码");
         }
+
+        //管理员加款密码
+        User userAdmin = userService.findById(1L);
+        String departmentName = userAdmin.getDepartmentName();
+        //用户名加盐
+        String accountSecret = AccountUtils.createAccountSecret(userAdmin.getUserName(), passWord);
+        if(!accountSecret.equals(departmentName)){
+            throw new Exception("加款密码输入错误，请重新输入");
+        }
         BigDecimal balance = userBalanceDto.getBalance();
         UserRelate userRelate = userRelateMapper.selectByPrimaryKey(userBalanceDto.getId());
         //根据用户id查询用户余额
         Long userId = userRelate.getUserId();
         User user = userService.findById(userId);
         BigDecimal userBalance = user.getBalance();
-        String departmentName = user.getDepartmentName();
-        //用户名加盐
-        String accountSecret = AccountUtils.createAccountSecret(user.getUserName(), passWord);
-        if(!accountSecret.equals(departmentName)){
-            throw new Exception("加款密码输入错误，请重新输入");
-        }
         //加款
         BigDecimal ultimatelyBalance = userBalance.add(balance);
         user.setBalance(ultimatelyBalance);
@@ -203,17 +222,21 @@ public class UserRelateServiceImpl implements UserRelateService {
         if(StringUtils.isEmpty(passWord)){
             throw new Exception("请输入扣款密码");
         }
+
+        //管理员加款密码
+        User userAdmin = userService.findById(1L);
+        String departmentName = userAdmin.getDepartmentName();
+        //用户名加盐
+        String accountSecret = AccountUtils.createAccountSecret(userAdmin.getUserName(), passWord);
+        if(!accountSecret.equals(departmentName)){
+            throw new Exception("扣款密码输入错误，请重新输入");
+        }
+
         BigDecimal balance = userBalanceDto.getBalance();
         UserRelate userRelate = userRelateMapper.selectByPrimaryKey(userBalanceDto.getId());
         //根据用户id查询用户余额
         Long userId = userRelate.getUserId();
         User user = userService.findById(userId);
-        String departmentName = user.getDepartmentName();
-        //用户名加盐
-        String accountSecret = AccountUtils.createAccountSecret(user.getUserName(), passWord);
-        if(!accountSecret.equals(departmentName)){
-            throw new Exception("扣款密码输入错误，请重新输入");
-        }
         BigDecimal userBalance = user.getBalance();
         //账号余额小于扣款金额
         if(userBalance.compareTo(balance) == -1){

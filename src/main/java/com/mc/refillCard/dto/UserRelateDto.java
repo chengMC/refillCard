@@ -27,10 +27,14 @@ public class UserRelateDto implements Serializable{
 	 */
 	private String userName;
 
+	private String nickName;
+
 	/**
 	 * 用户id
 	 */
 	private Long userId;
+
+	private String phone;
 
 	/**
 	 * 1 淘宝

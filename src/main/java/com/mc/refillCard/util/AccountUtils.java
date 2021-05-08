@@ -32,7 +32,7 @@ public class AccountUtils {
     }
 
     public static void main(String[] args) {
-        String accountSecret = createAccountSecret("测试的店铺", "admin123456");
+        String accountSecret = createAccountSecret("bo_850104", "admin123456");
         System.out.println(accountSecret);
     }
 

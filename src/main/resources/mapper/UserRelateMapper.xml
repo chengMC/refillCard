@@ -20,13 +20,14 @@
     <result column="platform" jdbcType="INTEGER" property="platform" />
     <result column="balance" jdbcType="DECIMAL" property="balance" />
     <result column="nick_name" jdbcType="VARCHAR" property="nickName" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
   </resultMap>
   <sql id="Base_Column_List">
     id, access_token, agiso_user_id, fuli_app_key, fulu_sercret, user_id, platform, balance
   </sql>
   <sql id="BaseVo_Column_List">
     ur.id,ur.access_token,ur.agiso_user_id,ur.fuli_app_key,ur.fulu_sercret,ur.user_id,ur.platform,
-    u.balance,u.user_name,u.create_emp as nick_name
+    u.balance,u.user_name,u.create_emp as nick_name,u.phone
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
