@@ -91,8 +91,8 @@ public class UserRelateServiceImpl implements UserRelateService {
     @Override
     public void updateDto(UserRelateDto userRelateDto){
         //修改阿奇索token
-        UserRelate userRelate = new UserRelate();
-        userRelateDto.setAccessToken(userRelateDto.getAccessToken());
+        UserRelate userRelate = userRelateMapper.selectByPrimaryKey(userRelateDto.getId());
+        userRelate.setAccessToken(userRelateDto.getAccessToken());
         userRelateMapper.updateByPrimaryKeySelective(userRelate);
         Long userId = userRelate.getUserId();
         if(userId !=null){
