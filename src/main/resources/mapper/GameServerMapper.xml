@@ -1,80 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mc.refillCard.dao.BlacklistMapper">
-  <resultMap id="BaseResultMap" type="com.mc.refillCard.entity.Blacklist">
+<mapper namespace="com.mc.refillCard.dao.GameServerMapper">
+  <resultMap id="BaseResultMap" type="com.mc.refillCard.entity.GameServer">
     <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="area_value" jdbcType="VARCHAR" property="areaValue" />
+    <result column="area_name" jdbcType="VARCHAR" property="areaName" />
+    <result column="area_name_operator" jdbcType="VARCHAR" property="areaNameOperator" />
     <result column="good_type_id" jdbcType="BIGINT" property="goodTypeId" />
     <result column="good_type_name" jdbcType="VARCHAR" property="goodTypeName" />
-    <result column="user_id" jdbcType="BIGINT" property="userId" />
-    <result column="account" jdbcType="VARCHAR" property="account" />
+    <result column="remake" jdbcType="VARCHAR" property="remake" />
     <result column="status" jdbcType="INTEGER" property="status" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, good_type_id, good_type_name, user_id, account, status, create_time, update_time
+    id, area_value, area_name, area_name_operator, good_type_id, good_type_name, remake, 
+    status, create_time, update_time
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />
-    from blacklist
+    from game_server
     where id = #{id,jdbcType=BIGINT}
   </select>
-  <select id="findListByAccount" resultMap="BaseResultMap">
+  <select id="findListByGoodType" resultType="com.mc.refillCard.entity.GameServer">
     select
     <include refid="Base_Column_List" />
-    from blacklist
-    where account = #{account,jdbcType=VARCHAR}
-    and user_id = #{userId,jdbcType=BIGINT}
-    <if test="goodTypeId != null">
-      and good_type_id = #{goodTypeId,jdbcType=BIGINT}
-    </if>
+    from game_server
+    where good_type_id = #{goodType,jdbcType=BIGINT}
   </select>
-    <select id="findPageVoByExample" resultMap="BaseResultMap">
-      select
-      <include refid="Base_Column_List" />
-      from blacklist
-      where user_id = #{userId,jdbcType=BIGINT}
-      <if test="goodTypeId != null">
-        and good_type_id = #{goodTypeId,jdbcType=BIGINT}
-      </if>
-      <if test="account != null and account !=''">
-        and account like concat('%',#{account,jdbcType=BIGINT},'%')
-      </if>
-      order by id desc
-    </select>
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
-    delete from blacklist
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from game_server
     where id = #{id,jdbcType=BIGINT}
   </delete>
-  <insert id="insert" parameterType="com.mc.refillCard.entity.Blacklist">
+  <insert id="insert" parameterType="com.mc.refillCard.entity.GameServer">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
       SELECT LAST_INSERT_ID()
     </selectKey>
-    insert into blacklist (good_type_id, good_type_name, user_id, 
-      account, status, create_time, 
-      update_time)
-    values (#{goodTypeId,jdbcType=BIGINT}, #{goodTypeName,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT}, 
-      #{account,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, 
-      #{updateTime,jdbcType=TIMESTAMP})
+    insert into game_server (area_value, area_name, area_name_operator, 
+      good_type_id, good_type_name, remake, 
+      status, create_time, update_time
+      )
+    values (#{areaValue,jdbcType=VARCHAR}, #{areaName,jdbcType=VARCHAR}, #{areaNameOperator,jdbcType=VARCHAR}, 
+      #{goodTypeId,jdbcType=BIGINT}, #{goodTypeName,jdbcType=VARCHAR}, #{remake,jdbcType=VARCHAR}, 
+      #{status,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
+      )
   </insert>
-  <insert id="insertSelective" parameterType="com.mc.refillCard.entity.Blacklist">
+  <insert id="insertSelective" parameterType="com.mc.refillCard.entity.GameServer">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
       SELECT LAST_INSERT_ID()
     </selectKey>
-    insert into blacklist
+    insert into game_server
     <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="areaValue != null">
+        area_value,
+      </if>
+      <if test="areaName != null">
+        area_name,
+      </if>
+      <if test="areaNameOperator != null">
+        area_name_operator,
+      </if>
       <if test="goodTypeId != null">
         good_type_id,
       </if>
       <if test="goodTypeName != null">
         good_type_name,
       </if>
-      <if test="userId != null">
-        user_id,
-      </if>
-      <if test="account != null">
-        account,
+      <if test="remake != null">
+        remake,
       </if>
       <if test="status != null">
         status,
@@ -87,17 +81,23 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="areaValue != null">
+        #{areaValue,jdbcType=VARCHAR},
+      </if>
+      <if test="areaName != null">
+        #{areaName,jdbcType=VARCHAR},
+      </if>
+      <if test="areaNameOperator != null">
+        #{areaNameOperator,jdbcType=VARCHAR},
+      </if>
       <if test="goodTypeId != null">
         #{goodTypeId,jdbcType=BIGINT},
       </if>
       <if test="goodTypeName != null">
         #{goodTypeName,jdbcType=VARCHAR},
       </if>
-      <if test="userId != null">
-        #{userId,jdbcType=BIGINT},
-      </if>
-      <if test="account != null">
-        #{account,jdbcType=VARCHAR},
+      <if test="remake != null">
+        #{remake,jdbcType=VARCHAR},
       </if>
       <if test="status != null">
         #{status,jdbcType=INTEGER},
@@ -110,20 +110,26 @@
       </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.mc.refillCard.entity.Blacklist">
-    update blacklist
+  <update id="updateByPrimaryKeySelective" parameterType="com.mc.refillCard.entity.GameServer">
+    update game_server
     <set>
+      <if test="areaValue != null">
+        area_value = #{areaValue,jdbcType=VARCHAR},
+      </if>
+      <if test="areaName != null">
+        area_name = #{areaName,jdbcType=VARCHAR},
+      </if>
+      <if test="areaNameOperator != null">
+        area_name_operator = #{areaNameOperator,jdbcType=VARCHAR},
+      </if>
       <if test="goodTypeId != null">
         good_type_id = #{goodTypeId,jdbcType=BIGINT},
       </if>
       <if test="goodTypeName != null">
         good_type_name = #{goodTypeName,jdbcType=VARCHAR},
       </if>
-      <if test="userId != null">
-        user_id = #{userId,jdbcType=BIGINT},
-      </if>
-      <if test="account != null">
-        account = #{account,jdbcType=VARCHAR},
+      <if test="remake != null">
+        remake = #{remake,jdbcType=VARCHAR},
       </if>
       <if test="status != null">
         status = #{status,jdbcType=INTEGER},
@@ -137,12 +143,14 @@
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.mc.refillCard.entity.Blacklist">
-    update blacklist
-    set good_type_id = #{goodTypeId,jdbcType=BIGINT},
+  <update id="updateByPrimaryKey" parameterType="com.mc.refillCard.entity.GameServer">
+    update game_server
+    set area_value = #{areaValue,jdbcType=VARCHAR},
+      area_name = #{areaName,jdbcType=VARCHAR},
+      area_name_operator = #{areaNameOperator,jdbcType=VARCHAR},
+      good_type_id = #{goodTypeId,jdbcType=BIGINT},
       good_type_name = #{goodTypeName,jdbcType=VARCHAR},
-      user_id = #{userId,jdbcType=BIGINT},
-      account = #{account,jdbcType=VARCHAR},
+      remake = #{remake,jdbcType=VARCHAR},
       status = #{status,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP}

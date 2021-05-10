@@ -1,12 +1,13 @@
 package com.mc.refillCard.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.common.Enum.TransactionStateEnum;
 import com.mc.refillCard.common.Result;
-import com.mc.refillCard.config.fulu.ShuShanApiProperties;
+import com.mc.refillCard.config.supplier.ShuShanApiProperties;
 import com.mc.refillCard.dto.GoodsDto;
 import com.mc.refillCard.dto.OriginalOrderDto;
 import com.mc.refillCard.dto.TransactionDto;
@@ -62,6 +63,8 @@ public class TransactionController {
     private OriginalOrderService originalOrderService;
     @Autowired
     private PlatformKeyService platformKeyService;
+    @Autowired
+    private GameServerService gameServerService;
 
     /***
      * 多条件搜索transaction数据
@@ -205,6 +208,149 @@ public class TransactionController {
 //        log.error("location1112-"+location);
 //        System.out.println("location"+location);
 
+
+        String json ="{\n" +
+                "  \"code\" : 0,\n" +
+                "  \"msg\" : \"success\",\n" +
+                "  \"data\" : [ {\n" +
+                "    \"value\" : \"100002\",\n" +
+                "    \"name\" : \"艾欧尼亚 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100003\",\n" +
+                "    \"name\" : \"比尔吉沃特 网通\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100004\",\n" +
+                "    \"name\" : \"祖安 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100005\",\n" +
+                "    \"name\" : \"诺克萨斯 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100006\",\n" +
+                "    \"name\" : \"德玛西亚 网通\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100007\",\n" +
+                "    \"name\" : \"班德尔城 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100008\",\n" +
+                "    \"name\" : \"皮尔特沃夫 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100009\",\n" +
+                "    \"name\" : \"战争学院 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100010\",\n" +
+                "    \"name\" : \"弗雷尔卓德 网通\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100011\",\n" +
+                "    \"name\" : \"巨神峰 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100012\",\n" +
+                "    \"name\" : \"雷瑟守备 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100013\",\n" +
+                "    \"name\" : \"无畏先锋 网通\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100014\",\n" +
+                "    \"name\" : \"裁决之地 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100015\",\n" +
+                "    \"name\" : \"黑色玫瑰 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100016\",\n" +
+                "    \"name\" : \"暗影岛 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100017\",\n" +
+                "    \"name\" : \"钢铁烈阳 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100018\",\n" +
+                "    \"name\" : \"恕瑞玛 网通\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100019\",\n" +
+                "    \"name\" : \"均衡教派 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100020\",\n" +
+                "    \"name\" : \"水晶之痕 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100021\",\n" +
+                "    \"name\" : \"教育网专区\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100022\",\n" +
+                "    \"name\" : \"影流 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100023\",\n" +
+                "    \"name\" : \"守望之海 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100024\",\n" +
+                "    \"name\" : \"扭曲丛林 网通\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100025\",\n" +
+                "    \"name\" : \"征服之海 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100026\",\n" +
+                "    \"name\" : \"卡拉曼达 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100027\",\n" +
+                "    \"name\" : \"皮城警备 电信\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100028\",\n" +
+                "    \"name\" : \"巨龙之巢 网通\"\n" +
+                "  }, {\n" +
+                "    \"value\" : \"100029\",\n" +
+                "    \"name\" : \"男爵领域 全网络\"\n" +
+                "  } ]\n" +
+                "}";
+        Map params = JSON.parseObject(json);
+        String data = String.valueOf(params.get("data"));
+        List<Map> maps = JSON.parseArray(data,Map.class);
+//        for (Map map : maps) {
+//            String value =  String.valueOf(map.get("value"));
+//            String name =  String.valueOf(map.get("name"));
+//            name = name.replaceAll(" ","");
+//            if(name.indexOf("电信")>-1){
+//                name = name.replaceAll("电信","");
+//            }
+//            if(name.indexOf("网通")>-1){
+//                name = name.replaceAll("网通","");
+//            }
+//            if(name.indexOf("全网络")>-1){
+//                name = name.replaceAll("全网络","");
+//            }
+//            GameServer gameServer = new GameServer();
+//            gameServer.setAreaValue(value);
+//            gameServer.setAreaName(name);
+//            gameServer.setAreaNameOperator(String.valueOf(map.get("name")));
+//            gameServer.setGoodTypeId(6L);
+//            gameServer.setGoodTypeName("DNF");
+//            gameServerService.add(gameServer);
+//        }
+
+//        Map paramsdata = JSON.parseObject(data);
+//        getSign(paramsdata);
+    }
+
+
+    private void getSign(Map<String, String> params){
+        String[] keys = params.keySet().toArray(new String[0]);
+        Arrays.sort(keys);
+
+        for (String key : keys) {
+            String value = params.get(key).replaceAll(" ","");
+            if(value.indexOf("电信")>-1){
+                value = value.replaceAll("电信","");
+            }
+            if(value.indexOf("网通")>-1){
+                value = value.replaceAll("网通","");
+            }
+            if(value.indexOf("全网络")>-1){
+                value = value.replaceAll("网通","");
+            }
+            GameServer gameServer = new GameServer();
+            gameServer.setAreaValue(key);
+            gameServer.setAreaName(value);
+            gameServer.setAreaNameOperator(params.get(key));
+            gameServer.setGoodTypeId(6L);
+            gameServer.setGoodTypeName("DNF");
+            gameServerService.add(gameServer);
+        }
     }
 
     @GetMapping("/changeTBOrderStatus")
@@ -320,6 +466,66 @@ public class TransactionController {
         PlatformKey platformKey = platformKeyService.updatePlatformKey(id);
         return Result.success("修改成功",platformKey) ;
     }
+
+    @GetMapping("/from")
+    public void getInfoFrom() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+
+//        HashMap<String, Object> dataMap = new HashMap<>();
+//        dataMap.put("action","placeOrder");
+//        dataMap.put("requestTime", DateUtil.now());
+//        dataMap.put("merAccount", "test");
+//        dataMap.put("businessType", "13");
+//        dataMap.put("merOrderNo", "1785427671079037869");
+//        dataMap.put("rechargeAccount", "569741817");
+//        dataMap.put("productId", "1078");
+//        dataMap.put("rechargeValue", "1");
+//        String shuShanSign = AccountUtils.getjinglanSign(dataMap, "0cbc6611f5540bd0809a388dc95a615b");
+//        dataMap.put("sign",shuShanSign);
+//
+//        //接口调用
+//        String result = HttpRequest.post("http://123.56.242.212:25000/mch/api/v2/form")
+//                .form(dataMap)
+////                .addHeaders(headerMap)
+//                .execute()
+//                .body();
+//        System.out.println(result);
+//        Map resultMap = JSON.parseObject(result);
+//        String resultCode = String.valueOf(resultMap.get("resultCode"));
+//        if(!"0".equals(resultCode)){
+//            String resultMsg = String.valueOf(resultMap.get("resultMsg"));
+//            System.out.println(resultMsg);
+//        }
+//
+//
+        HashMap<String, Object> dataMap = new HashMap<>();
+        dataMap.put("action","queryOrder");
+        dataMap.put("requestTime", DateUtil.now());
+        dataMap.put("merAccount", "test");
+        dataMap.put("merOrderNo", "1785427671079037869");
+        String shuShanSign = AccountUtils.getjinglanSign(dataMap, "0cbc6611f5540bd0809a388dc95a615b");
+        dataMap.put("sign",shuShanSign);
+
+        //接口调用
+        String result = HttpRequest.post("http://123.56.242.212:25000/mch/api/v2/form")
+                .form(dataMap)
+                .execute()
+                .body();
+        System.out.println(result);
+        Map resultMap = JSON.parseObject(result);
+        String resultCode = String.valueOf(resultMap.get("resultCode"));
+
+        String data = String.valueOf(resultMap.get("data"));
+        Map resultDataMap = JSON.parseObject(data);
+        System.out.println(resultDataMap.get("orderNo"));
+        if(!"0".equals(resultCode)){
+            String resultMsg = String.valueOf(resultMap.get("resultMsg"));
+            System.out.println(resultMsg);
+        }
+
+
+    }
+
+
 
 
 

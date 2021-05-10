@@ -92,8 +92,34 @@ public class AccountUtils {
     }
 
 
+    /**
+     *  净蓝签名
+     *
+     * @param params
+     * @param appSecret
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws UnsupportedEncodingException
+     */
+    public static String getjinglanSign(Map<String, Object> params, String appSecret) throws NoSuchAlgorithmException, UnsupportedEncodingException
+    {
+        String[] keys = params.keySet().toArray(new String[0]);
+        Arrays.sort(keys);
+
+        StringBuilder query = new StringBuilder();
+        for (String key : keys) {
+            String value = String.valueOf(params.get(key));
+            query.append(key+"=").append(value+"&");
+        }
+        query.append("key="+appSecret);
+
+        byte[] md5byte = encryptMD5(query.toString());
+
+        return  byte2hex(md5byte);
+    }
+
     //参数签名
-    public static String Sign(Map<String, String> params,String appSecret) throws NoSuchAlgorithmException, UnsupportedEncodingException
+    public static String getSign(Map<String, String> params, String appSecret) throws NoSuchAlgorithmException, UnsupportedEncodingException
     {
         String[] keys = params.keySet().toArray(new String[0]);
         Arrays.sort(keys);

@@ -32,6 +32,10 @@ shushan:
   appSecret: y3htuqkbk8awjlf
   merchantID: 17860
 
+#净蓝密钥和商户号 调用接口使用
+jinglan:
+  appSecret: 8575716d59894834aab9f29afd615ce4
+  merAccount: 1000000652
 
 fuli:
   appKey: 1wqyNXf90RGYCwTPojXh7BKAPBmUcn36/YCIABCq2I0QWjLKWJXQ96Txd4ZTszsF

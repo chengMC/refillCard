@@ -8,8 +8,9 @@ import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.common.Enum.*;
-import com.mc.refillCard.config.fulu.FuliProperties;
-import com.mc.refillCard.config.fulu.ShuShanApiProperties;
+import com.mc.refillCard.config.supplier.FuliProperties;
+import com.mc.refillCard.config.supplier.JinglanApiProperties;
+import com.mc.refillCard.config.supplier.ShuShanApiProperties;
 import com.mc.refillCard.dao.TransactionMapper;
 import com.mc.refillCard.dto.FuluOrderDto;
 import com.mc.refillCard.dto.OriginalOrderDto;
@@ -76,6 +77,8 @@ public class TransactionServiceImpl implements TransactionService {
     private UserService userService;
     @Autowired
     private PlatformKeyService platformKeyService;
+    @Autowired
+    private GameServerService gameServerService;
 
     /**
      Transaction条件+分页查询
@@ -251,6 +254,7 @@ public class TransactionServiceImpl implements TransactionService {
             return resultOrderMap;
         }
         Integer type = goodsRelateFulu.getType();
+        OriginalOrder originalOrder = originalOrderService.findById(orderDto.getId());
         //类型是QB 下单
         if (type.equals(GoodsRelateTypeEnum.QB.getCode())) {
             //根据类型查询所对应福禄商品
@@ -265,7 +269,6 @@ public class TransactionServiceImpl implements TransactionService {
                     matchingGoods = good;
                 }
             }
-            OriginalOrder originalOrder = originalOrderService.findById(orderDto.getId());
             //地区匹配不成功后，走全国商品
             if(matchingGoods == null){
                 //查询全国下单平台
@@ -306,6 +309,14 @@ public class TransactionServiceImpl implements TransactionService {
                     return qbOrderPushMap;
                 }
             }
+        }else if (type.equals(GoodsRelateTypeEnum.DNF.getCode()) || type.equals(GoodsRelateTypeEnum.LOL.getCode())){
+            //DNF或者LOL 净蓝下单
+            Map orderPushMap = jinglanPlaceOrder(transactionDto, userRelate);
+            //修改失败订单状态
+            updataOrderStatus(originalOrder, orderPushMap);
+            return orderPushMap;
+        }else {
+
         }
 
         return resultOrderMap;
@@ -321,6 +332,12 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
+    /**
+     *  福禄下单
+     * @param transactionDto
+     * @param userRelate
+     * @return
+     */
     @Override
     public Map fuliPlaceOrder(TransactionDto transactionDto, UserRelate userRelate) {
         Map resultOrderMap = new HashMap();
@@ -402,6 +419,12 @@ public class TransactionServiceImpl implements TransactionService {
         return resultOrderMap;
     }
 
+    /**
+     *  蜀山下单
+     * @param transactionDto
+     * @param userRelate
+     * @return
+     */
     @Override
     public Map shushanPlaceOrder(TransactionDto transactionDto, UserRelate userRelate) {
         Map resultOrderMap = new HashMap();
@@ -449,6 +472,70 @@ public class TransactionServiceImpl implements TransactionService {
                     updateBalance(orderDto, goodsRelateFulu, userRelate, type);
                 }
                 return qbOrderPushMap;
+            }
+        }
+        resultOrderMap.put("fail", "订单号：" + tid);
+        return resultOrderMap;
+    }
+
+    /**
+     *  净蓝下单
+     *
+     * @param transactionDto
+     * @param userRelate
+     * @return
+     */
+    @Override
+    public Map jinglanPlaceOrder(TransactionDto transactionDto, UserRelate userRelate) {
+        Map resultOrderMap = new HashMap();
+        Long userId = userRelate.getUserId();
+
+        Integer platform = PlatformEnum.JINGLAN.getCode();
+        //订单保存添加人
+        String tid = transactionDto.getTid();
+        Transaction transaction = transactionMapper.findByTid(tid);
+        //订单
+        List<OriginalOrderDto> orders = transactionDto.getOrders();
+        for (OriginalOrderDto orderDto : orders) {
+            //订单的宝贝id
+            Long numIid = orderDto.getNumIid();
+            GoodsRelateFulu  goodsRelateFulu = goodsRelateFuluService.findByGoodId(numIid, userId);
+            if(goodsRelateFulu == null){
+                resultOrderMap.put("fail", "订单号：" + tid+",没有找到对应的宝贝Id："+numIid);
+                return resultOrderMap;
+            }
+
+            Integer type = goodsRelateFulu.getType();
+            //类型是DNF
+            if (type.equals(GoodsRelateTypeEnum.DNF.getCode())) {
+                //判断余额
+                Map judgeMap = judgeBalance(orderDto, goodsRelateFulu, userRelate, type);
+                //账号余额 大于订单总价格
+                if(judgeMap.get("fail") != null){
+                    return judgeMap;
+                }
+                //DNF下单
+                Map dnfOrderPushMap = jinglandnfOrderPush(transaction, transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
+                if(dnfOrderPushMap.get("success") != null){
+                    //更新余额
+                    updateBalance(orderDto, goodsRelateFulu, userRelate, type);
+                }
+                return dnfOrderPushMap;
+            }else  if (type.equals(GoodsRelateTypeEnum.LOL.getCode())) {
+                //类型是LOL
+                //判断余额
+                Map judgeMap = judgeBalance(orderDto, goodsRelateFulu, userRelate, type);
+                //账号余额 大于订单总价格
+                if(judgeMap.get("fail") != null){
+                    return judgeMap;
+                }
+                //LOL下单
+                Map dnfOrderPushMap = jinglanlolOrderPush(transaction, transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
+                if(dnfOrderPushMap.get("success") != null){
+                    //更新余额
+                    updateBalance(orderDto, goodsRelateFulu, userRelate, type);
+                }
+                return dnfOrderPushMap;
             }
         }
         resultOrderMap.put("fail", "订单号：" + tid);
@@ -615,6 +702,135 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
+    /**
+     * 净蓝DNF下单
+     *
+     * @param transaction
+     * @param transactionDto
+     * @param userRelate
+     * @param tid
+     * @param originalOrderDto
+     * @param goodsRelateFulu
+     * @param platform
+     * @return
+     */
+    private Map jinglandnfOrderPush(Transaction transaction, TransactionDto transactionDto, UserRelate userRelate,
+                                    String tid, OriginalOrderDto originalOrderDto, GoodsRelateFulu goodsRelateFulu, Integer platform) {
+        Integer type = goodsRelateFulu.getType();
+        Long userId = userRelate.getUserId();
+        String originalTid = tid;
+
+        //根据类型查询所对应商品
+        List<Goods> goods = goodsService.findListByTypeAndPlatform(platform, type);
+
+        //充值账号 针对DNF 备注中可能有两个账号
+        String receiverAddress = transactionDto.getReceiverAddress();
+        if(receiverAddress.indexOf("账号")>-1){
+            receiverAddress = receiverAddress.substring(receiverAddress.indexOf("账号"));
+        }
+        String chargeAccount = AccountUtils.findNumber(receiverAddress);
+
+        //更新DNF账号信息
+        Long orderId = originalOrderDto.getId();
+        OriginalOrder originalOrder = originalOrderService.findById(orderId);
+        originalOrder.setCreateEmp(String.valueOf(userId));
+        originalOrder.setChargeAccount(chargeAccount);
+        originalOrder.setSupplier(PlatformEnum.JINGLAN.getName());
+        originalOrderService.update(originalOrder);
+
+        Blacklist blacklist = new Blacklist();
+        blacklist.setAccount(chargeAccount);
+        blacklist.setUserId(userRelate.getUserId());
+        List<Blacklist> listByAccount = blacklistService.findListByAccount(blacklist);
+        if(CollUtil.isNotEmpty(listByAccount)){
+            Map resultOrderMap = new HashMap();
+            resultOrderMap.put("fail", "订单号：" + tid+",黑名单账号："+chargeAccount);
+            return resultOrderMap;
+        }
+        //面值
+        Integer nominal = Integer.valueOf(goodsRelateFulu.getNominal());
+        //数量
+        Integer num = originalOrderDto.getNum().intValue();
+        //QB购买数等于面值乘数量
+        Integer buyNum = num * nominal;
+        Map pushResultMap = jinglanOrderPushAndQueryResult(originalOrderDto,transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum, null);
+        return pushResultMap;
+    }
+
+
+    /**
+     * 净蓝LOL下单
+     *
+     * @param transaction
+     * @param transactionDto
+     * @param userRelate
+     * @param tid
+     * @param originalOrderDto
+     * @param goodsRelateFulu
+     * @param platform
+     * @return
+     */
+    private Map jinglanlolOrderPush(Transaction transaction, TransactionDto transactionDto, UserRelate userRelate,
+                                    String tid, OriginalOrderDto originalOrderDto, GoodsRelateFulu goodsRelateFulu, Integer platform) {
+        Integer type = goodsRelateFulu.getType();
+        Long userId = userRelate.getUserId();
+        String originalTid = tid;
+
+        //根据类型查询所对应商品
+        List<Goods> goods = goodsService.findListByTypeAndPlatform(platform, type);
+
+        //充值账号 针对LOL 备注中可能有两个账号
+        String receiverAddress = transactionDto.getReceiverAddress();
+        if(receiverAddress.indexOf("账号")>-1){
+            receiverAddress = receiverAddress.substring(receiverAddress.indexOf("账号"));
+        }
+        String chargeAccount = AccountUtils.findNumber(receiverAddress);
+
+        //获取到LOL所有区信息
+        List<GameServer> gameServers = gameServerService.findListByGoodType(GoodsRelateTypeEnum.LOL.getCode().longValue());
+        //游戏区域
+        String gameServerName = transactionDto.getReceiverAddress();
+        //默认全国
+        GameServer matchingGameServer = null;
+        for (GameServer gameServer : gameServers) {
+            //匹配游戏区域
+            String areaName = gameServer.getAreaName();
+            if (gameServerName.indexOf(areaName) > -1) {
+                matchingGameServer = gameServer;
+            }
+        }
+        if(matchingGameServer == null){
+            Map resultOrderMap = new HashMap();
+            resultOrderMap.put("fail", "订单号：" + tid+",区域信息未匹配："+gameServerName);
+            return resultOrderMap;
+        }
+
+        //更新LOL账号信息
+        Long orderId = originalOrderDto.getId();
+        OriginalOrder originalOrder = originalOrderService.findById(orderId);
+        originalOrder.setCreateEmp(String.valueOf(userId));
+        originalOrder.setChargeAccount(chargeAccount+",区："+matchingGameServer.getAreaName());
+        originalOrder.setSupplier(PlatformEnum.JINGLAN.getName());
+        originalOrderService.update(originalOrder);
+
+        Blacklist blacklist = new Blacklist();
+        blacklist.setAccount(chargeAccount);
+        blacklist.setUserId(userRelate.getUserId());
+        List<Blacklist> listByAccount = blacklistService.findListByAccount(blacklist);
+        if(CollUtil.isNotEmpty(listByAccount)){
+            Map resultOrderMap = new HashMap();
+            resultOrderMap.put("fail", "订单号：" + tid+",黑名单账号："+chargeAccount);
+            return resultOrderMap;
+        }
+        //面值
+        Integer nominal = Integer.valueOf(goodsRelateFulu.getNominal());
+        //数量
+        Integer num = originalOrderDto.getNum().intValue();
+        //QB购买数等于面值乘数量
+        Integer buyNum = num * nominal;
+        Map pushResultMap = jinglanOrderPushAndQueryResult(originalOrderDto,transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,matchingGameServer);
+        return pushResultMap;
+    }
 
     /**
      * 通用下单
@@ -911,6 +1127,79 @@ public class TransactionServiceImpl implements TransactionService {
         return resultOrderMap;
     }
 
+
+
+    /**
+     * 净蓝充值下单查询
+     *
+     *
+     * @param originalOrderDto
+     * @param transaction
+     * @param tid
+     * @param userRelate
+     * @param goods
+     * @param chargeAccount
+     * @param buyNum
+     * @param matchingGameServer
+     * @return
+     */
+    private Map jinglanOrderPushAndQueryResult(OriginalOrderDto originalOrderDto, Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
+                                               String chargeAccount, Integer buyNum, GameServer matchingGameServer) {
+        String accessToken = userRelate.getAccessToken();
+        if(matchingGameServer == null){
+            log.info("净蓝DNF下单后查询返回，游戏区："+matchingGameServer.getAreaName());
+        }else{
+            log.info("净蓝LOL下单后查询返回，游戏区："+matchingGameServer.getAreaName());
+        }
+
+        Map dnfPushResultMap = jinglandnfPush(tid, buyNum, chargeAccount, goods,matchingGameServer);
+        //下单失败后直接返回
+        if(dnfPushResultMap.get("fail") != null){
+            return dnfPushResultMap;
+        }
+        //更新状态
+        OriginalOrder originalOrder = originalOrderService.findById(originalOrderDto.getId());
+
+        //下单成功后去查询
+        Map queryOrderResultMap = jinglanQueryOrderResult(tid);
+        //查询充值失败后直接返回
+        if(queryOrderResultMap.get("fail") != null){
+            String fail = String.valueOf(queryOrderResultMap.get("fail"));
+            log.error("净蓝下单查询后失败："+fail);
+            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+            originalOrder.setFailReason(fail);
+            originalOrderService.update(originalOrder);
+            return queryOrderResultMap;
+        }
+        //福禄查询充值成功后 转化对象
+        String orderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
+
+        log.error("净蓝下单查询后成功："+orderDtoStr);
+        Map orderDtoStrResult = JSON.parseObject(orderDtoStr);
+        //获取出data中的数据
+        String orderDtoStrResultData = String.valueOf(orderDtoStrResult.get("data"));
+        //data转map 获取详细数据
+        Map resultDataMap = JSON.parseObject(orderDtoStrResultData);
+        originalOrder.setOrderStatus(2);
+        originalOrder.setRemark(orderDtoStr);
+        originalOrder.setExternalOrderId(String.valueOf(resultDataMap.get("orderNo")));
+        transactionMapper.updateByPrimaryKeySelective(transaction);
+        //更新发货状态
+        try {
+            Boolean aBoolean = changeTBOrderStatus(originalTid, accessToken);
+            if (!aBoolean) {
+                log.error("阿奇索自动发货失败");
+            }
+        } catch (UnsupportedEncodingException e) {
+            log.error("阿奇索自动发货失败："+ e);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("阿奇索自动发货失败："+ e);
+        }
+        Map resultOrderMap = new HashMap();
+        resultOrderMap.put("success", "订单号：" + tid);
+        return resultOrderMap;
+    }
+
     /**
      * 陌陌订单推送查询返回接口
      *
@@ -1021,6 +1310,36 @@ public class TransactionServiceImpl implements TransactionService {
             String failStr = "平台"+area+"QB下单失败。订单号：" + tid + "," + resultMap.get("state-info");
             qbNationwidePushResultMap.put("fail", failStr);
             return qbNationwidePushResultMap;
+        }
+    }
+
+    /**
+     *净蓝DNF充值推送
+     *
+     * @param tid
+     * @param buyNum
+     * @param chargeAccount
+     * @param good
+     * @param matchingGameServer
+     * @return
+     */
+    private Map jinglandnfPush(String tid, Integer buyNum, String chargeAccount, Goods good, GameServer matchingGameServer){
+        Map dnfPushResultMap = new HashMap();
+        Map resultMap = jinglandnfOrderPushApi(tid, buyNum, chargeAccount, good,matchingGameServer);
+        if(matchingGameServer != null){
+            log.info("净蓝下单LOL" + tid  + "-resultMap-" + resultMap);
+        }else{
+            log.info("净蓝下单DNF" + tid  + "-resultMap-" + resultMap);
+        }
+        //0 订单接收，其余拒收
+        String resultCode = String.valueOf(resultMap.get("resultCode"));
+        if("0".equals(resultCode)){
+            dnfPushResultMap.put("success", "订单号：" + tid);
+            return dnfPushResultMap;
+        }else{
+            String failStr = "平台下单失败。订单号：" + tid + "," + resultMap.get("resultMsg");
+            dnfPushResultMap.put("fail", failStr);
+            return dnfPushResultMap;
         }
     }
 
@@ -1144,6 +1463,66 @@ public class TransactionServiceImpl implements TransactionService {
         return resultOrderMap;
     }
 
+    /**
+     * 查询订单结果
+     *
+     * @param tid
+     * @return
+     */
+    private Map jinglanQueryOrderResult(String tid) {
+        Map resultOrderMap = new HashMap();
+        //睡二秒后查询结果
+        try {
+            Thread.currentThread().sleep(2000);
+        } catch (Exception e) {
+            log.error("线程异常");
+        }
+        for (int i = 0; i < 500; i++) {
+            HashMap<String, Object> dataMap = new HashMap<>();
+            dataMap.put("action","queryOrder");
+            dataMap.put("requestTime", DateUtil.now());
+            dataMap.put("merAccount", JinglanApiProperties.getMerAccount());
+            dataMap.put("merOrderNo", tid);
+            String sign = null;
+            try {
+                sign =AccountUtils.getjinglanSign(dataMap, JinglanApiProperties.getAppSecret());
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            dataMap.put("sign",sign);
+
+            //接口调用
+            String result = HttpRequest.post("http://123.56.243.180:26000/mch/api/v2/form")
+                    .form(dataMap)
+                    .execute()
+                    .body();
+            Map resultMap = JSON.parseObject(result);
+            String orderState = String.valueOf(resultMap.get("orderState"));
+            //24 充值全部成功
+           if("24".equals(orderState)){
+                resultOrderMap.put("success", result);
+                return resultOrderMap;
+            }else if("23".equals(orderState) || "-1".equals(orderState)){
+               String orderStateDesc = String.valueOf(resultMap.get("orderStateDesc"));
+               //23 充值全部失败,-1 订单已取消
+                String failStr = "平台充值失败。订单号：" + tid + ",state-" + orderStateDesc;
+                resultOrderMap.put("fail", failStr);
+                return resultOrderMap;
+            } else {
+                //睡一秒后查询结果，因为查询下单有延迟
+                try {
+                    Thread.currentThread().sleep(1000);
+                } catch (Exception e) {
+                    log.error("jinglan线程异常");
+                }
+            }
+        }
+        String failStr = "平台查询充值失败。订单号：" + tid;
+        resultOrderMap.put("fail", failStr);
+        return resultOrderMap;
+    }
 
     /**
      * qb订单推送 福禄
@@ -1179,7 +1558,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     /**
-     * qb订单推送 福禄
+     * qb订单推送 蜀山
      *
      * @param tid
      * @param buyNum
@@ -1224,6 +1603,53 @@ public class TransactionServiceImpl implements TransactionService {
         String json = XmlUtils.xml2json(result);
         System.out.println("蜀山QB下单接口返回："+json);
         Map resultMap = JSON.parseObject(json);
+        return resultMap;
+    }
+
+    /**
+     * DNF 推送净蓝
+     *
+     * @param tid
+     * @param buyNum
+     * @param chargeAccount
+     * @param good
+     * @param matchingGameServer
+     * @return
+     */
+    private Map jinglandnfOrderPushApi(String tid, Integer buyNum, String chargeAccount, Goods good, GameServer matchingGameServer) {
+        HashMap<String, Object> dataMap = new HashMap<>();
+        dataMap.put("action","placeOrder");
+        dataMap.put("requestTime", DateUtil.now());
+        dataMap.put("merAccount", JinglanApiProperties.getMerAccount());
+        dataMap.put("businessType", "13");
+        dataMap.put("merOrderNo", tid);
+        dataMap.put("rechargeAccount", chargeAccount);
+        dataMap.put("productId", good.getProductId());
+        dataMap.put("rechargeValue", buyNum);
+        //LOL需要传
+        if(matchingGameServer != null){
+            dataMap.put("gameAreaName", matchingGameServer.getAreaName());
+        }
+        String shuShanSign = null;
+        try {
+            AccountUtils.getjinglanSign(dataMap, JinglanApiProperties.getAppSecret());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        dataMap.put("sign",shuShanSign);
+
+        System.out.println("净蓝DNF下单请求参数："+dataMap);
+
+        //接口调用
+        String result = HttpRequest.post("http://123.56.243.180:26000/mch/api/v2/form")
+                .form(dataMap)
+                .execute()
+                .body();
+        System.out.println(result);
+        System.out.println("净蓝DNF下单接口返回："+result);
+        Map resultMap = JSON.parseObject(result);
         return resultMap;
     }
 

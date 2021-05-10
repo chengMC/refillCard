@@ -95,6 +95,15 @@ public interface TransactionService {
     Map shushanPlaceOrder(TransactionDto transactionDto, UserRelate userRelate);
 
     /**
+     * 净蓝
+     *
+     * @param transactionDto
+     * @param userRelate
+     * @return
+     */
+    Map jinglanPlaceOrder(TransactionDto transactionDto, UserRelate userRelate);
+
+    /**
      *
      * @param tid
      * @param token

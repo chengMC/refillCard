@@ -1,4 +1,4 @@
-package com.mc.refillCard.config.fulu;
+package com.mc.refillCard.config.supplier;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;

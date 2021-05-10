@@ -7,7 +7,8 @@ package com.mc.refillCard.common.Enum;
  */
 public enum PlatformEnum {
     FULU(1,"fulu"),
-    SHUSHAN(2,"shushan");
+    SHUSHAN(2,"shushan"),
+    JINGLAN(3,"jinglan");
 
     private Integer code;
     private String name;

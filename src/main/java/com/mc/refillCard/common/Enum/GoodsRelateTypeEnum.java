@@ -6,7 +6,10 @@ package com.mc.refillCard.common.Enum;
 public enum GoodsRelateTypeEnum {
     QB(1,"QB"),
     MOMO(2,"陌陌"),
-    TANTAN(3,"探探");
+    TANTAN(3,"探探"),
+    E_CARD(4,"京东E卡"),
+    DNF(5,"DNF"),
+    LOL(6,"LOL");
 
     private Integer code;
     private String name;
