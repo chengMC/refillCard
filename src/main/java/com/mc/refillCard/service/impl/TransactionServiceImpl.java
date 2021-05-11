@@ -11,6 +11,7 @@ import com.mc.refillCard.common.Enum.DictCodeEnum;
 import com.mc.refillCard.common.Enum.GoodsRelateTypeEnum;
 import com.mc.refillCard.common.Enum.PlatformEnum;
 import com.mc.refillCard.common.Enum.TransactionStateEnum;
+import com.mc.refillCard.common.UserConstants;
 import com.mc.refillCard.dao.TransactionMapper;
 import com.mc.refillCard.dto.OriginalOrderDto;
 import com.mc.refillCard.dto.TransactionDto;
@@ -21,7 +22,6 @@ import com.mc.refillCard.util.BaiDuMapApiUtil;
 import com.mc.refillCard.vo.TransactionVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,9 +40,6 @@ import java.util.Map;
 @Slf4j
 @Service
 public class TransactionServiceImpl implements TransactionService {
-
-    @Value("${agiso.appSecret}")
-    private String appSecret;
 
     @Autowired
     private TransactionMapper transactionMapper;
@@ -335,7 +332,7 @@ public class TransactionServiceImpl implements TransactionService {
         paramMap.put("timestamp", String.valueOf(DateUtil.currentSeconds()));
         paramMap.put("tid", tid);
         paramMap.put("selDataType", "tiqu");
-        paramMap.put("sign", AccountUtils.getAqusuoSign(paramMap, appSecret));
+        paramMap.put("sign", AccountUtils.getAqusuoSign(paramMap, UserConstants.appSecret));
 
         HashMap<String, Object> dataMap = new HashMap<>();
         dataMap.put("timestamp",  paramMap.get("timestamp"));
