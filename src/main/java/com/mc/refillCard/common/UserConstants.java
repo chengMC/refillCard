@@ -54,6 +54,9 @@ public class UserConstants {
     //当前时间与过期时间差小于这个时间，token刷新
     public static final long USED_TIME = 1 * 1000 * 60;
 
-    public static final String SITE_CODE = "site";
+    /**
+     * 阿奇索秘钥
+     */
+    public static final String appSecret = "ak6mr75ettb7yktzv7spspwu322f374y";
 
 }

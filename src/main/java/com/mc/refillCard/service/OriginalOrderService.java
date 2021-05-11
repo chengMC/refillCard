@@ -3,10 +3,15 @@ package com.mc.refillCard.service;
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dto.OriginalOrderDto;
 import com.mc.refillCard.dto.OriginalOrderQueryDto;
+import com.mc.refillCard.entity.GoodsRelateFulu;
 import com.mc.refillCard.entity.OriginalOrder;
+import com.mc.refillCard.entity.UserRelate;
 import com.mc.refillCard.vo.OriginalOrderVo;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author: MC
@@ -73,4 +78,50 @@ public interface OriginalOrderService {
      * @return
      */
     List<OriginalOrder> findAll();
+
+
+    /**
+     *
+     *  订单判断账号余额
+     *
+     * @param orderDto
+     * @param goodsRelateFulu
+     * @param userRelate
+     * @param type
+     * @return
+     */
+    Map judgeBalance(OriginalOrderDto orderDto, GoodsRelateFulu goodsRelateFulu, UserRelate userRelate,  Integer type);
+
+    /**
+     * 订单更新账号余额
+     *
+     * @param orderDto
+     * @param goodsRelateFulu
+     * @param userRelate
+     * @param type
+     */
+   void updateBalance(OriginalOrderDto orderDto, GoodsRelateFulu goodsRelateFulu, UserRelate userRelate,  Integer type);
+
+    /**
+     * 成功后改变订单状态
+     * @param tid
+     * @param token
+     * @return
+     * @throws UnsupportedEncodingException
+     * @throws NoSuchAlgorithmException
+     */
+    Boolean changeTBOrderStatus(String tid, String token) throws UnsupportedEncodingException, NoSuchAlgorithmException;
+
+    /**
+     *  失败后更新备注
+     * @param tid
+     * @param token
+     * @return
+     * @throws UnsupportedEncodingException
+     * @throws NoSuchAlgorithmException
+     */
+    Boolean failMemoUpdate(String tid, String token) throws UnsupportedEncodingException, NoSuchAlgorithmException;
+
+
+
 }

@@ -94,6 +94,13 @@ public class OriginalOrderVo implements Serializable{
 	//买家地区
 	private String buyerArea;
 
+	private String gameAreaName;
+
+	private Long goodTypeId;
+
+	private String goodTypeName;
+
+	private Integer orderType;
 	/**
 	 *失败理由
 	 */

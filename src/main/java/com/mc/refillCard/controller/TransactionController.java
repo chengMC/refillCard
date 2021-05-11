@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.common.Enum.TransactionStateEnum;
 import com.mc.refillCard.common.Result;
+import com.mc.refillCard.config.supplier.JinglanApiProperties;
 import com.mc.refillCard.config.supplier.ShuShanApiProperties;
 import com.mc.refillCard.dto.GoodsDto;
 import com.mc.refillCard.dto.OriginalOrderDto;
@@ -20,7 +21,7 @@ import com.mc.refillCard.vo.TaobaoTransactionVo;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,20 +40,13 @@ import java.util.*;
 @CrossOrigin(origins = "*", allowCredentials = "true", maxAge = 3600)
 public class TransactionController {
 
-    private static String appSecret;
-    @Value("${agiso.appSecret}")
-    public static void setAppSecret(String appSecret) {
-        TransactionController.appSecret = appSecret;
-    }
-
+    @Lazy
     @Autowired
     private TransactionService transactionService;
     @Autowired
     private UserRelateService userRelateService;
     @Autowired
     private UserService userService;
-    @Autowired
-    private SysDictService sysDictService;
     @Autowired
     private GoodsService goodsService;
     @Autowired
@@ -154,7 +148,7 @@ public class TransactionController {
 
             //更新订单备注
             try {
-                Boolean aBoolean = transactionService.failMemoUpdate(tid,accessToken);
+                Boolean aBoolean = originalOrderService.failMemoUpdate(tid,accessToken);
                 if (!aBoolean) {
                     log.error("更新订单备注失败");
                 }
@@ -357,7 +351,7 @@ public class TransactionController {
     public void changeTBOrderStatus() throws UnsupportedEncodingException, NoSuchAlgorithmException {
         String tid = "1678240369790554917";
         String token = "TbAldssngwbswy3kpt5tu6ykacpz4tu3xkaahzvgbcyp228vva";
-        Boolean b = transactionService.changeTBOrderStatus(tid,token);
+        Boolean b = originalOrderService.changeTBOrderStatus(tid,token);
 
     }
 
@@ -368,7 +362,7 @@ public class TransactionController {
         String token = "TbAldssngwbswy3kpt5tu6ykacpz4tu3xkaahzvgbcyp228vva";
         //更新卖家备注
         try {
-            Boolean aBoolean = transactionService.failMemoUpdate(tid,token);
+            Boolean aBoolean = originalOrderService.failMemoUpdate(tid,token);
             if (!aBoolean) {
                 log.error("更新订单备注失败");
             }
@@ -500,9 +494,9 @@ public class TransactionController {
         HashMap<String, Object> dataMap = new HashMap<>();
         dataMap.put("action","queryOrder");
         dataMap.put("requestTime", DateUtil.now());
-        dataMap.put("merAccount", "test");
+        dataMap.put("merAccount", JinglanApiProperties.getMerAccount());
         dataMap.put("merOrderNo", "1785427671079037869");
-        String shuShanSign = AccountUtils.getjinglanSign(dataMap, "0cbc6611f5540bd0809a388dc95a615b");
+        String shuShanSign = AccountUtils.getjinglanSign(dataMap, JinglanApiProperties.getAppSecret());
         dataMap.put("sign",shuShanSign);
 
         //接口调用

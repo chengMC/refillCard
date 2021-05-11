@@ -109,6 +109,14 @@ public class OriginalOrder implements Serializable{
 	 */
 	private String chargeAccount;
 
+	private String gameAreaName;
+
+	private Long goodTypeId;
+
+	private String goodTypeName;
+
+	private Integer orderType;
+
 	/**
 	 *失败理由
 	 */

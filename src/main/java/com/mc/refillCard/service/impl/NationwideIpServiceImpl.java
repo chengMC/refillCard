@@ -196,6 +196,7 @@ public class NationwideIpServiceImpl implements NationwideIpService {
             Transaction transaction = new Transaction();
             transaction.setBuyerArea(area);
             List<Transaction> listByParam = transactionService.findListByParam(transaction);
+//            List<Transaction> listByParam = new ArrayList<>();
             map.put(area,listByParam.size());
         }
         // 由于HashMap不属于list子类，所以无法使用Collections.sort方法来进行排序，所以我们将hashmap中的entryset取出放入一个ArrayList中
