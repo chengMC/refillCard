@@ -219,14 +219,18 @@ public class OrderPushShuShanServiceImpl implements OrderPushShuShanService {
             originalOrderService.update(originalOrder);
             return queryOrderResultMap;
         }
-        //福禄查询充值成功后 转化对象
-        String orderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
-        log.error("蜀山下单查询后成功："+orderDtoStr);
-        Map orderDtoStrResult = JSON.parseObject(orderDtoStr);
-        originalOrder.setOrderStatus(2);
-        originalOrder.setRemark(orderDtoStr);
-        originalOrder.setExternalOrderId(String.valueOf(orderDtoStrResult.get("order-id")));
-        transactionService.update(transaction);
+        try{
+            //福禄查询充值成功后 转化对象
+            String orderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
+            log.error("蜀山下单查询后成功："+orderDtoStr);
+            Map orderDtoStrResult = JSON.parseObject(orderDtoStr);
+            originalOrder.setOrderStatus(2);
+            originalOrder.setRemark(orderDtoStr);
+            originalOrder.setExternalOrderId(String.valueOf(orderDtoStrResult.get("order-id")));
+            originalOrderService.update(originalOrder);
+        }catch (Exception e){
+            log.error("净蓝下单查询后,保存订单信息失败");
+        }
         //更新发货状态
         try {
             Boolean aBoolean = originalOrderService.changeTBOrderStatus(originalTid, accessToken);

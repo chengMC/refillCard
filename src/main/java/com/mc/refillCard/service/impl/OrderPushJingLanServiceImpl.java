@@ -283,19 +283,23 @@ public class OrderPushJingLanServiceImpl implements OrderPushJingLanService {
             originalOrderService.update(originalOrder);
             return queryOrderResultMap;
         }
-        //福询充值成功后
-        String orderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
+        try{
+            //福询充值成功后
+            String orderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
 
-        log.error("净蓝下单查询后成功："+orderDtoStr);
-        Map orderDtoStrResult = JSON.parseObject(orderDtoStr);
-        //获取出data中的数据
-        String orderDtoStrResultData = String.valueOf(orderDtoStrResult.get("data"));
-        //data转map 获取详细数据
-        Map resultDataMap = JSON.parseObject(orderDtoStrResultData);
-        originalOrder.setOrderStatus(2);
-        originalOrder.setRemark(orderDtoStr);
-        originalOrder.setExternalOrderId(String.valueOf(resultDataMap.get("orderNo")));
-        transactionService.update(transaction);
+            log.error("净蓝下单查询后成功："+orderDtoStr);
+            Map orderDtoStrResult = JSON.parseObject(orderDtoStr);
+            //获取出data中的数据
+            String orderDtoStrResultData = String.valueOf(orderDtoStrResult.get("data"));
+            //data转map 获取详细数据
+            Map resultDataMap = JSON.parseObject(orderDtoStrResultData);
+            originalOrder.setOrderStatus(2);
+            originalOrder.setRemark(orderDtoStr);
+            originalOrder.setExternalOrderId(String.valueOf(resultDataMap.get("orderNo")));
+            originalOrderService.update(originalOrder);
+        }catch (Exception e){
+            log.error("净蓝下单查询后,保存订单信息失败");
+        }
         //更新发货状态
         try {
             Boolean aBoolean = originalOrderService.changeTBOrderStatus(originalTid, accessToken);

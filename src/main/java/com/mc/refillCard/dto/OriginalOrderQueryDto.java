@@ -125,6 +125,8 @@ public class OriginalOrderQueryDto implements Serializable{
 	 */
 	private Integer orderStatus;
 
+	private Integer orderType;
+
 	/**
 	 * 创建人
 	 */

@@ -524,13 +524,17 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
             transactionService.update(transaction);
             return queryOrderResultMap;
         }
-        //福禄查询充值成功后 转化对象
-        String fuluOrderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
-        FuluOrderDto fuluOrderDto = JSON.parseObject(fuluOrderDtoStr, FuluOrderDto.class);
-        transaction.setState(TransactionStateEnum.SUCCEED.getCode());
-        transaction.setRemark(fuluOrderDtoStr);
-        transaction.setUpdateEmp(fuluOrderDto.getOrder_id());
-        transactionService.update(transaction);
+        try{
+            //福禄查询充值成功后 转化对象
+            String fuluOrderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
+            FuluOrderDto fuluOrderDto = JSON.parseObject(fuluOrderDtoStr, FuluOrderDto.class);
+            transaction.setState(TransactionStateEnum.SUCCEED.getCode());
+            transaction.setRemark(fuluOrderDtoStr);
+            transaction.setUpdateEmp(fuluOrderDto.getOrder_id());
+            transactionService.update(transaction);
+        }catch (Exception e){
+            log.error("净蓝下单查询后,保存订单信息失败");
+        }
         //更新发货状态
         try {
             Boolean aBoolean = originalOrderService.changeTBOrderStatus(originalTid, accessToken);
