@@ -3,6 +3,7 @@ import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.dto.UserBalanceDto;
 import com.mc.refillCard.dto.UserRelateDto;
 import com.mc.refillCard.entity.UserRelate;
+import com.mc.refillCard.vo.UserRelateValueVo;
 import com.mc.refillCard.vo.UserRelateVo;
 
 import java.util.List;
@@ -70,7 +71,7 @@ public interface UserRelateService {
      * 查询所有UserRelate
      * @return
      */
-    List<UserRelate> findAll();
+    List<UserRelateVo> findAll();
 
     /**
      * 根据阿奇索用户查询用户
@@ -100,4 +101,7 @@ public interface UserRelateService {
      * @param userBalanceDto
      */
     void deductBalance(UserBalanceDto userBalanceDto) throws Exception;
+
+    List<UserRelateValueVo> find();
+
 }

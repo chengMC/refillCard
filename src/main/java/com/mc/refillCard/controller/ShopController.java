@@ -7,6 +7,8 @@ import com.mc.refillCard.dto.UserBalanceDto;
 import com.mc.refillCard.dto.UserRelateDto;
 import com.mc.refillCard.entity.UserRelate;
 import com.mc.refillCard.service.UserRelateService;
+import com.mc.refillCard.vo.UserRelateValueVo;
+import com.mc.refillCard.vo.UserRelateVo;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +48,18 @@ public class ShopController {
     @GetMapping(value = "/findAll" )
     public Result findAll(){
         //调用UserRelateService实现查询所有UserRelate
-        List<UserRelate> list = userRelateService.findAll();
+        List<UserRelateVo> list = userRelateService.findAll();
+        return Result.success("查询成功",list) ;
+    }
+
+    /***
+     * 查询UserRelate全部数据
+     * @return
+     */
+    @GetMapping(value = "/find" )
+    public Result find(){
+        //调用UserRelateService实现查询所有UserRelate
+        List<UserRelateValueVo> list = userRelateService.find();
         return Result.success("查询成功",list) ;
     }
 

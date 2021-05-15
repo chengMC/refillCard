@@ -32,4 +32,7 @@ public interface OriginalOrderMapper {
     List<OriginalOrder> findAll();
 
     List<OriginalOrderVo> findPageVoByExample(OriginalOrderQueryDto originalOrderDto);
+
+    void orderFail();
+
 }

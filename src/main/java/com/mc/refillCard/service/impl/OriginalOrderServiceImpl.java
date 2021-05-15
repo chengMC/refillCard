@@ -315,4 +315,9 @@ public class OriginalOrderServiceImpl implements OriginalOrderService {
         return change;
     }
 
+    @Override
+    public void orderFail() {
+        originalOrderMapper.orderFail();
+    }
+
 }

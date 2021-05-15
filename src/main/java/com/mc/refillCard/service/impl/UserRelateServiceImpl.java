@@ -15,6 +15,7 @@ import com.mc.refillCard.service.FinanceRecordService;
 import com.mc.refillCard.service.UserRelateService;
 import com.mc.refillCard.service.UserService;
 import com.mc.refillCard.util.AccountUtils;
+import com.mc.refillCard.vo.UserRelateValueVo;
 import com.mc.refillCard.vo.UserRelateVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 /****
  * @Author: MC
@@ -144,7 +146,7 @@ public class UserRelateServiceImpl implements UserRelateService {
      * @return
      */
     @Override
-    public List<UserRelate> findAll() {
+    public List<UserRelateVo> findAll() {
         return userRelateMapper.findAll();
     }
 
@@ -258,6 +260,17 @@ public class UserRelateServiceImpl implements UserRelateService {
         financeRecord.setCreateTime(DateUtil.date());
         financeRecord.setRemark(userBalanceDto.getRemark());
         financeRecordService.add(financeRecord);
+    }
+
+    @Override
+    public List<UserRelateValueVo> find() {
+        List<UserRelateValueVo> relateValueVos  = new ArrayList<>();
+        List<UserRelateVo> userRelateAll = userRelateMapper.findAll();
+        for (UserRelateVo userRelate : userRelateAll) {
+            UserRelateValueVo valueVo =  BeanUtil.copyProperties(userRelate,UserRelateValueVo.class);
+            relateValueVos.add(valueVo);
+        }
+        return relateValueVos;
     }
 
 }

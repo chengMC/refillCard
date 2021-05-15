@@ -323,6 +323,8 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
 
         //充值账号 针对LOL 备注中可能有两个账号
         String receiverAddress = transactionDto.getReceiverAddress();
+        //游戏区域
+        String gameServerName = transactionDto.getReceiverAddress();
         if(receiverAddress.indexOf("账号")>-1){
             receiverAddress = receiverAddress.substring(receiverAddress.indexOf("账号"));
         }
@@ -339,13 +341,13 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
 
         //获取到LOL所有区信息
         List<GameServer> gameServers = gameServerService.findListByGoodType(GoodsRelateTypeEnum.LOL.getCode().longValue());
-        //游戏区域
-        String gameServerName = transactionDto.getReceiverAddress();
-        //默认全国
+        //匹配区域
         GameServer matchingGameServer = null;
+        log.info("gameServerName:"+gameServerName);
         for (GameServer gameServer : gameServers) {
             //匹配游戏区域
             String areaName = gameServer.getAreaName();
+            log.info("areaName:"+areaName);
             if (gameServerName.indexOf(areaName) > -1) {
                 matchingGameServer = gameServer;
             }

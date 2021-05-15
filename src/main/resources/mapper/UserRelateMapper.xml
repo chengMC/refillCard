@@ -56,7 +56,15 @@
     </if>
     order by u.id desc
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    <select id="findAll" resultMap="BaseVoResultMap">
+      SELECT
+      <include refid="BaseVo_Column_List" />
+      FROM user_relate ur
+      left join user u on u.id = ur.user_id
+      where u.status !=0
+      order by u.id desc
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from user_relate
     where id = #{id,jdbcType=BIGINT}
   </delete>

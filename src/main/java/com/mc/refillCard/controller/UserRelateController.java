@@ -5,6 +5,7 @@ import com.mc.refillCard.common.Result;
 import com.mc.refillCard.dto.UserRelateDto;
 import com.mc.refillCard.entity.UserRelate;
 import com.mc.refillCard.service.UserRelateService;
+import com.mc.refillCard.vo.UserRelateVo;
 import com.mc.refillCard.vo.UserVo;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,7 @@ public class UserRelateController {
     @GetMapping(value = "/findAll" )
     public Result findAll(){
         //调用UserRelateService实现查询所有UserRelate
-        List<UserRelate> list = userRelateService.findAll();
+        List<UserRelateVo> list = userRelateService.findAll();
         return Result.success("查询成功",list) ;
     }
 

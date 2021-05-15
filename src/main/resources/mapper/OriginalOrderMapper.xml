@@ -127,7 +127,10 @@
     </if>
     order by oo.update_time desc
   </select>
-
+  <update id="orderFail">
+    update original_order set order_status = 3,fail_reason ='订单超时'
+    where update_time  &lt; date_add(NOW(), interval -60 MINUTE)
+  </update>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from original_order
     where id = #{id,jdbcType=BIGINT}
@@ -467,4 +470,5 @@
       update_emp = #{updateEmp,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
+
 </mapper>

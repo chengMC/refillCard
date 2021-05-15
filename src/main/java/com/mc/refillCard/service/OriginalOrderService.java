@@ -122,6 +122,9 @@ public interface OriginalOrderService {
      */
     Boolean failMemoUpdate(String tid, String token) throws UnsupportedEncodingException, NoSuchAlgorithmException;
 
-
+    /**
+     *  订单充值一个小时判断超时
+     */
+    void orderFail();
 
 }

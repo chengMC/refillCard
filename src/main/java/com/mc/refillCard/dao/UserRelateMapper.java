@@ -30,7 +30,7 @@ public interface UserRelateMapper {
 
     List<UserRelate> selectByExample(UserRelate userRelate);
 
-    List<UserRelate> findAll();
+    List<UserRelateVo> findAll();
 
     List<UserRelateVo> findPageVoByExample(UserRelateDto userRelateDto);
 
