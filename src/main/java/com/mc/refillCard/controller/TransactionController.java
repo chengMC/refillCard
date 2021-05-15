@@ -1,13 +1,12 @@
 package com.mc.refillCard.controller;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.common.Enum.TransactionStateEnum;
 import com.mc.refillCard.common.Result;
-import com.mc.refillCard.config.supplier.JinglanApiProperties;
+import com.mc.refillCard.config.supplier.FuliProperties;
 import com.mc.refillCard.config.supplier.ShuShanApiProperties;
 import com.mc.refillCard.dto.GoodsDto;
 import com.mc.refillCard.dto.OriginalOrderDto;
@@ -18,6 +17,9 @@ import com.mc.refillCard.util.AccountUtils;
 import com.mc.refillCard.util.XmlUtils;
 import com.mc.refillCard.vo.TaobaoDoMemoUpdateVo;
 import com.mc.refillCard.vo.TaobaoTransactionVo;
+import fulu.sup.open.api.core.MethodConst;
+import fulu.sup.open.api.model.InputProductTemplateDto;
+import fulu.sup.open.api.sdk.DefaultOpenApiClient;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -463,6 +465,20 @@ public class TransactionController {
 
     @GetMapping("/from")
     public void getInfoFrom() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        String fuliAppKey ="+gViu2wfFwlHcca4U4FR+ijRebmrPjLu9+9JLeKukYjh3aqGj5g1BLO+soJ7Npix";
+        String fuluSercret = "77126992853e4fcabf04014ce75afbfa";
+
+        //通过福禄API下单
+        DefaultOpenApiClient client =
+                new DefaultOpenApiClient(FuliProperties.getUrl(), fuliAppKey, fuluSercret, MethodConst.OPEN_API_GOODS_TEMPLATE_GET);
+        InputProductTemplateDto dto = new InputProductTemplateDto();
+        dto.setTemplateId("05a6216a-4da6-46d6-99c6-bd03f86ccbb4");
+
+        client.setBizObject(dto);
+        System.out.println("福禄"+"下单请求："+JSON.toJSONString(dto));
+        String result = client.excute();
+        Map resultMap = JSON.parseObject(result);
+        System.out.println(resultMap);
 
 //        HashMap<String, Object> dataMap = new HashMap<>();
 //        dataMap.put("action","placeOrder");
@@ -491,30 +507,30 @@ public class TransactionController {
 //        }
 //
 //
-        HashMap<String, Object> dataMap = new HashMap<>();
-        dataMap.put("action","queryOrder");
-        dataMap.put("requestTime", DateUtil.now());
-        dataMap.put("merAccount", JinglanApiProperties.getMerAccount());
-        dataMap.put("merOrderNo", "1785427671079037869");
-        String shuShanSign = AccountUtils.getjinglanSign(dataMap, JinglanApiProperties.getAppSecret());
-        dataMap.put("sign",shuShanSign);
-
-        //接口调用
-        String result = HttpRequest.post("http://123.56.242.212:25000/mch/api/v2/form")
-                .form(dataMap)
-                .execute()
-                .body();
-        System.out.println(result);
-        Map resultMap = JSON.parseObject(result);
-        String resultCode = String.valueOf(resultMap.get("resultCode"));
-
-        String data = String.valueOf(resultMap.get("data"));
-        Map resultDataMap = JSON.parseObject(data);
-        System.out.println(resultDataMap.get("orderNo"));
-        if(!"0".equals(resultCode)){
-            String resultMsg = String.valueOf(resultMap.get("resultMsg"));
-            System.out.println(resultMsg);
-        }
+//        HashMap<String, Object> dataMap = new HashMap<>();
+//        dataMap.put("action","queryOrder");
+//        dataMap.put("requestTime", DateUtil.now());
+//        dataMap.put("merAccount", JinglanApiProperties.getMerAccount());
+//        dataMap.put("merOrderNo", "1785427671079037869");
+//        String shuShanSign = AccountUtils.getjinglanSign(dataMap, JinglanApiProperties.getAppSecret());
+//        dataMap.put("sign",shuShanSign);
+//
+//        //接口调用
+//        String result = HttpRequest.post("http://123.56.242.212:25000/mch/api/v2/form")
+//                .form(dataMap)
+//                .execute()
+//                .body();
+//        System.out.println(result);
+//        Map resultMap = JSON.parseObject(result);
+//        String resultCode = String.valueOf(resultMap.get("resultCode"));
+//
+//        String data = String.valueOf(resultMap.get("data"));
+//        Map resultDataMap = JSON.parseObject(data);
+//        System.out.println(resultDataMap.get("orderNo"));
+//        if(!"0".equals(resultCode)){
+//            String resultMsg = String.valueOf(resultMap.get("resultMsg"));
+//            System.out.println(resultMsg);
+//        }
 
 
     }

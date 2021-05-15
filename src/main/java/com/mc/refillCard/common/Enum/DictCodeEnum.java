@@ -12,7 +12,9 @@ public enum DictCodeEnum {
     PATTERN(4,"pattern"),
     PLATFORM(5,"platform"),
     NATIONWIDE(6,"nationwide"),
-    REGION(7,"region");
+    REGION(7,"region"),
+    DNF(8,"dnf"),
+    LOL(9,"LOL");
 
     private Integer code;
     private String name;

@@ -53,6 +53,9 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
     private BlacklistService blacklistService;
     @Autowired
     private PlatformKeyService platformKeyService;
+    @Autowired
+    private GameServerService gameServerService;
+
 
     @Override
     public Map fuliPlaceOrder(TransactionDto transactionDto, UserRelate userRelate) {
@@ -61,7 +64,6 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
         Integer platform = PlatformEnum.FULU.getCode();
         //订单保存添加人
         String tid = transactionDto.getTid();
-        Transaction transaction = transactionService.findById(Long.valueOf(tid));
 
         //充值账号
         String receiverAddress = transactionDto.getReceiverAddress();
@@ -100,36 +102,60 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
                     originalOrderService.updateBalance(orderDto, goodsRelateFulu, userRelate, type);
                 }
                 return qbOrderPushMap;
-            }
-            //下单是陌陌
-            if (type.equals(GoodsRelateTypeEnum.MOMO.getCode())) {
+            }else if (type.equals(GoodsRelateTypeEnum.MOMO.getCode())) {
+                //下单是陌陌
                 //判断余额
                 Map judgeMap = originalOrderService.judgeBalance(orderDto, goodsRelateFulu, userRelate, type);
                 //账号余额 大于订单总价格
                 if(judgeMap.get("fail") != null){
                     return judgeMap;
                 }
-                Map qbOrderPushMap = fuluCommonOrderPush(transaction, transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
+                Map qbOrderPushMap = fuluCommonOrderPush(transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
                 if(qbOrderPushMap.get("success") != null){
                     //更新余额
                     originalOrderService.updateBalance(orderDto, goodsRelateFulu, userRelate, type);
                 }
                 return qbOrderPushMap;
-            }
-            //探探下单
-            if (type.equals(GoodsRelateTypeEnum.TANTAN.getCode())) {
+            }else if (type.equals(GoodsRelateTypeEnum.TANTAN.getCode())) {
+                //探探下单
                 //判断余额
                 Map judgeMap = originalOrderService.judgeBalance(orderDto, goodsRelateFulu, userRelate, type);
                 //账号余额 大于订单总价格
                 if(judgeMap.get("fail") != null){
                     return judgeMap;
                 }
-                Map qbOrderPushMap = fuluCommonOrderPush(transaction, transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
+                Map qbOrderPushMap = fuluCommonOrderPush( transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
                 if(qbOrderPushMap.get("success") != null){
                     //更新余额
                     originalOrderService.updateBalance(orderDto, goodsRelateFulu, userRelate, type);
                 }
                 return qbOrderPushMap;
+            }else if (type.equals(GoodsRelateTypeEnum.DNF.getCode())) {
+                //DNF下单
+                //判断余额
+                Map judgeMap = originalOrderService.judgeBalance(orderDto, goodsRelateFulu, userRelate, type);
+                //账号余额 大于订单总价格
+                if(judgeMap.get("fail") != null){
+                    return judgeMap;
+                }
+                Map dnfOrderPushMap = fuluDNFOrderPush(transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
+                if(dnfOrderPushMap.get("success") != null){
+                    //更新余额
+                    originalOrderService.updateBalance(orderDto, goodsRelateFulu, userRelate, type);
+                }
+            }else if (type.equals(GoodsRelateTypeEnum.LOL.getCode())) {
+                //LOL下单
+                //判断余额
+                Map judgeMap = originalOrderService.judgeBalance(orderDto, goodsRelateFulu, userRelate, type);
+                //账号余额 大于订单总价格
+                if(judgeMap.get("fail") != null){
+                    return judgeMap;
+                }
+                Map lolOrderPushMap = fuluLOLOrderPush(transactionDto, userRelate, tid, orderDto, goodsRelateFulu,platform);
+                if(lolOrderPushMap.get("success") != null){
+                    //更新余额
+                    originalOrderService.updateBalance(orderDto, goodsRelateFulu, userRelate, type);
+                }
             }
         }
         return resultOrderMap;
@@ -156,13 +182,20 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
         String buyerArea = transactionDto.getBuyerArea();
         //根据类型查询所对应福禄商品
         List<Goods> goods = goodsService.findListByTypeAndPlatform(platform, type);
-        //查询IP段
-        List<NationwideIp> nationwideIpList = nationwideIpService.findAll();
 
         //充值账号
         String receiverAddress = transactionDto.getReceiverAddress();
         String chargeAccount = AccountUtils.findNumber(receiverAddress);
 
+        //更新订单
+        Long userId = userRelate.getUserId();
+        Long orderId = originalOrderDto.getId();
+        OriginalOrder originalOrder = originalOrderService.findById(orderId);
+        originalOrder.setCreateEmp(String.valueOf(userId));
+        originalOrder.setChargeAccount(chargeAccount);
+        originalOrder.setSupplier(PlatformEnum.FULU.getName());
+        originalOrderService.update(originalOrder);
+        //黑名单检测
         Blacklist blacklist = new Blacklist();
         blacklist.setAccount(chargeAccount);
         blacklist.setUserId(userRelate.getUserId());
@@ -172,7 +205,7 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
             resultOrderMap.put("fail", "订单号：" + tid+",黑名单账号："+chargeAccount);
             return resultOrderMap;
         }
-
+        List<NationwideIp> nationwideIpList = nationwideIpService.findAll();
         //面值
         Integer nominal = Integer.valueOf(goodsRelateFulu.getNominal());
         //数量
@@ -265,6 +298,91 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
     }
 
     /**
+     * QB订单推送
+     *
+     * @param transactionDto
+     * @param userRelate
+     * @param tid
+     * @param originalOrderDto
+     * @param goodsRelateFulu
+     * @param platform
+     * @return
+     */
+    private Map fuluLOLOrderPush(TransactionDto transactionDto, UserRelate userRelate,
+                                String tid, OriginalOrderDto originalOrderDto, GoodsRelateFulu goodsRelateFulu, Integer platform) {
+        Integer type = goodsRelateFulu.getType();
+        String originalTid = tid;
+        //根据类型查询所对应商品
+        List<Goods> goods = goodsService.findListByTypeAndPlatform(platform,type);
+        if(CollUtil.isEmpty(goods)){
+            Map resultOrderMap = new HashMap();
+            resultOrderMap.put("fail", "订单号：" + tid+",未找到商品或者商品已下架");
+            return resultOrderMap;
+        }
+        Goods matchingGood = goods.get(0);
+
+        //充值账号 针对LOL 备注中可能有两个账号
+        String receiverAddress = transactionDto.getReceiverAddress();
+        if(receiverAddress.indexOf("账号")>-1){
+            receiverAddress = receiverAddress.substring(receiverAddress.indexOf("账号"));
+        }
+        String chargeAccount = AccountUtils.findNumber(receiverAddress);
+
+        //更新LOL账号信息
+        Long userId = userRelate.getUserId();
+        Long orderId = originalOrderDto.getId();
+        OriginalOrder originalOrder = originalOrderService.findById(orderId);
+        originalOrder.setCreateEmp(String.valueOf(userId));
+        originalOrder.setChargeAccount(chargeAccount);
+        originalOrder.setSupplier(PlatformEnum.FULU.getName());
+        originalOrderService.update(originalOrder);
+
+        //获取到LOL所有区信息
+        List<GameServer> gameServers = gameServerService.findListByGoodType(GoodsRelateTypeEnum.LOL.getCode().longValue());
+        //游戏区域
+        String gameServerName = transactionDto.getReceiverAddress();
+        //默认全国
+        GameServer matchingGameServer = null;
+        for (GameServer gameServer : gameServers) {
+            //匹配游戏区域
+            String areaName = gameServer.getAreaName();
+            if (gameServerName.indexOf(areaName) > -1) {
+                matchingGameServer = gameServer;
+            }
+        }
+        if(matchingGameServer == null){
+            Map resultOrderMap = new HashMap();
+            resultOrderMap.put("fail", "订单号：" + tid+",区域信息未匹配："+gameServerName);
+            return resultOrderMap;
+        }
+
+        //更新LOL区
+        originalOrder.setGameAreaName(matchingGameServer.getAreaName());
+        originalOrderService.update(originalOrder);
+
+        //黑名单
+        Blacklist blacklist = new Blacklist();
+        blacklist.setAccount(chargeAccount);
+        blacklist.setUserId(userRelate.getUserId());
+        List<Blacklist> listByAccount = blacklistService.findListByAccount(blacklist);
+        if(CollUtil.isNotEmpty(listByAccount)){
+            Map resultOrderMap = new HashMap();
+            resultOrderMap.put("fail", "订单号：" + tid+",黑名单账号："+chargeAccount);
+            return resultOrderMap;
+        }
+
+        //面值
+        Integer nominal = Integer.valueOf(goodsRelateFulu.getNominal());
+        //数量
+        Integer num = originalOrderDto.getNum().intValue();
+        //QB购买数等于面值乘数量
+        Integer buyNum = num * nominal;
+
+        Map qbNationwidePushResultMap = fuluLOLOrderPushAndQueryResult(originalOrderDto, tid,originalTid,userRelate,matchingGood, chargeAccount, buyNum,matchingGameServer);
+        return qbNationwidePushResultMap;
+    }
+
+    /**
      * QB下单后查询结果并发返回
      *
      * @param originalOrderDto
@@ -287,6 +405,67 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
         log.info("qb下单后查询返回，地区："+goods.getArea()+"-IP:"+ip);
 
         Map qbNationwidePushResultMap = fuliQbNationwidePush(fuliAppKey, fuluSercret, tid, buyNum, chargeAccount, goods,ip);
+        //福禄下单失败后直接返回
+        if(qbNationwidePushResultMap.get("fail") != null){
+            return qbNationwidePushResultMap;
+        }
+        //更新状态
+        OriginalOrder originalOrder = originalOrderService.findById(originalOrderDto.getId());
+        //福禄下单成功后去查询
+        Map queryOrderResultMap = fuliQueryOrderResult(fuliAppKey, fuluSercret, tid);
+        //福禄查询充值失败后直接返回
+        if(queryOrderResultMap.get("fail") != null){
+            String fail = String.valueOf(queryOrderResultMap.get("fail"));
+            log.error(fail);
+            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+            originalOrder.setFailReason(fail);
+            originalOrderService.update(originalOrder);
+            return queryOrderResultMap;
+        }
+        //福禄查询充值成功后 转化对象
+        String fuluOrderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
+        FuluOrderDto fuluOrderDto = JSON.parseObject(fuluOrderDtoStr, FuluOrderDto.class);
+        originalOrder.setOrderStatus(TransactionStateEnum.SUCCEED.getCode());
+        originalOrder.setRemark(fuluOrderDtoStr);
+        originalOrder.setExternalOrderId(fuluOrderDto.getOrder_id());
+        originalOrderService.update(originalOrder);
+        //更新发货状态
+        try {
+            Boolean aBoolean = originalOrderService.changeTBOrderStatus(originalTid, accessToken);
+            if (!aBoolean) {
+                log.error("阿奇索自动发货失败");
+            }
+        } catch (UnsupportedEncodingException e) {
+            log.error("阿奇索自动发货失败："+ e);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("阿奇索自动发货失败："+ e);
+        }
+        Map resultOrderMap = new HashMap();
+        resultOrderMap.put("success", "订单号：" + tid);
+        return resultOrderMap;
+    }
+
+    /**
+     * QB下单后查询结果并发返回
+     *
+     * @param originalOrderDto
+     * @param tid
+     * @param userRelate
+     * @param goods
+     * @param chargeAccount
+     * @param buyNum
+     * @return
+     */
+    private Map fuluLOLOrderPushAndQueryResult(OriginalOrderDto originalOrderDto, String tid, String originalTid, UserRelate userRelate, Goods goods,
+                                              String chargeAccount, Integer buyNum,GameServer matchingGameServer) {
+        PlatformKey platformKey = platformKeyService.findByAppType(PlatformEnum.FULU.getCode());
+        String fuliAppKey = platformKey.getAppKey();
+        String fuluSercret = platformKey.getAppSercret();
+
+        String accessToken = userRelate.getAccessToken();
+        log.info("福禄LOL下单后查询返回，游戏区："+matchingGameServer.getAreaName());
+
+        Map qbNationwidePushResultMap = fuliLOLPush(fuliAppKey, fuluSercret, tid, buyNum, chargeAccount, goods,matchingGameServer);
         //福禄下单失败后直接返回
         if(qbNationwidePushResultMap.get("fail") != null){
             return qbNationwidePushResultMap;
@@ -355,6 +534,32 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
     }
 
     /**
+     * 直接推送福禄
+     *
+     * @param fuliAppKey
+     * @param fuluSercret
+     * @param tid
+     * @param buyNum
+     * @param chargeAccount
+     * @param good
+     * @return
+     */
+    private Map fuliLOLPush(String fuliAppKey, String fuluSercret,
+                                     String tid, Integer buyNum, String chargeAccount, Goods good, GameServer matchingGameServer){
+        Map qbNationwidePushResultMap = new HashMap();
+        Map resultMap = lolOrderPushFulu(fuliAppKey, fuluSercret, tid, buyNum, chargeAccount, good,matchingGameServer);
+        log.info("福禄下单LOL" + tid  + "-resultMap-" + resultMap);
+        if (!"0".equals(String.valueOf(resultMap.get("code")))) {
+            String failStr = "平台下单失败。订单号：" + tid + "," + resultMap.get("message");
+            qbNationwidePushResultMap.put("fail", failStr);
+            return qbNationwidePushResultMap;
+        }else{
+            qbNationwidePushResultMap.put("success", "订单号：" + tid);
+            return qbNationwidePushResultMap;
+        }
+    }
+
+    /**
      * qb订单推送 福禄
      *
      * @param fuliAppKey
@@ -382,6 +587,39 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
         }
         client.setBizObject(dto);
         System.out.println("福禄QB下单请求："+JSON.toJSONString(dto));
+        String result = client.excute();
+        Map resultMap = JSON.parseObject(result);
+        return resultMap;
+    }
+
+    /**
+     * qb订单推送 福禄
+     *
+     * @param fuliAppKey
+     * @param fuluSercret
+     * @param tid
+     * @param buyNum
+     * @param chargeAccount
+     * @param good
+     * @return
+     */
+    private Map lolOrderPushFulu(String fuliAppKey, String fuluSercret,
+                                String tid,Integer buyNum, String chargeAccount, Goods good, GameServer matchingGameServer) {
+        //通过福禄API下单
+        DefaultOpenApiClient client =
+                new DefaultOpenApiClient(FuliProperties.getUrl(), fuliAppKey, fuluSercret, MethodConst.OPEN_API_DIRECT_ORDER_ADD);
+        InputDirectOrderDto dto = new InputDirectOrderDto();
+        dto.setProductId(good.getProductId().intValue());
+        dto.setCustomerOrderNo(tid);
+        dto.setBuyNum(buyNum);
+        dto.setChargeAccount(chargeAccount);
+        dto.setChargeGameName(good.getProductName());
+        //LOL需要传区
+        if(matchingGameServer != null){
+            dto.setChargeGameRegion( matchingGameServer.getAreaNameOperator());
+        }
+        client.setBizObject(dto);
+        System.out.println("福禄LOL下单请求："+JSON.toJSONString(dto));
         String result = client.excute();
         Map resultMap = JSON.parseObject(result);
         return resultMap;
@@ -446,7 +684,62 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
     /**
      * 通用下单
      *
-     * @param transaction
+     * @param transactionDto
+     * @param userRelate
+     * @param tid
+     * @param originalOrderDto
+     * @param goodsRelateFulu
+     * @param platform
+     * @return
+     */
+    private Map fuluDNFOrderPush(TransactionDto transactionDto, UserRelate userRelate,
+                                 String tid, OriginalOrderDto originalOrderDto, GoodsRelateFulu goodsRelateFulu, Integer platform) {
+        Map resultOrderMap = new HashMap();
+        String originalTid = tid;
+        Integer type = goodsRelateFulu.getType();
+
+        //充值账号 针对DNF 备注中可能有两个账号
+        String receiverAddress = transactionDto.getReceiverAddress();
+        if(receiverAddress.indexOf("账号")>-1){
+            receiverAddress = receiverAddress.substring(receiverAddress.indexOf("账号"));
+        }
+        String chargeAccount = AccountUtils.findNumber(receiverAddress);
+        //数量
+        Integer buyNum = originalOrderDto.getNum().intValue();
+        Long userId = userRelate.getUserId();
+        //更新DNF账号信息
+        Long orderId = originalOrderDto.getId();
+        OriginalOrder originalOrder = originalOrderService.findById(orderId);
+        originalOrder.setCreateEmp(String.valueOf(userId));
+        originalOrder.setChargeAccount(chargeAccount);
+        originalOrder.setSupplier(PlatformEnum.FULU.getName());
+        originalOrderService.update(originalOrder);
+
+        //黑名单
+        Blacklist blacklist = new Blacklist();
+        blacklist.setAccount(chargeAccount);
+        blacklist.setUserId(userRelate.getUserId());
+        List<Blacklist> listByAccount = blacklistService.findListByAccount(blacklist);
+        if(CollUtil.isNotEmpty(listByAccount)){
+            resultOrderMap = new HashMap();
+            resultOrderMap.put("fail", "订单号：" + tid+",黑名单账号："+chargeAccount);
+            return resultOrderMap;
+        }
+
+        //根据类型查询所对应福禄商品
+        List<Goods> goods = goodsService.findListByTypeAndPlatform(platform,type);
+        if(CollUtil.isEmpty(goods)){
+            resultOrderMap.put("fail", "订单号：" + tid+",未找到商品或者商品已下架");
+            return resultOrderMap;
+        }
+        Goods matchingGood = goods.get(0);
+        Map qbNationwidePushResultMap = commonOrderPushAndQueryResult(originalOrderDto, tid,originalTid,userRelate,matchingGood, chargeAccount, buyNum);
+        return qbNationwidePushResultMap;
+    }
+
+    /**
+     * 通用下单
+     *
      * @param transactionDto
      * @param userRelate
      * @param tid
@@ -455,7 +748,7 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
      * @param platform
      * @return
      */
-    private Map fuluCommonOrderPush(Transaction transaction, TransactionDto transactionDto, UserRelate userRelate,
+    private Map fuluCommonOrderPush( TransactionDto transactionDto, UserRelate userRelate,
                                     String tid, OriginalOrderDto orderDto, GoodsRelateFulu goodsRelateFulu, Integer platform) {
         Map resultOrderMap = new HashMap();
         String originalTid = tid;
@@ -467,6 +760,16 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
         String chargeAccount = AccountUtils.findNumber(receiverAddress);
         //数量
         Integer buyNum = orderDto.getNum().intValue();
+
+        Blacklist blacklist = new Blacklist();
+        blacklist.setAccount(chargeAccount);
+        blacklist.setUserId(userRelate.getUserId());
+        List<Blacklist> listByAccount = blacklistService.findListByAccount(blacklist);
+        if(CollUtil.isNotEmpty(listByAccount)){
+            resultOrderMap = new HashMap();
+            resultOrderMap.put("fail", "订单号：" + tid+",黑名单账号："+chargeAccount);
+            return resultOrderMap;
+        }
 
         //根据类型查询所对应福禄商品
         Goods matchingGood = null;
@@ -482,14 +785,13 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
             resultOrderMap.put("fail", "订单号：" + tid+",未找到商品或者商品已下架");
             return resultOrderMap;
         }
-        Map qbNationwidePushResultMap = commonOrderPushAndQueryResult(transaction, tid,originalTid,userRelate,matchingGood, chargeAccount, buyNum);
+        Map qbNationwidePushResultMap = commonOrderPushAndQueryResult(orderDto, tid,originalTid,userRelate,matchingGood, chargeAccount, buyNum);
         return qbNationwidePushResultMap;
     }
 
     /**
      * 陌陌订单推送查询返回接口
      *
-     * @param transaction
      * @param tid
      * @param originalTid
      * @param userRelate
@@ -498,7 +800,7 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
      * @param buyNum
      * @return
      */
-    private Map commonOrderPushAndQueryResult(Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
+    private Map commonOrderPushAndQueryResult(OriginalOrderDto originalOrderDto,String tid, String originalTid, UserRelate userRelate, Goods goods,
                                               String chargeAccount, Integer buyNum) {
         PlatformKey platformKey = platformKeyService.findByAppType(PlatformEnum.FULU.getCode());
         String fuliAppKey = platformKey.getAppKey();
@@ -512,28 +814,29 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
             resultMap.put("fail", failStr);
             return resultMap;
         }
-
+        //更新状态
+        OriginalOrder originalOrder = originalOrderService.findById(originalOrderDto.getId());
         //福禄下单成功后去查询
         Map queryOrderResultMap = fuliQueryOrderResult(fuliAppKey, fuluSercret, tid);
         //福禄查询充值失败后直接返回
         if(queryOrderResultMap.get("fail") != null){
             String fail = String.valueOf(queryOrderResultMap.get("fail"));
             log.error(fail);
-            transaction.setState(TransactionStateEnum.FAIL.getCode());
-            transaction.setRemark(fail);
-            transactionService.update(transaction);
+            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+            originalOrder.setFailReason(fail);
+            originalOrderService.update(originalOrder);
             return queryOrderResultMap;
         }
         try{
             //福禄查询充值成功后 转化对象
             String fuluOrderDtoStr = String.valueOf(queryOrderResultMap.get("success"));
             FuluOrderDto fuluOrderDto = JSON.parseObject(fuluOrderDtoStr, FuluOrderDto.class);
-            transaction.setState(TransactionStateEnum.SUCCEED.getCode());
-            transaction.setRemark(fuluOrderDtoStr);
-            transaction.setUpdateEmp(fuluOrderDto.getOrder_id());
-            transactionService.update(transaction);
+            originalOrder.setOrderStatus(TransactionStateEnum.SUCCEED.getCode());
+            originalOrder.setRemark(fuluOrderDtoStr);
+            originalOrder.setExternalOrderId(fuluOrderDto.getOrder_id());
+            originalOrderService.update(originalOrder);
         }catch (Exception e){
-            log.error("净蓝下单查询后,保存订单信息失败");
+            log.error("下单查询后,保存订单信息失败");
         }
         //更新发货状态
         try {
@@ -565,7 +868,7 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
         dto.setChargeGameName(good.getProductName());
 
         client.setBizObject(dto);
-        System.out.println("福禄陌陌下单请求："+JSON.toJSONString(dto));
+        System.out.println("福禄"+good.getProductName()+"下单请求："+JSON.toJSONString(dto));
         String result = client.excute();
         Map resultMap = JSON.parseObject(result);
         return resultMap;

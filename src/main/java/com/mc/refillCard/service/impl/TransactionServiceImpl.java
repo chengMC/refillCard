@@ -289,14 +289,43 @@ public class TransactionServiceImpl implements TransactionService {
                     return qbOrderPushMap;
                 }
             }
-        }else if (type.equals(GoodsRelateTypeEnum.DNF.getCode()) || type.equals(GoodsRelateTypeEnum.LOL.getCode())){
-            //DNF或者LOL 净蓝下单
-            Map orderPushMap = orderPushJingLanService.jinglanPlaceOrder(transactionDto, userRelate);
-            //修改失败订单状态
-            updataOrderStatus(originalOrder, orderPushMap);
-            return orderPushMap;
-        }else {
+        }else if (type.equals(GoodsRelateTypeEnum.DNF.getCode())){
+            //查询DNF订单查询下单平台
+            SysDict dnfOrder = sysDictService.findByCode(DictCodeEnum.DNF.getName());
+            Integer regionValue = Integer.valueOf(dnfOrder.getDataValue());
+            //下单平台 1 福禄 2 蜀山 3 净蓝
+            if(PlatformEnum.JINGLAN.getCode().equals(regionValue)){
+                //DNF或者LOL 净蓝下单
+                Map orderPushMap = orderPushJingLanService.jinglanPlaceOrder(transactionDto, userRelate);
+                //修改失败订单状态
+                updataOrderStatus(originalOrder, orderPushMap);
+                return orderPushMap;
+             }else if(PlatformEnum.FULU.getCode().equals(regionValue)){
+                //DNF或者LOL 福禄
+                Map orderPushMap = orderPushFuluService.fuliPlaceOrder(transactionDto, userRelate);
+                //修改失败订单状态
+                updataOrderStatus(originalOrder, orderPushMap);
+                return orderPushMap;
+            }
 
+        }else if (type.equals(GoodsRelateTypeEnum.LOL.getCode())){
+            //查询LOL订单查询下单平台
+            SysDict lolOrder = sysDictService.findByCode(DictCodeEnum.LOL.getName());
+            Integer lolValue = Integer.valueOf(lolOrder.getDataValue());
+            //下单平台 1 福禄 2 蜀山 3 净蓝
+            if(PlatformEnum.JINGLAN.getCode().equals(lolValue)){
+                //DNF或者LOL 净蓝下单
+                Map orderPushMap = orderPushJingLanService.jinglanPlaceOrder(transactionDto, userRelate);
+                //修改失败订单状态
+                updataOrderStatus(originalOrder, orderPushMap);
+                return orderPushMap;
+            }else if(PlatformEnum.FULU.getCode().equals(lolValue)){
+                //DNF或者LOL 福禄
+                Map orderPushMap =  orderPushFuluService.fuliPlaceOrder(transactionDto, userRelate);
+                //修改失败订单状态
+                updataOrderStatus(originalOrder, orderPushMap);
+                return orderPushMap;
+            }
         }
 
         return resultOrderMap;

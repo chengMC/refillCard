@@ -130,7 +130,13 @@ public class OrderPushJingLanServiceImpl implements OrderPushJingLanService {
         String originalTid = tid;
 
         //根据类型查询所对应商品
-        List<Goods> goods = goodsService.findListByTypeAndPlatform(platform, type);
+        List<Goods> goods = goodsService.findListByTypeAndPlatform(platform,type);
+        if(CollUtil.isEmpty(goods)){
+            Map resultOrderMap = new HashMap();
+             resultOrderMap.put("fail", "订单号：" + tid+",未找到商品或者商品已下架");
+            return resultOrderMap;
+        }
+        Goods matchingGood = goods.get(0);
 
         //充值账号 针对DNF 备注中可能有两个账号
         String receiverAddress = transactionDto.getReceiverAddress();
@@ -162,7 +168,7 @@ public class OrderPushJingLanServiceImpl implements OrderPushJingLanService {
         Integer num = originalOrderDto.getNum().intValue();
         //QB购买数等于面值乘数量
         Integer buyNum = num * nominal;
-        Map pushResultMap = jinglanOrderPushAndQueryResult(originalOrderDto,transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum, null);
+        Map pushResultMap = jinglanOrderPushAndQueryResult(originalOrderDto, tid,originalTid,userRelate, matchingGood, chargeAccount, buyNum, null);
         return pushResultMap;
     }
 
@@ -237,7 +243,7 @@ public class OrderPushJingLanServiceImpl implements OrderPushJingLanService {
         Integer num = originalOrderDto.getNum().intValue();
         //QB购买数等于面值乘数量
         Integer buyNum = num * nominal;
-        Map pushResultMap = jinglanOrderPushAndQueryResult(originalOrderDto,transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,matchingGameServer);
+        Map pushResultMap = jinglanOrderPushAndQueryResult(originalOrderDto, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,matchingGameServer);
         return pushResultMap;
     }
 
@@ -255,7 +261,7 @@ public class OrderPushJingLanServiceImpl implements OrderPushJingLanService {
      * @param matchingGameServer
      * @return
      */
-    private Map jinglanOrderPushAndQueryResult(OriginalOrderDto originalOrderDto, Transaction transaction, String tid, String originalTid, UserRelate userRelate, Goods goods,
+    private Map jinglanOrderPushAndQueryResult(OriginalOrderDto originalOrderDto, String tid, String originalTid, UserRelate userRelate, Goods goods,
                                                String chargeAccount, Integer buyNum, GameServer matchingGameServer) {
         String accessToken = userRelate.getAccessToken();
         if(matchingGameServer == null){
