@@ -23,7 +23,7 @@
     from game_server
     where id = #{id,jdbcType=BIGINT}
   </select>
-  <select id="findListByGoodType" resultType="com.mc.refillCard.entity.GameServer">
+  <select id="findListByGoodType" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
     from game_server

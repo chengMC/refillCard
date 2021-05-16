@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
+import com.mc.refillCard.common.Enum.GoodsRelateTypeEnum;
 import com.mc.refillCard.common.Enum.TransactionStateEnum;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.config.supplier.FuliProperties;
@@ -203,7 +204,23 @@ public class TransactionController {
         log.info("location1-");
 //        log.error("location1112-"+location);
 //        System.out.println("location"+location);
-
+        String gameServerName="所在区/服:艾欧尼亚\n" +
+        "游戏账号:569741817\n" +
+        "备注:";
+        //获取到LOL所有区信息
+        List<GameServer> gameServers = gameServerService.findListByGoodType(GoodsRelateTypeEnum.LOL.getCode().longValue());
+        //匹配区域
+        GameServer matchingGameServer = null;
+        log.info("gameServerName:"+gameServerName);
+        for (GameServer gameServer : gameServers) {
+            //匹配游戏区域
+            String areaName = gameServer.getAreaName();
+            log.info("areaName:"+areaName);
+            if (gameServerName.indexOf(areaName) > -1) {
+                matchingGameServer = gameServer;
+            }
+        }
+        System.out.println(matchingGameServer.getAreaName());
 
         String json ="{\n" +
                 "  \"code\" : 0,\n" +
