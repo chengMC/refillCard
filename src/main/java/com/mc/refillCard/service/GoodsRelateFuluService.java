@@ -54,7 +54,7 @@ public interface GoodsRelateFuluService {
      * 修改GoodsRelateFulu数据
      * @param goodsRelateFuluDto
      */
-    void updateDto(GoodsRelateFuluDto goodsRelateFuluDto);
+    void updateDto(GoodsRelateFuluDto goodsRelateFuluDto) throws Exception;
 
     /***
      * 新增GoodsRelateFulu
@@ -65,7 +65,7 @@ public interface GoodsRelateFuluService {
      * 新增GoodsRelateFulu
      * @param goodsRelateFuluDto
      */
-    void addDto(GoodsRelateFuluDto goodsRelateFuluDto);
+    void addDto(GoodsRelateFuluDto goodsRelateFuluDto) throws Exception;
 
     /***
      * 查询所有GoodsRelateFulu

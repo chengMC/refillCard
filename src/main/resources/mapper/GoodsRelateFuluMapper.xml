@@ -61,6 +61,21 @@
       </if>
       order by grf.id desc
     </select>
+    <select id="findListByParam" resultMap="BaseVoResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from goods_relate_fulu
+      where 1=1
+      <if test="goodId != null">
+        and good_id = #{goodId,jdbcType=BIGINT}
+      </if>
+      <if test="type != null">
+        and type = #{type,jdbcType=INTEGER}
+      </if>
+      <if test="id != null">
+        and id != #{id,jdbcType=BIGINT}
+      </if>
+    </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from goods_relate_fulu
     where id = #{id,jdbcType=BIGINT}

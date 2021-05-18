@@ -706,8 +706,12 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
             receiverAddress = receiverAddress.substring(receiverAddress.indexOf("账号"));
         }
         String chargeAccount = AccountUtils.findNumber(receiverAddress);
+        //面值
+        Integer nominal = Integer.valueOf(goodsRelateFulu.getNominal());
         //数量
-        Integer buyNum = originalOrderDto.getNum().intValue();
+        Integer num = originalOrderDto.getNum().intValue();
+        //QB购买数等于面值乘数量
+        Integer buyNum = num * nominal;
         Long userId = userRelate.getUserId();
         //更新DNF账号信息
         Long orderId = originalOrderDto.getId();

@@ -97,7 +97,7 @@ public class GoodsRelateFuluController {
      * @return
      */
     @PostMapping(value="/update")
-    public Result update(@RequestBody GoodsRelateFuluDto goodsRelateFuluDto){
+    public Result update(@RequestBody GoodsRelateFuluDto goodsRelateFuluDto) throws Exception {
         //调用GoodsRelateFuluService实现修改GoodsRelateFulu
        Long id = goodsRelateFuluDto.getId();
        if(id == null){
@@ -106,7 +106,6 @@ public class GoodsRelateFuluController {
         goodsRelateFuluService.updateDto(goodsRelateFuluDto);
         return Result.success("编辑成功");
     }
-
 
 
     /***
@@ -131,7 +130,7 @@ public class GoodsRelateFuluController {
      * @return
      */
     @PostMapping(value="/add")
-    public Result add(@RequestBody GoodsRelateFuluDto goodsRelateFuluDto){
+    public Result add(@RequestBody GoodsRelateFuluDto goodsRelateFuluDto) throws Exception {
         Long userId = goodsRelateFuluDto.getUserId();
         if(userId==null){
             UserVo user = (UserVo) SecurityUtils.getSubject().getPrincipal();

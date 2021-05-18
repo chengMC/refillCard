@@ -83,7 +83,8 @@ public class GoodsRelateFuluServiceImpl implements GoodsRelateFuluService {
      * @param goodsRelateFuluDto
      */
     @Override
-    public void updateDto(GoodsRelateFuluDto goodsRelateFuluDto){
+    public void updateDto(GoodsRelateFuluDto goodsRelateFuluDto) throws Exception {
+        verify(goodsRelateFuluDto);
         GoodsRelateFulu goodsRelateFulu = BeanUtil.copyProperties(goodsRelateFuluDto, GoodsRelateFulu.class);
         goodsRelateFuluMapper.updateByPrimaryKeySelective(goodsRelateFulu);
     }
@@ -102,9 +103,27 @@ public class GoodsRelateFuluServiceImpl implements GoodsRelateFuluService {
      * @param goodsRelateFuluDto
      */
     @Override
-    public void addDto(GoodsRelateFuluDto goodsRelateFuluDto){
+    public void addDto(GoodsRelateFuluDto goodsRelateFuluDto) throws Exception {
+        verify(goodsRelateFuluDto);
+
         GoodsRelateFulu goodsRelateFulu = BeanUtil.copyProperties(goodsRelateFuluDto, GoodsRelateFulu.class);
         goodsRelateFuluMapper.insertSelective(goodsRelateFulu);
+    }
+
+    /**
+     *  校验
+     * @param goodsRelateFuluDto
+     */
+    private void verify(GoodsRelateFuluDto goodsRelateFuluDto) throws Exception {
+        GoodsRelateFulu goodsRelateFuluParam = new GoodsRelateFulu();
+        goodsRelateFuluParam.setGoodId(goodsRelateFuluDto.getGoodId());
+        goodsRelateFuluParam.setId(goodsRelateFuluDto.getId());
+        goodsRelateFuluParam.setType(goodsRelateFuluDto.getType());
+        List<GoodsRelateFulu> listByParam = goodsRelateFuluMapper.findListByParam(goodsRelateFuluParam);
+        if(CollUtil.isNotEmpty(listByParam)){
+             throw new Exception("商品编号已存在，请重新输入");
+        }
+
     }
 
     /**

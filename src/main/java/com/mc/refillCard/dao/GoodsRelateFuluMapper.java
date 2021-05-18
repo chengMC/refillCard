@@ -37,4 +37,6 @@ public interface GoodsRelateFuluMapper {
     GoodsRelateFulu findByGoodId(@Param("goodId") Long goodId, @Param("userId") Long userId);
 
     void batchAdd(@Param("goodsRelateFulus") List<GoodsRelateFulu> goodsRelateFulus);
+
+    List<GoodsRelateFulu> findListByParam(GoodsRelateFulu goodsRelateFulu);
 }
