@@ -84,7 +84,19 @@ public class OrderPushShuShanServiceImpl implements OrderPushShuShanService {
 
             Integer type = goodsRelateFulu.getType();
             //类型是QB 下单
-            if (type.equals(GoodsRelateTypeEnum.QB.getCode())) {
+            if (type.equals(GoodsRelateTypeEnum.QB.getCode()) || type.equals(GoodsRelateTypeEnum.MINI_QB.getCode())) {
+                //面值
+                Integer nominal = Integer.valueOf(goodsRelateFulu.getNominal());
+                //数量
+                Integer num = orderDto.getNum().intValue();
+                //QB购买数等于面值乘数量
+                Integer buyNum = num * nominal;
+                //如果金额小于30，直接走去蜀山全国
+                if(buyNum < 30) {
+                    //走小额
+                    type = 7;
+                }
+
                 //判断余额
                 Map judgeMap = originalOrderService.judgeBalance(orderDto, goodsRelateFulu, userRelate, type);
                 //账号余额 大于订单总价格
@@ -149,8 +161,6 @@ public class OrderPushShuShanServiceImpl implements OrderPushShuShanService {
         //如果金额小于30，直接走去全国
         if(buyNum < 30){
             //QB小额
-            type = 7;
-            goods = goodsService.findListByTypeAndPlatform(platform, type);
             Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto,transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
             return qbNationwidePushResultMap;
         }

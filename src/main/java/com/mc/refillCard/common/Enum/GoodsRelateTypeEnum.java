@@ -9,7 +9,8 @@ public enum GoodsRelateTypeEnum {
     TANTAN(3,"探探"),
     E_CARD(4,"京东E卡"),
     DNF(5,"DNF"),
-    LOL(6,"LOL");
+    LOL(6,"LOL"),
+    MINI_QB(7,"小额QB");
 
     private Integer code;
     private String name;

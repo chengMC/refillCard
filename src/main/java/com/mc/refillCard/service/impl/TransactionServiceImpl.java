@@ -234,7 +234,8 @@ public class TransactionServiceImpl implements TransactionService {
         Integer type = goodsRelateFulu.getType();
         OriginalOrder originalOrder = originalOrderService.findById(orderDto.getId());
         //类型是QB 下单
-        if (type.equals(GoodsRelateTypeEnum.QB.getCode())) {
+        if (type.equals(GoodsRelateTypeEnum.QB.getCode()) || type.equals(GoodsRelateTypeEnum.MINI_QB.getCode())) {
+            //小额QB
             //面值
             Integer nominal = Integer.valueOf(goodsRelateFulu.getNominal());
             //数量
@@ -242,7 +243,7 @@ public class TransactionServiceImpl implements TransactionService {
             //QB购买数等于面值乘数量
             Integer buyNum = num * nominal;
             //如果金额小于30，直接走去蜀山全国
-            if(buyNum < 30){
+            if(buyNum < 30) {
                 Map qbOrderPushMap = orderPushShuShanService.shushanPlaceOrder(transactionDto, userRelate);
                 //修改失败订单状态
                 updataOrderStatus(originalOrder, qbOrderPushMap);
