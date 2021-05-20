@@ -5,7 +5,6 @@ import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.mc.refillCard.common.Enum.GoodsRelateTypeEnum;
 import com.mc.refillCard.common.Enum.PlatformEnum;
-import com.mc.refillCard.common.Enum.TransactionStateEnum;
 import com.mc.refillCard.config.supplier.ShuShanApiProperties;
 import com.mc.refillCard.dto.OriginalOrderDto;
 import com.mc.refillCard.dto.TransactionDto;
@@ -149,6 +148,9 @@ public class OrderPushShuShanServiceImpl implements OrderPushShuShanService {
         Integer buyNum = num * nominal;
         //如果金额小于30，直接走去全国
         if(buyNum < 30){
+            //QB小额
+            type = 7;
+            goods = goodsService.findListByTypeAndPlatform(platform, type);
             Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto,transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
             return qbNationwidePushResultMap;
         }
@@ -214,7 +216,7 @@ public class OrderPushShuShanServiceImpl implements OrderPushShuShanService {
         if(queryOrderResultMap.get("fail") != null){
             String fail = String.valueOf(queryOrderResultMap.get("fail"));
             log.error("蜀山下单查询后失败："+fail);
-            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+//            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
             originalOrder.setFailReason(fail);
             originalOrderService.update(originalOrder);
             return queryOrderResultMap;

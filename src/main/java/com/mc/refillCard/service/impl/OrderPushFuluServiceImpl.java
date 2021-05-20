@@ -419,7 +419,7 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
         if(queryOrderResultMap.get("fail") != null){
             String fail = String.valueOf(queryOrderResultMap.get("fail"));
             log.error(fail);
-            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+//            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
             originalOrder.setFailReason(fail);
             originalOrderService.update(originalOrder);
             return queryOrderResultMap;
@@ -480,7 +480,7 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
         if(queryOrderResultMap.get("fail") != null){
             String fail = String.valueOf(queryOrderResultMap.get("fail"));
             log.error(fail);
-            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+//            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
             originalOrder.setFailReason(fail);
             originalOrderService.update(originalOrder);
             return queryOrderResultMap;
@@ -828,7 +828,7 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
         if(queryOrderResultMap.get("fail") != null){
             String fail = String.valueOf(queryOrderResultMap.get("fail"));
             log.error(fail);
-            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+//            originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
             originalOrder.setFailReason(fail);
             originalOrderService.update(originalOrder);
             return queryOrderResultMap;

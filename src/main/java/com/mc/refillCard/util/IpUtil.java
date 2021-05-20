@@ -12,8 +12,9 @@ public class IpUtil {
     public static void main(String[] args) {
 //        String randomIp = getRandomIp();
 //        String areaRandomIp = getAreaRandomIp("1.192.0.0","1.192.7.255");
-        String areaRandomIp = getAreaRandomIp("1.192.52.0","1.192.55.255");
-        System.out.println(areaRandomIp);
+//        String areaRandomIp = getAreaRandomIp("1.192.52.0","1.192.55.255");
+        System.out.println(createRandom(50,100));
+//        System.out.println(areaRandomIp);
     }
     public static String getRandomIp(){
         //ip范围
@@ -75,6 +76,8 @@ public class IpUtil {
         Random random = new Random();
         return random.nextInt(endNum - startNum + 1) + startNum;
     }
+
+
 
 
 }

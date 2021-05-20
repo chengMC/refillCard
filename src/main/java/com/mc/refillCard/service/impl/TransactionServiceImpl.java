@@ -235,6 +235,20 @@ public class TransactionServiceImpl implements TransactionService {
         OriginalOrder originalOrder = originalOrderService.findById(orderDto.getId());
         //类型是QB 下单
         if (type.equals(GoodsRelateTypeEnum.QB.getCode())) {
+            //面值
+            Integer nominal = Integer.valueOf(goodsRelateFulu.getNominal());
+            //数量
+            Integer num = orderDto.getNum().intValue();
+            //QB购买数等于面值乘数量
+            Integer buyNum = num * nominal;
+            //如果金额小于30，直接走去蜀山全国
+            if(buyNum < 30){
+                Map qbOrderPushMap = orderPushShuShanService.shushanPlaceOrder(transactionDto, userRelate);
+                //修改失败订单状态
+                updataOrderStatus(originalOrder, qbOrderPushMap);
+                return qbOrderPushMap;
+            }
+
             //地区
             String buyerArea = transactionDto.getBuyerArea();
             //根据类型查询所对应福禄商品
