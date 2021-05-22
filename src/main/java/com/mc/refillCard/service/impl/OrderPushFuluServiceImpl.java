@@ -143,6 +143,7 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
                     //更新余额
                     originalOrderService.updateBalance(orderDto, goodsRelateFulu, userRelate, type);
                 }
+                return dnfOrderPushMap;
             }else if (type.equals(GoodsRelateTypeEnum.LOL.getCode())) {
                 //LOL下单
                 //判断余额
@@ -156,6 +157,7 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
                     //更新余额
                     originalOrderService.updateBalance(orderDto, goodsRelateFulu, userRelate, type);
                 }
+                return lolOrderPushMap;
             }
         }
         return resultOrderMap;

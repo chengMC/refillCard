@@ -41,6 +41,7 @@
     from goods
     where type =#{type,jdbcType=INTEGER}
     and platform = #{platform,jdbcType=INTEGER}
+    and status =1
   </select>
     <select id="findByArea" resultMap="BaseResultMap">
       select
