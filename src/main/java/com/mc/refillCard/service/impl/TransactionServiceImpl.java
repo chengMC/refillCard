@@ -48,6 +48,8 @@ public class TransactionServiceImpl implements TransactionService {
     @Autowired
     private OrderPushShuShanService orderPushShuShanService;
     @Autowired
+    private OrderPushMiNiDianService orderPushMiNiDianService;
+    @Autowired
     private OrderPushJingLanService orderPushJingLanService;
     @Autowired
     private OriginalOrderService originalOrderService;
@@ -270,12 +272,7 @@ public class TransactionServiceImpl implements TransactionService {
                 SysDict nationwideCode = sysDictService.findByCode(DictCodeEnum.NATIONWIDE.getName());
                 Integer nationwideValue = Integer.valueOf(nationwideCode.getDataValue());
                 Map qbOrderPushMap = null;
-               //下单平台 1 福禄 2 蜀山
-                if(PlatformEnum.SHUSHAN.getCode().equals(nationwideValue)){
-                    qbOrderPushMap = orderPushShuShanService.shushanPlaceOrder(transactionDto, userRelate);
-                }else if(PlatformEnum.FULU.getCode().equals(nationwideValue)){
-                   qbOrderPushMap =  orderPushFuluService.fuliPlaceOrder(transactionDto, userRelate);
-                }
+                qbOrderPushMap = OrderPushMap(transactionDto, userRelate, nationwideValue, qbOrderPushMap);
                 //修改失败订单状态
                 updataOrderStatus(originalOrder, qbOrderPushMap);
                 return qbOrderPushMap;
@@ -284,43 +281,33 @@ public class TransactionServiceImpl implements TransactionService {
                 SysDict regionCode = sysDictService.findByCode(DictCodeEnum.REGION.getName());
                 Integer regionValue = Integer.valueOf(regionCode.getDataValue());
                 Map qbOrderPushMap = null;
-                //下单平台 1 福禄 2 蜀山
-                if(PlatformEnum.SHUSHAN.getCode().equals(regionValue)){
-                     qbOrderPushMap =  orderPushShuShanService.shushanPlaceOrder(transactionDto, userRelate);
-                }else if(PlatformEnum.FULU.getCode().equals(regionValue)){
-                     qbOrderPushMap = orderPushFuluService.fuliPlaceOrder(transactionDto, userRelate);
-                }
-
+                //下单平台 1 福禄 2 蜀山 3 净蓝 4 迷你点
+                qbOrderPushMap = OrderPushMap(transactionDto, userRelate, regionValue, qbOrderPushMap);
                 //地区失败后，走全国
                 if (qbOrderPushMap.get("fail") != null) {
                     transactionDto.setBuyerArea("未知");
                     regionCode = sysDictService.findByCode(DictCodeEnum.NATIONWIDE.getName());
                     regionValue = Integer.valueOf(regionCode.getDataValue());
-                    //下单平台 1 福禄 2 蜀山
-                    if (PlatformEnum.SHUSHAN.getCode().equals(regionValue)) {
-                        qbOrderPushMap =  orderPushShuShanService.shushanPlaceOrder(transactionDto, userRelate);
-                    } else if (PlatformEnum.FULU.getCode().equals(regionValue)) {
-                        qbOrderPushMap = orderPushFuluService.fuliPlaceOrder(transactionDto, userRelate);
-                    }
+                    //下单平台 1 福禄 2 蜀山 3 净蓝 4 迷你点
+                    qbOrderPushMap = OrderPushMap(transactionDto, userRelate, regionValue, qbOrderPushMap);
                 }
-
                 //修改失败订单状态
                 updataOrderStatus(originalOrder, qbOrderPushMap);
                 return qbOrderPushMap;
             }
-        }else if (type.equals(GoodsRelateTypeEnum.DNF.getCode())){
+        } else if (type.equals(GoodsRelateTypeEnum.MOMO.getCode())) {
+            //查询陌陌订单查询下单平台
+            Map  orderPushMap = orderPushFuluService.fuliPlaceOrder(transactionDto, userRelate);
+            //修改失败订单状态
+            updataOrderStatus(originalOrder, orderPushMap);
+            return orderPushMap;
+        } else if (type.equals(GoodsRelateTypeEnum.DNF.getCode())){
             //查询DNF订单查询下单平台
             SysDict dnfOrder = sysDictService.findByCode(DictCodeEnum.DNF.getName());
             Integer regionValue = Integer.valueOf(dnfOrder.getDataValue());
             Map orderPushMap = null;
-            //下单平台 1 福禄 2 蜀山 3 净蓝
-            if(PlatformEnum.JINGLAN.getCode().equals(regionValue)){
-                //DNF或者LOL 净蓝下单
-                 orderPushMap = orderPushJingLanService.jinglanPlaceOrder(transactionDto, userRelate);
-             }else if(PlatformEnum.FULU.getCode().equals(regionValue)){
-                //DNF或者LOL 福禄
-                 orderPushMap = orderPushFuluService.fuliPlaceOrder(transactionDto, userRelate);
-            }
+            //下单平台 1 福禄 2 蜀山 3 净蓝 4 迷你点
+            orderPushMap = OrderPushMap(transactionDto, userRelate, regionValue, orderPushMap);
             //修改失败订单状态
             updataOrderStatus(originalOrder, orderPushMap);
             return orderPushMap;
@@ -330,19 +317,39 @@ public class TransactionServiceImpl implements TransactionService {
             SysDict lolOrder = sysDictService.findByCode(DictCodeEnum.LOL.getName());
             Integer lolValue = Integer.valueOf(lolOrder.getDataValue());
             Map orderPushMap = null;
-            //下单平台 1 福禄 2 蜀山 3 净蓝
-            if(PlatformEnum.JINGLAN.getCode().equals(lolValue)){
-                //DNF或者LOL 净蓝下单
-                 orderPushMap = orderPushJingLanService.jinglanPlaceOrder(transactionDto, userRelate);
-            }else if(PlatformEnum.FULU.getCode().equals(lolValue)){
-                //DNF或者LOL 福禄
-                 orderPushMap =  orderPushFuluService.fuliPlaceOrder(transactionDto, userRelate);
-            }
+            //下单平台 1 福禄 2 蜀山 3 净蓝 4 迷你点
+            orderPushMap = OrderPushMap(transactionDto, userRelate, lolValue, orderPushMap);
             //修改失败订单状态
             updataOrderStatus(originalOrder, orderPushMap);
             return orderPushMap;
         }
         return resultOrderMap;
+    }
+
+    /**
+     * 供应商下单
+     *
+     * @param transactionDto
+     * @param userRelate
+     * @param nationwideValue
+     * @param qbOrderPushMap
+     * @return
+     */
+    private Map OrderPushMap(TransactionDto transactionDto, UserRelate userRelate, Integer nationwideValue, Map qbOrderPushMap) {
+        //下单平台 1 福禄 2 蜀山 3 净蓝 4 迷你点
+        if (PlatformEnum.SHUSHAN.getCode().equals(nationwideValue)) {
+            qbOrderPushMap = orderPushShuShanService.shushanPlaceOrder(transactionDto, userRelate);
+        }
+        else if (PlatformEnum.FULU.getCode().equals(nationwideValue)) {
+            qbOrderPushMap = orderPushFuluService.fuliPlaceOrder(transactionDto, userRelate);
+        }
+        else if (PlatformEnum.JINGLAN.getCode().equals(nationwideValue)) {
+            qbOrderPushMap = orderPushJingLanService.jinglanPlaceOrder(transactionDto, userRelate);
+        }
+        else if (PlatformEnum.MINIDIAN.getCode().equals(nationwideValue)) {
+            qbOrderPushMap = orderPushMiNiDianService.minidianPlaceOrder(transactionDto, userRelate);
+        }
+        return qbOrderPushMap;
     }
 
     private void updataOrderStatus(OriginalOrder originalOrder, Map orderPushMap) {

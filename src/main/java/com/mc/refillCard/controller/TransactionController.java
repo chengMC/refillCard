@@ -8,7 +8,7 @@ import com.mc.refillCard.common.Enum.GoodsRelateTypeEnum;
 import com.mc.refillCard.common.Enum.TransactionStateEnum;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.config.supplier.FuliProperties;
-import com.mc.refillCard.config.supplier.ShuShanApiProperties;
+import com.mc.refillCard.config.supplier.MiNiDianApiProperties;
 import com.mc.refillCard.dto.GoodsDto;
 import com.mc.refillCard.dto.OriginalOrderDto;
 import com.mc.refillCard.dto.TransactionDto;
@@ -452,12 +452,12 @@ public class TransactionController {
     public void getInfo() throws UnsupportedEncodingException, NoSuchAlgorithmException {
 
         HashMap<String, Object> dataMap = new HashMap<>();
-        dataMap.put("MerchantID",ShuShanApiProperties.getMerchantID());
-        String shuShanSign = AccountUtils.getShuShanSign(dataMap, ShuShanApiProperties.getAppSecret());
+        dataMap.put("MerchantID",MiNiDianApiProperties.getMerchantID());
+        String shuShanSign = AccountUtils.getShuShanSign(dataMap, MiNiDianApiProperties.getAppSecret());
         dataMap.put("Sign",shuShanSign);
 
         //接口调用
-        String result = HttpRequest.post("http://api.shushanzx.shucard.com/Api/QueryMerchant")
+        String result = HttpRequest.post("http://api.minidianwl.shucard.com/Api/QueryMerchant")
                 .form(dataMap)
 //                .addHeaders(headerMap)
                 .execute()

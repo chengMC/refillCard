@@ -10,7 +10,8 @@ public enum GoodsRelateTypeEnum {
     E_CARD(4,"京东E卡"),
     DNF(5,"DNF"),
     LOL(6,"LOL"),
-    MINI_QB(7,"小额QB");
+    MINI_QB(7,"小额QB"),
+    TAQU(8,"他趣");
 
     private Integer code;
     private String name;
