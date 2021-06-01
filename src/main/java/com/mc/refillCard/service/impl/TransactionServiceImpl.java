@@ -163,8 +163,8 @@ public class TransactionServiceImpl implements TransactionService {
 
         transactionMapper.insertSelective(transaction);
         //充值账号
-        String receiverAddress = transactionDto.getReceiverAddress();
-        String chargeAccount = AccountUtils.findNumber(receiverAddress);
+//        String receiverAddress = transactionDto.getReceiverAddress();
+//        String chargeAccount = AccountUtils.findNumber(receiverAddress);
 
         //保存订单id
         Long id = transaction.getId();
@@ -184,7 +184,7 @@ public class TransactionServiceImpl implements TransactionService {
             order.setSkuPropertiesName(orderDto.getSkuPropertiesName());
             order.setTitle(orderDto.getTitle());
             order.setTotalFee(orderDto.getTotalFee());
-            order.setChargeAccount(chargeAccount);
+//            order.setChargeAccount(chargeAccount);
             order.setCreateTime(DateUtil.date());
             order.setUpdateTime(DateUtil.date());
             originalOrderService.add(order);
