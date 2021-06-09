@@ -164,6 +164,10 @@ public class TransactionServiceImpl implements TransactionService {
         transactionMapper.insertSelective(transaction);
         //充值账号
         String receiverAddress = transactionDto.getReceiverAddress();
+        //处理非实体店铺订单备注问题
+        if(receiverAddress == null){
+            receiverAddress = transactionDto.getBuyerMessage();
+        }
 //        String chargeAccount = AccountUtils.findNumber(receiverAddress);
         String  chargeAccount = receiverAddress;
         try {
