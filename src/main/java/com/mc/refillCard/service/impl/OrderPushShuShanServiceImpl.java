@@ -182,12 +182,12 @@ public class OrderPushShuShanServiceImpl implements OrderPushShuShanService {
         }else{
             //走地区
             Map qbWtoNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, matchingGoods, chargeAccount, buyNum,matchingGoods.getArea());
-//            if(qbWtoNationwidePushResultMap.get("fail") != null){
-//                tid = tid+"QB";
-//                //失败后再次走全国
-//                Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
-//                return qbNationwidePushResultMap;
-//            }
+            if(qbWtoNationwidePushResultMap.get("fail") != null){
+                tid = tid+"QB";
+                //失败后再次走全国
+                Map qbNationwidePushResultMap = shuShanQbOrderPushAndQueryResult(originalOrderDto, transaction, tid,originalTid,userRelate, goods.get(0), chargeAccount, buyNum,"");
+                return qbNationwidePushResultMap;
+            }
             return qbWtoNationwidePushResultMap;
         }
     }

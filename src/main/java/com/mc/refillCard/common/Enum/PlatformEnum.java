@@ -9,7 +9,8 @@ public enum PlatformEnum {
     FULU(1,"fulu"),
     SHUSHAN(2,"shushan"),
     JINGLAN(3,"jinglan"),
-    MINIDIAN(4,"minidian");
+    MINIDIAN(4,"minidian"),
+    XINGZOU(5,"xingzou");
 
     private Integer code;
     private String name;

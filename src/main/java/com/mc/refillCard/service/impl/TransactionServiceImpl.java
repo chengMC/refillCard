@@ -48,6 +48,8 @@ public class TransactionServiceImpl implements TransactionService {
     @Autowired
     private OrderPushShuShanService orderPushShuShanService;
     @Autowired
+    private OrderPushXingZouServiceImpl orderPushXingZouService;
+    @Autowired
     private OrderPushMiNiDianService orderPushMiNiDianService;
     @Autowired
     private OrderPushJingLanService orderPushJingLanService;
@@ -241,97 +243,13 @@ public class TransactionServiceImpl implements TransactionService {
             resultOrderMap.put("fail", "订单号：" + tid+",没有找到对应的宝贝Id："+numIid);
             return resultOrderMap;
         }
-        Integer type = goodsRelateFulu.getType();
         OriginalOrder originalOrder = originalOrderService.findById(orderDto.getId());
-        //类型是QB 下单
-        if (type.equals(GoodsRelateTypeEnum.QB.getCode()) || type.equals(GoodsRelateTypeEnum.MINI_QB.getCode())) {
-            //小额QB
-            //面值
-            Integer nominal = Integer.valueOf(goodsRelateFulu.getNominal());
-            //数量
-            Integer num = orderDto.getNum().intValue();
-            //QB购买数等于面值乘数量
-            Integer buyNum = num * nominal;
-            //如果金额小于30，直接走去蜀山全国
-            if(buyNum < 30) {
-                Map qbOrderPushMap = orderPushShuShanService.shushanPlaceOrder(transactionDto, userRelate);
-                //修改失败订单状态
-                updataOrderStatus(originalOrder, qbOrderPushMap);
-                return qbOrderPushMap;
-            }
 
-            //地区
-            String buyerArea = transactionDto.getBuyerArea();
-            //根据类型查询所对应福禄商品
-            Integer platform = PlatformEnum.FULU.getCode();
-            List<Goods> goods = goodsService.findListByTypeAndPlatform(platform, type);
-            //默认全国
-            Goods matchingGoods = null;
-            for (Goods good : goods) {
-                //地区匹配
-                String area = good.getArea();
-                if (buyerArea.indexOf(area) > -1) {
-                    matchingGoods = good;
-                }
-            }
-            //地区匹配不成功后，走全国商品
-            if(matchingGoods == null){
-                //查询全国下单平台
-                SysDict nationwideCode = sysDictService.findByCode(DictCodeEnum.NATIONWIDE.getName());
-                Integer nationwideValue = Integer.valueOf(nationwideCode.getDataValue());
-                Map qbOrderPushMap = null;
-                qbOrderPushMap = OrderPushMap(transactionDto, userRelate, nationwideValue, qbOrderPushMap);
-                //修改失败订单状态
-                updataOrderStatus(originalOrder, qbOrderPushMap);
-                return qbOrderPushMap;
-            }else{
-                //查询区域下单平台
-                SysDict regionCode = sysDictService.findByCode(DictCodeEnum.REGION.getName());
-                Integer regionValue = Integer.valueOf(regionCode.getDataValue());
-                Map qbOrderPushMap = null;
-                //下单平台 1 福禄 2 蜀山 3 净蓝 4 迷你点
-                qbOrderPushMap = OrderPushMap(transactionDto, userRelate, regionValue, qbOrderPushMap);
-                //地区失败后，走全国
-                if (qbOrderPushMap.get("fail") != null) {
-                    transactionDto.setBuyerArea("未知");
-                    regionCode = sysDictService.findByCode(DictCodeEnum.NATIONWIDE.getName());
-                    regionValue = Integer.valueOf(regionCode.getDataValue());
-                    //下单平台 1 福禄 2 蜀山 3 净蓝 4 迷你点
-                    qbOrderPushMap = OrderPushMap(transactionDto, userRelate, regionValue, qbOrderPushMap);
-                }
-                //修改失败订单状态
-                updataOrderStatus(originalOrder, qbOrderPushMap);
-                return qbOrderPushMap;
-            }
-        } else if (type.equals(GoodsRelateTypeEnum.MOMO.getCode())) {
-            //查询陌陌订单查询下单平台
-            Map  orderPushMap = orderPushFuluService.fuliPlaceOrder(transactionDto, userRelate);
-            //修改失败订单状态
-            updataOrderStatus(originalOrder, orderPushMap);
-            return orderPushMap;
-        } else if (type.equals(GoodsRelateTypeEnum.DNF.getCode())){
-            //查询DNF订单查询下单平台
-            SysDict dnfOrder = sysDictService.findByCode(DictCodeEnum.DNF.getName());
-            Integer regionValue = Integer.valueOf(dnfOrder.getDataValue());
-            Map orderPushMap = null;
-            //下单平台 1 福禄 2 蜀山 3 净蓝 4 迷你点
-            orderPushMap = OrderPushMap(transactionDto, userRelate, regionValue, orderPushMap);
-            //修改失败订单状态
-            updataOrderStatus(originalOrder, orderPushMap);
-            return orderPushMap;
-
-        }else if (type.equals(GoodsRelateTypeEnum.LOL.getCode())){
-            //查询LOL订单查询下单平台
-            SysDict lolOrder = sysDictService.findByCode(DictCodeEnum.LOL.getName());
-            Integer lolValue = Integer.valueOf(lolOrder.getDataValue());
-            Map orderPushMap = null;
-            //下单平台 1 福禄 2 蜀山 3 净蓝 4 迷你点
-            orderPushMap = OrderPushMap(transactionDto, userRelate, lolValue, orderPushMap);
-            //修改失败订单状态
-            updataOrderStatus(originalOrder, orderPushMap);
-            return orderPushMap;
-        }
-        return resultOrderMap;
+        //查询全国下单平台
+        Map  qbOrderPushMap = orderPushXingZouService.xingzouPlaceOrder(transactionDto, userRelate);
+        //修改失败订单状态
+        updataOrderStatus(originalOrder, qbOrderPushMap);
+        return qbOrderPushMap;
     }
 
     /**

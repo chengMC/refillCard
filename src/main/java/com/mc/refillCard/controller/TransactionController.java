@@ -9,6 +9,7 @@ import com.mc.refillCard.common.Enum.TransactionStateEnum;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.config.supplier.FuliProperties;
 import com.mc.refillCard.config.supplier.MiNiDianApiProperties;
+import com.mc.refillCard.config.supplier.XingZouApiProperties;
 import com.mc.refillCard.dto.GoodsDto;
 import com.mc.refillCard.dto.OriginalOrderDto;
 import com.mc.refillCard.dto.TransactionDto;
@@ -78,7 +79,7 @@ public class TransactionController {
     @RequestMapping("/push/receiveMsg")
     public String receivedMsg(@RequestParam("timestamp") long timestamp, @RequestParam("json") String json,
                               @RequestParam("aopic") long aopic, @RequestParam("sign") String sign) {
-//          json = "{\"Platform\":\"TAOBAO\",\"PlatformUserId\":\"234234234\",\"ReceiverName\":null,\"ReceiverMobile\":null,\"ReceiverPhone\":null,\"ReceiverAddress\":\"QQ:569741817\\r\\n备注:\",\"BuyerArea\":\"湖北\",\"ExtendedFields\":{},\"Tid\":16608731045877812697,\"TidStr\":\"1660873104587781269\",\"Status\":\"WAIT_SELLER_SEND_GOODS\",\"SellerNick\":\"劲舞团24小时充值\",\"BuyerNick\":\"启动蓝色\",\"Type\":null,\"BuyerMessage\":null,\"Price\":\"9.99\",\"Num\":3,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PayTime\":null,\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"PostFee\":\"0.00\",\"Created\":\"2021-03-21 19:18:40\",\"TradeFrom\":\"WAP,WAP\",\"Orders\":[{\"Oid\":1660873104587781269,\"OidStr\":\"1660873104587781269\",\"NumIid\":640359390526,\"OuterIid\":\"10\",\"OuterSkuId\":null,\"Title\":\"【谨防诈骗】腾讯qq币10qbQ币10个q币10qb10个qb10QB 自动充值\",\"Price\":\"9.99\",\"Num\":3,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"SkuId\":null,\"SkuPropertiesName\":null,\"DivideOrderFee\":null,\"PartMjzDiscount\":null}],\"SellerMemo\":null,\"SellerFlag\":0,\"CreditCardFee\":null}";
+//          json = "{\"Platform\":\"TAOBAO\",\"PlatformUserId\":\"234234234\",\"ReceiverName\":null,\"ReceiverMobile\":null,\"ReceiverPhone\":null,\"ReceiverAddress\":\"QQ:569741817\\r\\n备注:\",\"BuyerArea\":\"湖北\",\"ExtendedFields\":{},\"Tid\":1660873104587781211,\"TidStr\":\"1660873104587781269\",\"Status\":\"WAIT_SELLER_SEND_GOODS\",\"SellerNick\":\"劲舞团24小时充值\",\"BuyerNick\":\"启动蓝色\",\"Type\":null,\"BuyerMessage\":null,\"Price\":\"9.99\",\"Num\":3,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PayTime\":null,\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"PostFee\":\"0.00\",\"Created\":\"2021-03-21 19:18:40\",\"TradeFrom\":\"WAP,WAP\",\"Orders\":[{\"Oid\":1660873104587781269,\"OidStr\":\"1660873104587781269\",\"NumIid\":640359390526,\"OuterIid\":\"10\",\"OuterSkuId\":null,\"Title\":\"【谨防诈骗】腾讯qq币10qbQ币10个q币10qb10个qb10QB 自动充值\",\"Price\":\"9.99\",\"Num\":3,\"TotalFee\":\"9.99\",\"Payment\":\"9.99\",\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i1/T1aiVpXoBHXXb1upjX.jpg\",\"SkuId\":null,\"SkuPropertiesName\":null,\"DivideOrderFee\":null,\"PartMjzDiscount\":null}],\"SellerMemo\":null,\"SellerFlag\":0,\"CreditCardFee\":null}";
         //json = "{\"Platform\":\"TAOBAO\",\"PlatformUserId\":\"1849101211\",\"ReceiverName\":null,\"ReceiverMobile\":null,\"ReceiverPhone\":null,\"ReceiverAddress\":null,\"BuyerArea\":\"移动\",\"ExtendedFields\":{\"ReceiverCity\":\"运城市\",\"ReceiverState\":\"山西省\"},\"Tid\":\"1829432917194238450\",\"TidStr\":\"1829432917194238450\",\"Status\":\"WAIT_SELLER_SEND_GOODS\",\"SellerNick\":\"阿小1554\",\"BuyerNick\":\"t_1510402241453_0796\",\"Type\":null,\"BuyerMessage\":\"910490431\",\"Price\":\"1.20\",\"Num\":1,\"TotalFee\":\"1.20\",\"Payment\":\"1.20\",\"PayTime\":null,\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i2/1849101211/O1CN014vkdB41KogJfh9Crm_!!1849101211.jpg\",\"PostFee\":\"0.00\",\"Created\":\"2021-05-28 13:36:18\",\"TradeFrom\":\"WAP,WAP\",\"Orders\":[{\"Oid\":\"1829432917194238450\",\"OidStr\":\"1829432917194238450\",\"NumIid\":645045852023,\"OuterIid\":null,\"OuterSkuId\":null,\"Title\":\"游戏周边q币dnf地下城五一国庆套点券DNF点卷支持花坝收藏卡\",\"Price\":\"1.20\",\"Num\":1,\"TotalFee\":\"1.20\",\"Payment\":\"1.20\",\"PicPath\":\"https://img.alicdn.com/bao/uploaded/i2/1849101211/O1CN014vkdB41KogJfh9Crm_!!1849101211.jpg\",\"SkuId\":\"4820536282214\",\"SkuPropertiesName\":\"颜色分类:1Q币【每日特惠 备注号码】\",\"DivideOrderFee\":null,\"PartMjzDiscount\":null}],\"SellerMemo\":null,\"SellerFlag\":0,\"CreditCardFee\":null}";
 
         Map<String, String> map = new HashMap<String, String>();
@@ -455,26 +456,74 @@ public class TransactionController {
 
 
     @GetMapping("/getInfo")
-    public void getInfo() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Result getInfo() throws UnsupportedEncodingException, NoSuchAlgorithmException {
 
         HashMap<String, Object> dataMap = new HashMap<>();
-        dataMap.put("MerchantID",MiNiDianApiProperties.getMerchantID());
-        String shuShanSign = AccountUtils.getShuShanSign(dataMap, MiNiDianApiProperties.getAppSecret());
+        dataMap.put("MerchantID", XingZouApiProperties.getMerchantID());
+        String shuShanSign = AccountUtils.getShuShanSign(dataMap, XingZouApiProperties.getAppSecret());
         dataMap.put("Sign",shuShanSign);
 
         //接口调用
-        String result = HttpRequest.post("http://api.minidianwl.shucard.com/Api/QueryMerchant")
+        String result = HttpRequest.post("http://api.xuniwl.com/Api/QueryMerchant")
                 .form(dataMap)
 //                .addHeaders(headerMap)
                 .execute()
                 .body();
         System.out.println(result);
         String json = XmlUtils.xml2json(result);
+//
+//        System.out.println(json);
+        String tid ="1875145827464585423";
+        //商家编号
+        dataMap.put("MerchantID",XingZouApiProperties.getMerchantID());
+        //商家订单编号（不允许重复）
+        dataMap.put("MerchantOrderID", tid);
+         shuShanSign = null;
+        try {
 
+//             shuShanSign = AccountUtils.getShuShanSign(dataMap, XingZouApiProperties.getAppSecret());
+            String Sign = XingZouApiProperties.getMerchantID()+tid;
+//             Sign = "100171875145827464585423muek195c688l4m1";
+            shuShanSign = AccountUtils.encryptMD5Str(Sign);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        dataMap.put("Sign",shuShanSign);
+
+        //接口调用
+         result = HttpRequest.post("http://api.xuniwl.com/Api/QueryOrder")
+                .form(dataMap)
+                .execute()
+                .body();
+        System.out.println(result);
+         json = XmlUtils.xml2json(result);
         System.out.println(json);
 
+
+        return Result.success(json) ;
     }
 
+    @GetMapping("/QueryProductDetails/{id}")
+    public Result getInfo(@PathVariable String id) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+
+        HashMap<String, Object> dataMap = new HashMap<>();
+        dataMap.put("ProductID",id);
+        String shuShanSign = AccountUtils.getShuShanSign(dataMap, XingZouApiProperties.getAppSecret());
+//        dataMap.put("Sign",shuShanSign);
+
+        //接口调用
+        String result = HttpRequest.post("http://api.xuniwl.com/Api/QueryProductDetails")
+                .form(dataMap)
+//                .addHeaders(headerMap)
+                .execute()
+                .body();
+        System.out.println(result);
+        String json = XmlUtils.xml2json(result);
+        System.out.println(json);
+        return Result.success(json) ;
+    }
 
     /***
      * 查询PlatformKey全部数据

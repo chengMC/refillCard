@@ -6,10 +6,10 @@ spring:
     name: test
   datasource:
       driver-class-name: com.mysql.jdbc.Driver
-      url: jdbc:mysql://114.55.7.121:3306/refill_card_back?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
-#      url: jdbc:mysql://114.55.7.121:3306/refill_card?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
-      username: root
-      password: JxmMRMpiSP4xaSbN
+      url: jdbc:mysql://116.62.65.150:3306/refill_card_back?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+#      url: jdbc:mysql://116.62.65.150:3306/refill_card?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      username: refill_card
+      password: bsRLd628Sh3dXTsw
   redis:
     host: localhost
     password:
