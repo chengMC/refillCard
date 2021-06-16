@@ -1,6 +1,7 @@
 package com.mc.refillCard.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
@@ -8,7 +9,6 @@ import com.mc.refillCard.common.Enum.GoodsRelateTypeEnum;
 import com.mc.refillCard.common.Enum.TransactionStateEnum;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.config.supplier.FuliProperties;
-import com.mc.refillCard.config.supplier.MiNiDianApiProperties;
 import com.mc.refillCard.dto.GoodsDto;
 import com.mc.refillCard.dto.OriginalOrderDto;
 import com.mc.refillCard.dto.TransactionDto;
@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
@@ -62,6 +63,8 @@ public class TransactionController {
     private PlatformKeyService platformKeyService;
     @Autowired
     private GameServerService gameServerService;
+    @Autowired
+    private UserPricingService userPricingService;
 
     /***
      * 多条件搜索transaction数据
@@ -450,23 +453,108 @@ public class TransactionController {
 
     @GetMapping("/getInfo")
     public void getInfo() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        String MerchantID="10017";
+        String appSecret="v62hdaxlnwupbdy1";
 
-        HashMap<String, Object> dataMap = new HashMap<>();
-        dataMap.put("MerchantID",MiNiDianApiProperties.getMerchantID());
-        String shuShanSign = AccountUtils.getShuShanSign(dataMap, MiNiDianApiProperties.getAppSecret());
-        dataMap.put("Sign",shuShanSign);
+        List<OriginalOrder> listByFail = originalOrderService.findListByFail();
+        for (OriginalOrder originalOrderFail : listByFail) {
 
-        //接口调用
-        String result = HttpRequest.post("http://api.minidianwl.shucard.com/Api/QueryMerchant")
-                .form(dataMap)
+            Long MerchantOrderID= originalOrderFail.getOId();
+            HashMap<String, Object> dataMap = new HashMap<>();
+            dataMap.put("MerchantID",MerchantID);
+            dataMap.put("MerchantOrderID",MerchantOrderID);
+
+            String Sign = MerchantID+MerchantOrderID+appSecret;
+            String shuShanSign = AccountUtils.encryptMD5Str(Sign);
+
+            dataMap.put("Sign",shuShanSign);
+
+            //接口调用
+            String result = HttpRequest.post("http://api.xuniwl.com/Api/QueryOrder")
+                    .form(dataMap)
 //                .addHeaders(headerMap)
-                .execute()
-                .body();
-        System.out.println(result);
-        String json = XmlUtils.xml2json(result);
+                    .execute()
+                    .body();
+            System.out.println(result);
+            String json = XmlUtils.xml2json(result);
 
-        System.out.println(json);
+            System.out.println(json);
 
+            Map resultMap = JSON.parseObject(json);
+            String state = String.valueOf(resultMap.get("state"));
+            //102	充值中
+            if ("102".equals(state)) {
+
+            }else if("101".equals(state)){
+                //成功
+                saveOrder(originalOrderFail);
+                System.out.println("MerchantOrderID-"+MerchantOrderID);
+            }else {
+                //失败
+                OriginalOrder originalOrder = originalOrderService.findById(originalOrderFail.getId());
+                originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
+                originalOrder.setFailReason("订单失败");
+                originalOrder.setUpdateTime(DateUtil.date());
+                originalOrderService.update(originalOrder);
+            }
+
+
+
+        }
+    }
+
+    private void saveOrder(OriginalOrder originalOrderFail) {
+        Transaction transaction = transactionService.findById(originalOrderFail.getTransactionId());
+        if(transaction==null){
+            return ;
+        }
+//
+            //根据平台用户id查询对照关系
+            UserRelate userRelate = userRelateService.findByPlatformUserId(transaction.getPlatformUserId());
+            Long userId = userRelate.getUserId();
+            //订单的宝贝id
+            Long numIid = originalOrderFail.getNumId();
+            GoodsRelateFulu  goodsRelateFulu = goodsRelateFuluService.findByGoodId(numIid, userId);
+
+            Integer type = goodsRelateFulu.getType();
+            User user = userService.findById(userId);
+            UserPricing userPricing = userPricingService.findByUserIdAndType(userId,type);
+            //账号余额
+            BigDecimal balance = user.getBalance();
+            //计算商品价格
+            BigDecimal totalPrice = calculatePrice(originalOrderFail, goodsRelateFulu, userPricing);
+            //成功后减少余额
+            BigDecimal subtract = balance.subtract(totalPrice);
+            //获取到最新余额
+            user.setBalance(subtract);
+            userService.update(user);
+            //更新价格
+            OriginalOrder originalOrder = originalOrderService.findById(originalOrderFail.getId());
+            //扣款前余额
+            originalOrder.setBeforeBalance(balance);
+            //扣款后余额
+            originalOrder.setAfterBalance(subtract);
+            //扣款金额
+            originalOrder.setDeductPrice(totalPrice);
+            originalOrder.setOrderStatus(TransactionStateEnum.SUCCEED.getCode());
+            originalOrder.setUpdateTime(DateUtil.date());
+            originalOrderService.update(originalOrder);
+    }
+
+    /**
+     *  计算价格
+     * @return
+     */
+    private BigDecimal calculatePrice(OriginalOrder orderDto,GoodsRelateFulu goodsRelateFulu,UserPricing userPricing){
+        //订单中宝贝数量
+        BigDecimal orderNumBig = new BigDecimal(orderDto.getNum());
+        //宝贝金额
+        BigDecimal nominalBig = new BigDecimal(goodsRelateFulu.getNominal());
+        //统一定价
+        BigDecimal unifyPrice = userPricing.getUnifyPrice();
+        //总价格=统一定价*以宝贝金额*订单中宝贝数量
+        BigDecimal totalPrice = unifyPrice.multiply(nominalBig).multiply(orderNumBig);
+        return totalPrice;
     }
 
 

@@ -35,4 +35,6 @@ public interface OriginalOrderMapper {
 
     void orderFail();
 
+    List<OriginalOrder> findListByFail();
+
 }

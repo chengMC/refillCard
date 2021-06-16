@@ -127,4 +127,5 @@ public interface OriginalOrderService {
      */
     void orderFail();
 
+    List<OriginalOrder> findListByFail();
 }

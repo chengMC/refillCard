@@ -320,4 +320,9 @@ public class OriginalOrderServiceImpl implements OriginalOrderService {
         originalOrderMapper.orderFail();
     }
 
+    @Override
+    public List<OriginalOrder> findListByFail() {
+        return originalOrderMapper.findListByFail();
+    }
+
 }
