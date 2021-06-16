@@ -1,6 +1,7 @@
 package com.mc.refillCard;
 
 
+import com.mc.refillCard.util.AccountUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -9,12 +10,19 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class refillCardApplication {
 
     public static void main(String[] args) {
-//        String chargeAccount="所在区/服:373476573游戏账号:373476573 备注:";
-//        if(chargeAccount.indexOf("账号")>-1){
-//            chargeAccount = chargeAccount.substring(chargeAccount.indexOf("账号"));
+        //充值账号
+//        String receiverAddress = "所在区/服:373476573游戏账号:373476573 备注:";
+//        String chargeAccount = AccountUtils.findNumber(receiverAddress);
+//        System.out.println(chargeAccount);
+//        String chargeAccount1="所在区/服:西北1区\n" +
+//                "游戏账号:1510394449\n" +
+//                "备注:";
+//        String receiverAddress = chargeAccount1;
+//        if(receiverAddress.indexOf("账号")>-1){
+//            receiverAddress = receiverAddress.substring(receiverAddress.indexOf("账号"));
 //        }
-//        String number = AccountUtils.findNumber(chargeAccount);
-//        System.out.println(number);
+//        String chargeAccount = AccountUtils.findNumber(receiverAddress);
+//        System.out.println(chargeAccount);
 
 //        String json ="{\n" +
 //                "  \"code\" : 0,\n" +
