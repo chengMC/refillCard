@@ -8,9 +8,26 @@
     <result column="fuli_app_key" jdbcType="VARCHAR" property="fuliAppKey" />
     <result column="fulu_sercret" jdbcType="VARCHAR" property="fuluSercret" />
     <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="platform" jdbcType="INTEGER" property="platform" />
+    <result column="balance" jdbcType="DECIMAL" property="balance" />
+  </resultMap>
+  <resultMap id="BaseVoResultMap" type="com.mc.refillCard.vo.UserRelateVo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="access_token" jdbcType="VARCHAR" property="accessToken" />
+    <result column="agiso_user_id" jdbcType="VARCHAR" property="agisoUserId" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="platform" jdbcType="INTEGER" property="platform" />
+    <result column="balance" jdbcType="DECIMAL" property="balance" />
+    <result column="nick_name" jdbcType="VARCHAR" property="nickName" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, access_token, agiso_user_id, fuli_app_key, fulu_sercret, user_id
+    id, access_token, agiso_user_id, fuli_app_key, fulu_sercret, user_id, platform, balance
+  </sql>
+  <sql id="BaseVo_Column_List">
+    ur.id,ur.access_token,ur.agiso_user_id,ur.fuli_app_key,ur.fulu_sercret,ur.user_id,ur.platform,
+    u.balance,u.user_name,u.create_emp as nick_name,u.phone
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
@@ -24,7 +41,30 @@
     from user_relate
     where agiso_user_id = #{platformUserId,jdbcType=VARCHAR}
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+  <select id="findPageVoByExample" resultMap="BaseVoResultMap">
+    SELECT
+    <include refid="BaseVo_Column_List" />
+    FROM user_relate ur
+    left join user u on u.id = ur.user_id
+    where u.status !=0
+    <if test="userName != null">
+      and (u.user_name like concat('%',#{userName,jdbcType=VARCHAR},'%')
+      or u.create_emp like concat('%',#{userName,jdbcType=VARCHAR},'%'))
+    </if>
+    <if test="platform != null">
+     and ur.platform = #{platform}
+    </if>
+    order by u.id desc
+  </select>
+    <select id="findAll" resultMap="BaseVoResultMap">
+      SELECT
+      <include refid="BaseVo_Column_List" />
+      FROM user_relate ur
+      left join user u on u.id = ur.user_id
+      where u.status !=0
+      order by u.id desc
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from user_relate
     where id = #{id,jdbcType=BIGINT}
   </delete>
@@ -33,9 +73,11 @@
       SELECT LAST_INSERT_ID()
     </selectKey>
     insert into user_relate (access_token, agiso_user_id, fuli_app_key, 
-      fulu_sercret, user_id)
+      fulu_sercret, user_id, platform, 
+      balance)
     values (#{accessToken,jdbcType=VARCHAR}, #{agisoUserId,jdbcType=VARCHAR}, #{fuliAppKey,jdbcType=VARCHAR}, 
-      #{fuluSercret,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT})
+      #{fuluSercret,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT}, #{platform,jdbcType=INTEGER}, 
+      #{balance,jdbcType=DECIMAL})
   </insert>
   <insert id="insertSelective" parameterType="com.mc.refillCard.entity.UserRelate">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -58,6 +100,12 @@
       <if test="userId != null">
         user_id,
       </if>
+      <if test="platform != null">
+        platform,
+      </if>
+      <if test="balance != null">
+        balance,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="accessToken != null">
@@ -74,6 +122,12 @@
       </if>
       <if test="userId != null">
         #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="platform != null">
+        #{platform,jdbcType=INTEGER},
+      </if>
+      <if test="balance != null">
+        #{balance,jdbcType=DECIMAL},
       </if>
     </trim>
   </insert>
@@ -95,6 +149,12 @@
       <if test="userId != null">
         user_id = #{userId,jdbcType=BIGINT},
       </if>
+      <if test="platform != null">
+        platform = #{platform,jdbcType=INTEGER},
+      </if>
+      <if test="balance != null">
+        balance = #{balance,jdbcType=DECIMAL},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -104,7 +164,9 @@
       agiso_user_id = #{agisoUserId,jdbcType=VARCHAR},
       fuli_app_key = #{fuliAppKey,jdbcType=VARCHAR},
       fulu_sercret = #{fuluSercret,jdbcType=VARCHAR},
-      user_id = #{userId,jdbcType=BIGINT}
+      user_id = #{userId,jdbcType=BIGINT},
+      platform = #{platform,jdbcType=INTEGER},
+      balance = #{balance,jdbcType=DECIMAL}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

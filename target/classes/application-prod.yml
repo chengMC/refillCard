@@ -1,0 +1,18 @@
+server:
+  port: 6353
+#  port: 6351
+
+spring:
+  application:
+    name: prod
+  datasource:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://116.62.65.150:3306/refill_card?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      username: refill_card
+      password: bsRLd628Sh3dXTsw
+  redis:
+    host: localhost
+    password:
+    port: 6379
+    database: 4
+    timeout: 20000
