@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mc.refillCard.dao.UserPricingMapper">
+  <resultMap id="BaseResultMap" type="com.mc.refillCard.entity.UserPricing">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="good_type_id" jdbcType="BIGINT" property="goodTypeId" />
+    <result column="good_type_name" jdbcType="VARCHAR" property="goodTypeName" />
+    <result column="unify_price" jdbcType="DECIMAL" property="unifyPrice" />
+  </resultMap>
+  <resultMap id="BaseVoResultMap" type="com.mc.refillCard.vo.UserPricingVo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="nick_name" jdbcType="VARCHAR" property="nickName" />
+    <result column="good_type_id" jdbcType="BIGINT" property="goodTypeId" />
+    <result column="good_type_name" jdbcType="VARCHAR" property="goodTypeName" />
+    <result column="unify_price" jdbcType="DECIMAL" property="unifyPrice" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, user_id, good_type_id, good_type_name, unify_price
+  </sql>
+  <sql id="BaseVo_Column_List">
+    up.id,up.user_id,up.good_type_id,up.good_type_name,up.unify_price,
+    u.user_name,u.create_emp as nick_name
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from user_pricing
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="findByUserIdAndType" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from user_pricing
+    where user_id = #{userId,jdbcType=BIGINT}
+    and good_type_id = #{type}
+  </select>
+    <select id="findPageVoByExample" resultMap="BaseVoResultMap">
+      SELECT
+      <include refid="BaseVo_Column_List" />
+      FROM user_pricing up
+      left join user u on u.id = up.user_id
+      where u.status != 0
+      <if test="userId != null">
+        and up.user_id = #{userId}
+      </if>
+      <if test="goodTypeId != null">
+        and up.good_type_id = #{goodTypeId}
+      </if>
+      order by up.good_type_id desc,u.id desc
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from user_pricing
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.mc.refillCard.entity.UserPricing">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into user_pricing (user_id, good_type_id, good_type_name, 
+      unify_price)
+    values (#{userId,jdbcType=BIGINT}, #{goodTypeId,jdbcType=BIGINT}, #{goodTypeName,jdbcType=VARCHAR}, 
+      #{unifyPrice,jdbcType=DECIMAL})
+  </insert>
+  <insert id="insertSelective" parameterType="com.mc.refillCard.entity.UserPricing">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into user_pricing
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="goodTypeId != null">
+        good_type_id,
+      </if>
+      <if test="goodTypeName != null">
+        good_type_name,
+      </if>
+      <if test="unifyPrice != null">
+        unify_price,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="goodTypeId != null">
+        #{goodTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="goodTypeName != null">
+        #{goodTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="unifyPrice != null">
+        #{unifyPrice,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.mc.refillCard.entity.UserPricing">
+    update user_pricing
+    <set>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="goodTypeId != null">
+        good_type_id = #{goodTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="goodTypeName != null">
+        good_type_name = #{goodTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="unifyPrice != null">
+        unify_price = #{unifyPrice,jdbcType=DECIMAL},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.mc.refillCard.entity.UserPricing">
+    update user_pricing
+    set user_id = #{userId,jdbcType=BIGINT},
+      good_type_id = #{goodTypeId,jdbcType=BIGINT},
+      good_type_name = #{goodTypeName,jdbcType=VARCHAR},
+      unify_price = #{unifyPrice,jdbcType=DECIMAL}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

@@ -28,6 +28,7 @@
     <include refid="Base_Column_List" />
     from goods_relate
     where good_id = #{goodId,jdbcType=BIGINT}
+    and user_id = #{userId,jdbcType=BIGINT}
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from goods_relate

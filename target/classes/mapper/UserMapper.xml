@@ -18,10 +18,11 @@
     <result column="role_id" jdbcType="BIGINT" property="roleId" />
     <result column="department_id" jdbcType="BIGINT" property="departmentId" />
     <result column="department_name" jdbcType="VARCHAR" property="departmentName" />
+    <result column="balance" jdbcType="DECIMAL" property="balance" />
   </resultMap>
   <sql id="Base_Column_List">
     id, user_name, password, phone, remark, status, create_emp, create_time, update_time,
-    update_emp, logo, email, role_name, role_id, department_id, department_name
+    update_emp, logo, email, role_name, role_id, department_id, department_name,balance
   </sql>
   <select id="selectByExample" resultMap="BaseResultMap">
     select
@@ -31,7 +32,7 @@
     and (select is_hidden from role r where r.id =user.role_id) = 1
     <if test="userName != null">
       and (user_name like concat('%',#{userName,jdbcType=VARCHAR},'%')
-       or phone like concat('%',#{phone,jdbcType=VARCHAR},'%'))
+       or phone like concat('%',#{userName,jdbcType=VARCHAR},'%'))
     </if>
     order by update_time desc
   </select>
@@ -40,7 +41,6 @@
     <include refid="Base_Column_List" />
     from user
     where user.id = #{id,jdbcType=BIGINT}
-    and user.status != 0
   </select>
 
   <select id="findUser" resultMap="BaseResultMap">
@@ -88,37 +88,51 @@
       from user
       where
       status != 0
-      and user_name =#{userName,jdbcType=VARCHAR}
-       or phone =#{userName,jdbcType=VARCHAR}
+      and (user_name =#{userName,jdbcType=VARCHAR}
+       or phone =#{userName,jdbcType=VARCHAR})
       limit 1
+    </select>
+    <select id="findPlatformUserId" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from user
+      where status != 0
+      and remark =#{platformUserId,jdbcType=VARCHAR}
+    </select>
+    <select id="findAll" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from user
+      where 1=1
     </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from user
     where id = #{id,jdbcType=BIGINT}
   </delete>
 
-
   <insert id="insert" parameterType="com.mc.refillCard.entity.User">
-    insert into user (id, user_name, password,
-    phone, remark, status,
-    create_emp, create_time, update_time,
-    update_emp, logo, email,
-    role_name, role_id, department_id,
-    department_name)
-    values (#{id,jdbcType=BIGINT}, #{userName,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},
-    #{phone,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER},
-    #{createEmp,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP},
-    #{updateEmp,jdbcType=VARCHAR}, #{logo,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR},
-    #{roleName,jdbcType=VARCHAR}, #{roleId,jdbcType=BIGINT}, #{departmentId,jdbcType=BIGINT},
-    #{departmentName,jdbcType=VARCHAR})
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into user (user_name, password, phone,
+    remark, status, create_emp,
+    create_time, update_time, update_emp,
+    logo, email, role_name,
+    role_id, department_id, department_name,
+    is_hidden, balance)
+    values (#{userName,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR},
+    #{remark,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{createEmp,jdbcType=VARCHAR},
+    #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{updateEmp,jdbcType=VARCHAR},
+    #{logo,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{roleName,jdbcType=VARCHAR},
+    #{roleId,jdbcType=BIGINT}, #{departmentId,jdbcType=BIGINT}, #{departmentName,jdbcType=VARCHAR},
+    #{isHidden,jdbcType=INTEGER}, #{balance,jdbcType=DECIMAL})
   </insert>
-  <insert id="insertSelective" parameterType="com.mc.refillCard.entity.User"
-          useGeneratedKeys="true" keyProperty="id"  keyColumn="id">
+  <insert id="insertSelective" parameterType="com.mc.refillCard.entity.User">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
     insert into user
     <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        id,
-      </if>
       <if test="userName != null">
         user_name,
       </if>
@@ -164,11 +178,14 @@
       <if test="departmentName != null">
         department_name,
       </if>
+      <if test="isHidden != null">
+        is_hidden,
+      </if>
+      <if test="balance != null">
+        balance,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        #{id,jdbcType=BIGINT},
-      </if>
       <if test="userName != null">
         #{userName,jdbcType=VARCHAR},
       </if>
@@ -213,6 +230,12 @@
       </if>
       <if test="departmentName != null">
         #{departmentName,jdbcType=VARCHAR},
+      </if>
+      <if test="isHidden != null">
+        #{isHidden,jdbcType=INTEGER},
+      </if>
+      <if test="balance != null">
+        #{balance,jdbcType=DECIMAL},
       </if>
     </trim>
   </insert>
@@ -264,26 +287,35 @@
       <if test="departmentName != null">
         department_name = #{departmentName,jdbcType=VARCHAR},
       </if>
+      <if test="isHidden != null">
+        is_hidden = #{isHidden,jdbcType=INTEGER},
+      </if>
+      <if test="balance != null">
+        balance = #{balance,jdbcType=DECIMAL},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.mc.refillCard.entity.User">
     update user
     set user_name = #{userName,jdbcType=VARCHAR},
-    password = #{password,jdbcType=VARCHAR},
-    phone = #{phone,jdbcType=VARCHAR},
-    remark = #{remark,jdbcType=VARCHAR},
-    status = #{status,jdbcType=INTEGER},
-    create_emp = #{createEmp,jdbcType=VARCHAR},
-    create_time = #{createTime,jdbcType=TIMESTAMP},
-    update_time = #{updateTime,jdbcType=TIMESTAMP},
-    update_emp = #{updateEmp,jdbcType=VARCHAR},
-    logo = #{logo,jdbcType=VARCHAR},
-    email = #{email,jdbcType=VARCHAR},
-    role_name = #{roleName,jdbcType=VARCHAR},
-    role_id = #{roleId,jdbcType=BIGINT},
-    department_id = #{departmentId,jdbcType=BIGINT},
-    department_name = #{departmentName,jdbcType=VARCHAR}
+      password = #{password,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      remark = #{remark,jdbcType=VARCHAR},
+      status = #{status,jdbcType=INTEGER},
+      create_emp = #{createEmp,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      update_emp = #{updateEmp,jdbcType=VARCHAR},
+      logo = #{logo,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      role_name = #{roleName,jdbcType=VARCHAR},
+      role_id = #{roleId,jdbcType=BIGINT},
+      department_id = #{departmentId,jdbcType=BIGINT},
+      department_name = #{departmentName,jdbcType=VARCHAR},
+      is_hidden = #{isHidden,jdbcType=INTEGER},
+      balance = #{balance,jdbcType=DECIMAL}
     where id = #{id,jdbcType=BIGINT}
   </update>
+
 </mapper>

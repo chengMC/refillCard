@@ -3,6 +3,9 @@ spring:
 #    active: dev
     active: test
 #    active: prod
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
 
 mybatis:
   mapper-locations: classpath*:mapper/*.xml
@@ -19,14 +22,30 @@ logging:
     com.mc.refillCard: debug
 
 
-
+#阿奇索密钥和token 调用接口使用
 agiso:
   appSecret: ak6mr75ettb7yktzv7spspwu322f374y
   AccssToken: TbAlds5gt3bhurg6zsupfhvecndpxszavyxwch9tx62atd9y5s
 
+#蜀山密钥和商户ID 调用接口使用
+shushan:
+  appSecret: y3htuqkbk8awjlf
+  merchantID: 17860
+
+#迷你点密钥和商户ID 调用接口使用
+minidian:
+  appSecret: 23559orqmggu8gs
+  merchantID: 10002
+
+
+#净蓝密钥和商户号 调用接口使用
+jinglan:
+  appSecret: 8575716d59894834aab9f29afd615ce4
+  merAccount: 1000000652
+
 fuli:
-  appKey: +gViu2wfFwlHcca4U4FR+ijRebmrPjLu9+9JLeKukYjh3aqGj5g1BLO+soJ7Npix
-  sysSecret: 77126992853e4fcabf04014ce75afbfa
+  appKey: 1wqyNXf90RGYCwTPojXh7BKAPBmUcn36/YCIABCq2I0QWjLKWJXQ96Txd4ZTszsF
+  sysSecret: a7f8f390c8bf42b0a2da34caceb8915b
   url: http://openapi.fulu.com/api/getway
 
 #百度地图api
