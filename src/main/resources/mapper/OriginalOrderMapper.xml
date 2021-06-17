@@ -128,8 +128,8 @@
     order by oo.update_time desc
   </select>
   <update id="orderFail">
-    update original_order set order_status = 3,fail_reason ='订单超时'
-    where update_time  &lt; date_add(NOW(), interval -60 MINUTE)
+    update original_order set order_status = 3,fail_reason ='订单失败'
+    where charge_account is null and order_status = 1
   </update>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from original_order

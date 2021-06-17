@@ -2,6 +2,7 @@ package com.mc.refillCard.schedule;
 
 import com.mc.refillCard.service.OriginalOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 
@@ -20,14 +21,14 @@ public class Schedule {
         this.originalOrderService = originalOrderService;
     }
 
-//
-//    /**
-//     *  一个小时的订单判断超时失败
-//     */
-//    @Scheduled(fixedRate = 1000 * 60 * 10 )
-//    public void updateStatus() {
-//        originalOrderService.orderFail();
-//    }
+
+    /**
+     *  5分钟判断一次无账号订单，修改为失败
+     */
+    @Scheduled(fixedRate = 1000 * 60 * 5 )
+    public void updateStatus() {
+        originalOrderService.orderFail();
+    }
 
 
 }
