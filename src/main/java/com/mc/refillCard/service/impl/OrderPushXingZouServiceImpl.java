@@ -180,6 +180,12 @@ public class OrderPushXingZouServiceImpl implements OrderXingZouService {
         Integer num = originalOrderDto.getNum().intValue();
         //QB购买数等于面值乘数量
         Integer buyNum = num * nominal;
+//        //如果金额大于100 不充值
+//        if(buyNum > 100){
+//            Map resultOrderMap = new HashMap();
+//            resultOrderMap.put("fail", "订单号：" + tid+",订单金额大于100");
+//            return resultOrderMap;
+//        }
         //如果金额小于30，直接走去全国
         if(buyNum < 30){
             //QB小额

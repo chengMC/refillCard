@@ -57,6 +57,6 @@ public class UserConstants {
     /**
      * 阿奇索秘钥
      */
-    public static final String appSecret = "ak6mr75ettb7yktzv7spspwu322f374y";
+    public static final String appSecret = "9dmdgvf723ammkdtgtdmwmd8ybbpmvzt";
 
 }
