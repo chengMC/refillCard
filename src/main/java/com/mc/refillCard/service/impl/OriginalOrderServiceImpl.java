@@ -173,7 +173,7 @@ public class OriginalOrderServiceImpl implements OriginalOrderService {
             resultOrderMap.put("fail", "订单号：" + tid + ",订单余额不足");
             return resultOrderMap;
         }
-        resultOrderMap.put("success","余额充1111足");
+        resultOrderMap.put("success","余额充足");
         return resultOrderMap;
     }
 
