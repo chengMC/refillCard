@@ -645,7 +645,7 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
         } catch (Exception e) {
             log.error("线程异常");
         }
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 5000; i++) {
             DefaultOpenApiClient client =
                     new DefaultOpenApiClient(FuliProperties.getUrl(), fuliAppKey, fuluSercret, MethodConst.OPEN_API_ORDER_GET);
             InputOrderGetDto dto = new InputOrderGetDto();
@@ -673,9 +673,17 @@ public class OrderPushFuluServiceImpl implements OrderPushFuluService {
                 resultOrderMap.put("fail", failStr);
                 return resultOrderMap;
             }
+            if(i>100){
+                //睡一秒后查询结果，因为查询下单有延迟
+                try {
+                    Thread.currentThread().sleep(7000);
+                } catch (Exception e) {
+                    log.error("线程异常");
+                }
+            }
             //睡一秒后查询结果，因为查询下单有延迟
             try {
-                Thread.currentThread().sleep(1000);
+                Thread.currentThread().sleep(3000);
             } catch (Exception e) {
                 log.error("线程异常");
             }

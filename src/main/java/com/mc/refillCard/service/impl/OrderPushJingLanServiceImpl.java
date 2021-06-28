@@ -411,7 +411,7 @@ public class OrderPushJingLanServiceImpl implements OrderPushJingLanService {
         } catch (Exception e) {
             log.error("线程异常");
         }
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 5000; i++) {
             HashMap<String, Object> dataMap = new HashMap<>();
             dataMap.put("action","queryOrder");
             dataMap.put("requestTime", DateUtil.now());
@@ -447,9 +447,17 @@ public class OrderPushJingLanServiceImpl implements OrderPushJingLanService {
                 resultOrderMap.put("fail", failStr);
                 return resultOrderMap;
             } else {
+                if(i>100){
+                    //睡一秒后查询结果，因为查询下单有延迟
+                    try {
+                        Thread.currentThread().sleep(7000);
+                    } catch (Exception e) {
+                        log.error("线程异常");
+                    }
+                }
                 //睡一秒后查询结果，因为查询下单有延迟
                 try {
-                    Thread.currentThread().sleep(1000);
+                    Thread.currentThread().sleep(3000);
                 } catch (Exception e) {
                     log.error("jinglan线程异常");
                 }

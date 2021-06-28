@@ -496,7 +496,7 @@ public class OrderPushMiNiDianServiceImpl implements OrderPushMiNiDianService {
         } catch (Exception e) {
             log.error("线程异常");
         }
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 5000; i++) {
             HashMap<String, Object> dataMap = new HashMap<>();
             //商家编号
             dataMap.put("MerchantID",MiNiDianApiProperties.getMerchantID());
@@ -524,9 +524,17 @@ public class OrderPushMiNiDianServiceImpl implements OrderPushMiNiDianService {
             String state = String.valueOf(resultMap.get("state"));
             //102	充值中
             if ("102".equals(state)) {
+                if(i>100){
+                    //睡一秒后查询结果，因为查询下单有延迟
+                    try {
+                        Thread.currentThread().sleep(7000);
+                    } catch (Exception e) {
+                        log.error("线程异常");
+                    }
+                }
                 //睡一秒后查询结果，因为查询下单有延迟
                 try {
-                    Thread.currentThread().sleep(1000);
+                    Thread.currentThread().sleep(3000);
                 } catch (Exception e) {
                     log.error("线程异常");
                 }
