@@ -32,7 +32,7 @@ public class AccountUtils {
     }
 
     public static void main(String[] args) {
-        String accountSecret = createAccountSecret("bo_850104", "admin123456");
+        String accountSecret = createAccountSecret(String.valueOf(1), "qwe123");
         System.out.println(accountSecret);
     }
 

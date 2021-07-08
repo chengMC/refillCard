@@ -3,22 +3,24 @@ package com.mc.refillCard.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.lang.Snowflake;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.mc.refillCard.common.Enum.DictCodeEnum;
-import com.mc.refillCard.common.Enum.GoodsRelateTypeEnum;
-import com.mc.refillCard.common.Enum.PlatformEnum;
-import com.mc.refillCard.common.Enum.TransactionStateEnum;
+import com.mc.refillCard.common.Enum.*;
+import com.mc.refillCard.common.Result;
 import com.mc.refillCard.common.UserConstants;
+import com.mc.refillCard.config.supplier.PhoneBillApiProperties;
 import com.mc.refillCard.dao.TransactionMapper;
 import com.mc.refillCard.dto.OriginalOrderDto;
+import com.mc.refillCard.dto.PhoneBillDto;
 import com.mc.refillCard.dto.TransactionDto;
 import com.mc.refillCard.entity.*;
 import com.mc.refillCard.service.*;
 import com.mc.refillCard.util.AccountUtils;
 import com.mc.refillCard.util.BaiDuMapApiUtil;
+import com.mc.refillCard.util.PhoneUtils;
 import com.mc.refillCard.vo.TransactionVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +61,8 @@ public class TransactionServiceImpl implements TransactionService {
     private GoodsService goodsService;
     @Autowired
     private SysDictService sysDictService;
+    @Autowired
+    private Snowflake snowflake;
 
     /**
      Transaction条件+分页查询
@@ -332,6 +336,76 @@ public class TransactionServiceImpl implements TransactionService {
             return orderPushMap;
         }
         return resultOrderMap;
+    }
+
+    @Override
+    public Result pushPhoneBill(PhoneBillDto phoneBillDto) {
+        String MerchantID= PhoneBillApiProperties.getMerchantID();
+        String appSecret=PhoneBillApiProperties.getAppSecret();
+
+        //订单号
+        phoneBillDto.setSzOrderId(snowflake.nextIdStr());
+        //根据手机号求营运商
+        String szPhoneNum = phoneBillDto.getSzPhoneNum();
+        String pattern = PhoneUtils.checkOperator(szPhoneNum);
+        String nSortType = NSotrTypeEnum.getNameByCode(pattern);
+
+        String Sign = "szAgentId="+MerchantID+"&szOrderId="+phoneBillDto.getSzOrderId()+"&szPhoneNum="+ szPhoneNum
+                +"&nMoney="+phoneBillDto.getNMoney()+"&nSortType="+nSortType+"&nProductClass=1&nProductType=1&szTimeStamp="+DateUtil.date()
+                +"&szKey="+appSecret;
+        String szVerifyString = null;
+        try {
+            szVerifyString = AccountUtils.encryptMD5Str(Sign);
+        } catch (NoSuchAlgorithmException e) {
+        } catch (UnsupportedEncodingException e) {
+        }
+
+        //下单
+        String url ="http://47.96.136.129:10186/plat/api/old/submitorder";
+        url +="?szAgentId="+MerchantID+"&szOrderId="+phoneBillDto.getSzOrderId()+"&szPhoneNum="+ szPhoneNum
+                +"&nMoney="+phoneBillDto.getNMoney()+"&nSortType="+nSortType+"&nProductClass=1&nProductType=1&szTimeStamp="+DateUtil.date()
+                +"&szVerifyString="+"&szNotifyUr="+szVerifyString+"&szFormat=JSON";
+
+        //接口调用
+        String result = HttpRequest.post(url)
+                .execute()
+                .body();
+        Map resultMap = JSON.parseObject(result);
+        System.out.println("话费下单--"+ result);
+        String nRtn = String.valueOf(resultMap.get("nRtn"));
+        if(!"0".equals(nRtn)){
+            //下单失败
+            return Result.fall("下单失败",result);
+        }
+        try {
+            Thread.currentThread().sleep(5000);
+        } catch (Exception e) {
+            log.error("线程异常");
+        }
+        for (int i = 0; i < 5000; i++) {
+            try {
+                //睡半个小时在查询
+                Thread.currentThread().sleep(1000*60*30);
+            } catch (Exception e) {
+                log.error("线程异常");
+            }
+
+            //查询接口
+            String queryOrderUrl ="http://47.96.136.129:10186/plat/api/old/queryorder";
+            url +="?szAgentId="+MerchantID+"&szOrderId="+phoneBillDto.getSzOrderId()+"&szPhoneNum="+ szPhoneNum
+                    +"&nMoney="+phoneBillDto.getNMoney()+"&nSortType="+nSortType+"&nProductClass=1&nProductType=1&szTimeStamp="+DateUtil.date()
+                    +"&szVerifyString="+"&szNotifyUr="+szVerifyString+"&szFormat=JSON";
+            //接口调用
+            String queryOrderResult = HttpRequest.post(queryOrderUrl)
+                    .execute()
+                    .body();
+            Map queryOrderResultMap = JSON.parseObject(queryOrderResult);
+
+
+        }
+
+
+        return null;
     }
 
     /**

@@ -1,13 +1,22 @@
 package com.mc.refillCard;
 
 
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSON;
 import com.mc.refillCard.util.AccountUtils;
+import com.mc.refillCard.util.PhoneUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.util.Map;
 
 //@EnableScheduling
 @SpringBootApplication
 public class refillCardApplication {
+
 
     public static void main(String[] args) {
         //充值账号
@@ -114,8 +123,10 @@ public class refillCardApplication {
 //                "  } ]\n" +
 //                "}";
 //        Map orderDtoStrResult = JSON.parseObject(json);
+//        Long l = snowflake.nextId();
 
-
+//        String s = PhoneUtils.checkOperator("15827243762");
+//        System.out.println("-"+s);
 
         SpringApplication.run(refillCardApplication.class, args);
     }

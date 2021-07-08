@@ -37,6 +37,10 @@ minidian:
   appSecret: 23559orqmggu8gs
   merchantID: 10002
 
+#话费密钥和商户ID 调用接口使用
+phonebill:
+  appSecret: 7f5dd141a0084043a4caeaf185eb168e
+  merchantID: 200003
 
 #净蓝密钥和商户号 调用接口使用
 jinglan:

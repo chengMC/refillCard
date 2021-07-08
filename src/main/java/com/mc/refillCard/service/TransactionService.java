@@ -1,6 +1,8 @@
 package com.mc.refillCard.service;
 
 import com.github.pagehelper.PageInfo;
+import com.mc.refillCard.common.Result;
+import com.mc.refillCard.dto.PhoneBillDto;
 import com.mc.refillCard.dto.TransactionDto;
 import com.mc.refillCard.entity.Transaction;
 import com.mc.refillCard.entity.UserRelate;
@@ -98,4 +100,12 @@ public interface TransactionService {
      * @return
      */
     Map placeOrder(TransactionDto transactionDto, UserRelate userRelate);
+
+    /**
+     * 话费下单
+     * @param phoneBillDto
+     * @return
+     */
+    Result pushPhoneBill(PhoneBillDto phoneBillDto);
+
 }

@@ -2,15 +2,19 @@ package com.mc.refillCard.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.lang.UUID;
 import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.mc.refillCard.common.Enum.GoodsRelateTypeEnum;
 import com.mc.refillCard.common.Enum.TransactionStateEnum;
 import com.mc.refillCard.common.Result;
 import com.mc.refillCard.config.supplier.FuliProperties;
+import com.mc.refillCard.config.supplier.PhoneBillApiProperties;
 import com.mc.refillCard.dto.GoodsDto;
 import com.mc.refillCard.dto.OriginalOrderDto;
+import com.mc.refillCard.dto.PhoneBillDto;
 import com.mc.refillCard.dto.TransactionDto;
 import com.mc.refillCard.entity.*;
 import com.mc.refillCard.service.*;
@@ -18,11 +22,13 @@ import com.mc.refillCard.util.AccountUtils;
 import com.mc.refillCard.util.XmlUtils;
 import com.mc.refillCard.vo.TaobaoDoMemoUpdateVo;
 import com.mc.refillCard.vo.TaobaoTransactionVo;
+import com.mc.refillCard.vo.UserVo;
 import fulu.sup.open.api.core.MethodConst;
 import fulu.sup.open.api.model.InputProductTemplateDto;
 import fulu.sup.open.api.sdk.DefaultOpenApiClient;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang.StringUtils;
+import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
@@ -459,54 +465,35 @@ public class TransactionController {
 
     @GetMapping("/getInfo")
     public void getInfo() throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        String MerchantID="10017";
-        String appSecret="v62hdaxlnwupbdy1";
+//        String MerchantID="200003";
+//        String appSecret="7f5dd141a0084043a4caeaf185eb168e";
+//        List<User> list = userService.findList(new User());
+//        for (User user : list) {
+//            String accountSecret = AccountUtils.createAccountSecret(String.valueOf(user.getId()+10000), "appSecret");
+//            user.setEmail(accountSecret);
+//            userService.update(user);
+//        }
 
-        List<OriginalOrder> listByFail = originalOrderService.findListByFail();
-        for (OriginalOrder originalOrderFail : listByFail) {
-
-            Long MerchantOrderID= originalOrderFail.getOId();
+        String MerchantID= PhoneBillApiProperties.getMerchantID();
+        String appSecret=PhoneBillApiProperties.getAppSecret();
             HashMap<String, Object> dataMap = new HashMap<>();
-            dataMap.put("MerchantID",MerchantID);
-            dataMap.put("MerchantOrderID",MerchantOrderID);
+            dataMap.put("szAgentId",MerchantID);
+            dataMap.put("szFormat","JSON");
 
-            String Sign = MerchantID+MerchantOrderID+appSecret;
+            String Sign = "szAgentId="+MerchantID+"&szKey="+appSecret;
             String shuShanSign = AccountUtils.encryptMD5Str(Sign);
 
-            dataMap.put("Sign",shuShanSign);
+            dataMap.put("szVerifyString",shuShanSign);
 
-            //接口调用
-            String result = HttpRequest.post("http://api.xuniwl.com/Api/QueryOrder")
-                    .form(dataMap)
-//                .addHeaders(headerMap)
-                    .execute()
-                    .body();
-            System.out.println(result);
-            String json = XmlUtils.xml2json(result);
+            String url ="http://47.96.136.129:10186/plat/api/old/queryBalance";
+            url +="?szAgentId="+MerchantID+"&szVerifyString="+shuShanSign+"&szFormat=JSON";
 
-            System.out.println(json);
-
-            Map resultMap = JSON.parseObject(json);
-            String state = String.valueOf(resultMap.get("state"));
-            //102	充值中
-            if ("102".equals(state)) {
-
-            }else if("101".equals(state)){
-                //成功
-                saveOrder(originalOrderFail);
-                System.out.println("MerchantOrderID-"+MerchantOrderID);
-            }else {
-                //失败
-                OriginalOrder originalOrder = originalOrderService.findById(originalOrderFail.getId());
-                originalOrder.setOrderStatus(TransactionStateEnum.FAIL.getCode());
-                originalOrder.setFailReason("订单失败");
-                originalOrder.setUpdateTime(DateUtil.date());
-                originalOrderService.update(originalOrder);
-            }
-
-
-
-        }
+        //接口调用
+        String result = HttpRequest.post(url)
+                .execute()
+                .body();
+        Map resultMap = JSON.parseObject(result);
+        System.out.println(result);
     }
 
     private void saveOrder(OriginalOrder originalOrderFail) {
@@ -646,6 +633,17 @@ public class TransactionController {
 
     }
 
+
+    /**
+     * 外部话费下单
+     *
+     * @param phoneBillDto
+     * @return
+     */
+    @GetMapping("/submit/order")
+    private Result PushPhoneBill(PhoneBillDto phoneBillDto) {
+        return  transactionService.pushPhoneBill(phoneBillDto);
+    }
 
 
 
